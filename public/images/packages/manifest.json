@@ -1,0 +1,114 @@
+{
+  "Family": [
+    "/images/packages/Family/1.jpg",
+    "/images/packages/Family/2.jpg",
+    "/images/packages/Family/3.jpg",
+    "/images/packages/Family/4.jpg",
+    "/images/packages/Family/5.jpg",
+    "/images/packages/Family/6.jpg"
+  ],
+  "Couple": [
+    "/images/packages/Couple/1.jpg",
+    "/images/packages/Couple/2.jpg",
+    "/images/packages/Couple/3.jpg",
+    "/images/packages/Couple/4.jpg",
+    "/images/packages/Couple/5.jpg",
+    "/images/packages/Couple/6.jpg"
+  ],
+  "Honeymoon": [
+    "/images/packages/Honeymoon/1.jpg",
+    "/images/packages/Honeymoon/2.jpg",
+    "/images/packages/Honeymoon/3.jpg",
+    "/images/packages/Honeymoon/4.jpg",
+    "/images/packages/Honeymoon/5.jpg",
+    "/images/packages/Honeymoon/6.jpg"
+  ],
+  "Friends": [
+    "/images/packages/Friends/1.jpg",
+    "/images/packages/Friends/2.jpg",
+    "/images/packages/Friends/3.jpg",
+    "/images/packages/Friends/4.jpg",
+    "/images/packages/Friends/5.jpg",
+    "/images/packages/Friends/6.jpg"
+  ],
+  "Adventure": [
+    "/images/packages/Adventure/1.jpg",
+    "/images/packages/Adventure/2.jpg",
+    "/images/packages/Adventure/3.jpg",
+    "/images/packages/Adventure/4.jpg",
+    "/images/packages/Adventure/5.jpg",
+    "/images/packages/Adventure/6.jpg"
+  ],
+  "Group": [
+    "/images/packages/Group/1.jpg",
+    "/images/packages/Group/2.jpg",
+    "/images/packages/Group/3.jpg",
+    "/images/packages/Group/4.jpg",
+    "/images/packages/Group/5.jpg",
+    "/images/packages/Group/6.jpg"
+  ],
+  "Weekend": [
+    "/images/packages/Weekend/1.jpg",
+    "/images/packages/Weekend/2.jpg",
+    "/images/packages/Weekend/3.jpg",
+    "/images/packages/Weekend/4.jpg",
+    "/images/packages/Weekend/5.jpg",
+    "/images/packages/Weekend/6.jpg"
+  ],
+  "Wildlife": [
+    "/images/packages/Wildlife/1.jpg",
+    "/images/packages/Wildlife/2.jpg",
+    "/images/packages/Wildlife/3.jpg",
+    "/images/packages/Wildlife/4.jpg",
+    "/images/packages/Wildlife/5.jpg",
+    "/images/packages/Wildlife/6.jpg"
+  ],
+  "NatureTea": [
+    "/images/packages/NatureTea/1.jpg",
+    "/images/packages/NatureTea/2.jpg",
+    "/images/packages/NatureTea/3.jpg",
+    "/images/packages/NatureTea/4.jpg",
+    "/images/packages/NatureTea/5.jpg",
+    "/images/packages/NatureTea/6.jpg"
+  ],
+  "HillStation": [
+    "/images/packages/HillStation/1.jpg",
+    "/images/packages/HillStation/2.jpg",
+    "/images/packages/HillStation/3.jpg",
+    "/images/packages/HillStation/4.jpg",
+    "/images/packages/HillStation/5.jpg",
+    "/images/packages/HillStation/6.jpg"
+  ],
+  "Luxury": [
+    "/images/packages/Luxury/1.jpg",
+    "/images/packages/Luxury/2.jpg",
+    "/images/packages/Luxury/3.jpg",
+    "/images/packages/Luxury/4.jpg",
+    "/images/packages/Luxury/5.jpg",
+    "/images/packages/Luxury/6.jpg"
+  ],
+  "Budget": [
+    "/images/packages/Budget/1.jpg",
+    "/images/packages/Budget/2.jpg",
+    "/images/packages/Budget/3.jpg",
+    "/images/packages/Budget/4.jpg",
+    "/images/packages/Budget/5.jpg",
+    "/images/packages/Budget/6.jpg"
+  ],
+  "Corporate": [
+    "/images/packages/Corporate/1.jpg",
+    "/images/packages/Corporate/2.jpg",
+    "/images/packages/Corporate/3.jpg",
+    "/images/packages/Corporate/4.jpg",
+    "/images/packages/Corporate/5.jpg",
+    "/images/packages/Corporate/6.jpg"
+  ],
+  "Student": [
+    "/images/packages/Student/1.jpg",
+    "/images/packages/Student/2.jpg",
+    "/images/packages/Student/3.jpg",
+    "/images/packages/Student/4.jpg",
+    "/images/packages/Student/5.jpg",
+    "/images/packages/Student/6.jpg"
+  ]
+}

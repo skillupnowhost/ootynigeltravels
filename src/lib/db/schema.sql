@@ -1,0 +1,237 @@
+-- Ooty Nigel Travels — SQLite schema
+-- Applied idempotently by scripts/migrate.mjs
+
+CREATE TABLE IF NOT EXISTS users (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  role          TEXT NOT NULL CHECK (role IN ('admin','manager','staff','customer')),
+  name          TEXT NOT NULL,
+  phone         TEXT NOT NULL UNIQUE,
+  email         TEXT,
+  password_hash TEXT NOT NULL,
+  created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+  id          TEXT PRIMARY KEY,
+  token_hash  TEXT NOT NULL UNIQUE,
+  user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at  TEXT NOT NULL,
+  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS drivers (
+  id                INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug              TEXT NOT NULL UNIQUE,
+  name              TEXT NOT NULL,
+  phone             TEXT NOT NULL,
+  license_no        TEXT,
+  photo             TEXT,
+  experience_years  INTEGER NOT NULL DEFAULT 0,
+  languages         TEXT NOT NULL DEFAULT '[]',
+  rating            REAL NOT NULL DEFAULT 4.8,
+  bio               TEXT,
+  active            INTEGER NOT NULL DEFAULT 1,
+  created_at        TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS fleet (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug           TEXT NOT NULL UNIQUE,
+  name           TEXT NOT NULL,
+  category       TEXT NOT NULL,
+  seats          INTEGER NOT NULL,
+  luggage        TEXT,
+  price_per_day  INTEGER NOT NULL,
+  model_kind     TEXT NOT NULL DEFAULT 'icon' CHECK (model_kind IN ('3d','photo','icon')),
+  hero_asset     TEXT,
+  gallery        TEXT NOT NULL DEFAULT '[]',
+  features       TEXT NOT NULL DEFAULT '[]',
+  active         INTEGER NOT NULL DEFAULT 1,
+  created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS destinations (
+  id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug                TEXT NOT NULL UNIQUE,
+  name                TEXT NOT NULL,
+  region              TEXT,
+  description         TEXT,
+  image               TEXT,
+  highlights          TEXT NOT NULL DEFAULT '[]',
+  best_season         TEXT,
+  distance_from_ooty  TEXT,
+  active              INTEGER NOT NULL DEFAULT 1,
+  created_at          TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS packages (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug          TEXT NOT NULL UNIQUE,
+  name          TEXT NOT NULL,
+  tagline       TEXT,
+  summary       TEXT,
+  description   TEXT,
+  duration_label TEXT,
+  price_from    INTEGER NOT NULL,
+  hero_image    TEXT,
+  category      TEXT,
+  itinerary     TEXT NOT NULL DEFAULT '[]',
+  includes      TEXT NOT NULL DEFAULT '[]',
+  excludes      TEXT NOT NULL DEFAULT '[]',
+  faqs          TEXT NOT NULL DEFAULT '[]',
+  highlights    TEXT NOT NULL DEFAULT '[]',
+  gallery          TEXT NOT NULL DEFAULT '[]',
+  original_price   INTEGER,
+  rating           REAL NOT NULL DEFAULT 4.8,
+  review_count     INTEGER NOT NULL DEFAULT 0,
+  vehicle_options  TEXT NOT NULL DEFAULT '[]',
+  max_group_size   INTEGER,
+  duration_days    INTEGER,
+  distance_label   TEXT,
+  pickup_drop      TEXT,
+  driver_info      TEXT,
+  best_time        TEXT,
+  places_covered   TEXT NOT NULL DEFAULT '[]',
+  active        INTEGER NOT NULL DEFAULT 1,
+  created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS coupons (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  code        TEXT NOT NULL UNIQUE,
+  pct         INTEGER NOT NULL,
+  active      INTEGER NOT NULL DEFAULT 1,
+  note        TEXT,
+  expires_at  TEXT,
+  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS bookings (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  booking_code     TEXT NOT NULL UNIQUE,
+  customer_id      INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  guest_name       TEXT NOT NULL,
+  guest_phone      TEXT NOT NULL,
+  guest_email      TEXT,
+  package_id       INTEGER REFERENCES packages(id) ON DELETE SET NULL,
+  fleet_id         INTEGER REFERENCES fleet(id) ON DELETE SET NULL,
+  destination      TEXT,
+  travel_date      TEXT NOT NULL,
+  end_date         TEXT,
+  pickup_location  TEXT NOT NULL,
+  pickup_time      TEXT,
+  adults           INTEGER NOT NULL DEFAULT 1,
+  children         INTEGER NOT NULL DEFAULT 0,
+  estimate_amount  INTEGER NOT NULL DEFAULT 0,
+  coupon_code      TEXT,
+  status           TEXT NOT NULL DEFAULT 'Pending',
+  payment_status   TEXT NOT NULL DEFAULT 'Unpaid',
+  driver_id        INTEGER REFERENCES drivers(id) ON DELETE SET NULL,
+  vehicle_number   TEXT,
+  remarks          TEXT,
+  itinerary        TEXT NOT NULL DEFAULT '[]',
+  cancel_requested INTEGER NOT NULL DEFAULT 0,
+  created_at       TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  updated_at       TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_bookings_phone ON bookings(guest_phone);
+CREATE INDEX IF NOT EXISTS idx_bookings_customer ON bookings(customer_id);
+
+CREATE TABLE IF NOT EXISTS booking_history (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  booking_id  INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  status      TEXT NOT NULL,
+  note        TEXT,
+  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS reviews (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_name TEXT NOT NULL,
+  rating        INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  comment       TEXT NOT NULL,
+  package_id    INTEGER REFERENCES packages(id) ON DELETE SET NULL,
+  source        TEXT NOT NULL DEFAULT 'website',
+  approved      INTEGER NOT NULL DEFAULT 1,
+  created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  name        TEXT NOT NULL,
+  email       TEXT,
+  phone       TEXT,
+  subject     TEXT,
+  message     TEXT NOT NULL,
+  handled     INTEGER NOT NULL DEFAULT 0,
+  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug          TEXT NOT NULL UNIQUE,
+  title         TEXT NOT NULL,
+  excerpt       TEXT,
+  content       TEXT NOT NULL,
+  cover_image   TEXT,
+  author        TEXT,
+  read_minutes  INTEGER NOT NULL DEFAULT 4,
+  tags          TEXT NOT NULL DEFAULT '[]',
+  category      TEXT NOT NULL DEFAULT 'Guides',
+  published_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS gallery_images (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  category    TEXT NOT NULL,
+  src         TEXT NOT NULL,
+  alt         TEXT NOT NULL,
+  caption     TEXT,
+  credit      TEXT,
+  featured    INTEGER NOT NULL DEFAULT 0,
+  sort_order  INTEGER NOT NULL DEFAULT 0,
+  active      INTEGER NOT NULL DEFAULT 1,
+  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_gallery_images_category ON gallery_images(category);
+
+CREATE TABLE IF NOT EXISTS faqs (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  category    TEXT NOT NULL DEFAULT 'General',
+  question    TEXT NOT NULL,
+  answer      TEXT NOT NULL,
+  sort_order  INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS trip_requests (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  name           TEXT NOT NULL,
+  phone          TEXT NOT NULL,
+  email          TEXT,
+  trip_type      TEXT NOT NULL,
+  destinations   TEXT NOT NULL DEFAULT '[]',
+  group_size     INTEGER NOT NULL DEFAULT 2,
+  duration_label TEXT,
+  travel_month   TEXT,
+  budget_range   TEXT,
+  notes          TEXT,
+  package_slug   TEXT,
+  vehicle_type   TEXT,
+  hotel_category TEXT,
+  computed_total INTEGER,
+  status         TEXT NOT NULL DEFAULT 'New',
+  created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  actor_user_id  INTEGER,
+  actor_name     TEXT,
+  action         TEXT NOT NULL,
+  entity_type    TEXT NOT NULL,
+  entity_id      TEXT,
+  meta           TEXT,
+  created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
