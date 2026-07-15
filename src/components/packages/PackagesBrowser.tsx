@@ -3,10 +3,11 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "motion/react";
-import { SlidersHorizontal, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence, LayoutGroup } from "motion/react";
+import { SlidersHorizontal, ChevronDown, LayoutGrid, X, Wallet, Clock3, Users2, Car, ArrowUpDown } from "lucide-react";
 import { PackageCard } from "@/components/packages/PackageCard";
 import { GlassSelect } from "@/components/ui/GlassSelect";
+import { MotionIcon } from "@/components/ui/MotionIcon";
 import { TRIP_CATEGORIES, tripCategoryMeta } from "@/lib/config/tripCategories";
 import type { TourPackage } from "@/lib/db/types";
 
@@ -51,6 +52,8 @@ const SORTS = [
   { key: "rating", label: "Highest Rated" },
 ];
 
+const ALL_KEY = "";
+
 export function PackagesBrowser({
   packages,
   vehicleCategories,
@@ -67,7 +70,7 @@ export function PackagesBrowser({
   );
 
   const [active, setActive] = useState<string>(
-    initial && availableCategories.some((c) => c.key === initial) ? initial : availableCategories[0]?.key ?? ""
+    initial && availableCategories.some((c) => c.key === initial) ? initial : ALL_KEY
   );
   const [showFilters, setShowFilters] = useState(false);
   const [budget, setBudget] = useState("");
@@ -78,7 +81,7 @@ export function PackagesBrowser({
 
   const filtered = useMemo(() => {
     const result = packages
-      .filter((p) => p.category === active)
+      .filter((p) => active === ALL_KEY || p.category === active)
       .filter((p) => matchesBudget(p.price_from, budget))
       .filter((p) => matchesDuration(p.duration_days, duration))
       .filter((p) => (minTravellers > 0 ? (p.max_group_size ?? 0) >= minTravellers : true))
@@ -93,43 +96,62 @@ export function PackagesBrowser({
   }, [packages, active, budget, duration, minTravellers, vehicleType, sort]);
 
   const activeFilterCount = [budget, duration, vehicleType].filter(Boolean).length + (minTravellers > 0 ? 1 : 0);
+  const hasAnyFilters = active !== ALL_KEY || activeFilterCount > 0;
+
+  function clearAll() {
+    setActive(ALL_KEY);
+    setBudget("");
+    setDuration("");
+    setMinTravellers(0);
+    setVehicleType("");
+  }
 
   return (
     <div>
-      <div
-        className="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0 lg:flex-wrap"
-        role="tablist"
-        aria-label="Trip categories"
-      >
-        {availableCategories.map((c) => (
-          <button
-            key={c.key}
-            type="button"
-            role="tab"
-            aria-selected={active === c.key}
-            onClick={() => setActive(c.key)}
-            className={`group inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 ${
-              active === c.key
-                ? "border-forest-900 bg-forest-900 text-ivory-50 shadow-[0_10px_24px_-10px_rgba(11,59,46,0.5)]"
-                : "border-forest-200 bg-white text-forest-800 hover:border-forest-400"
-            }`}
-          >
-            <span className={active === c.key ? "text-gold-400" : "text-forest-600"}>{c.icon(16)}</span>
-            {c.label}
-          </button>
-        ))}
-        <Link
-          href="/packages/customize"
-          className="inline-flex shrink-0 items-center gap-2 rounded-full border border-dashed border-gold-500 bg-gold-50 px-4 py-2 text-sm font-semibold text-gold-800 transition-all duration-300 hover:border-gold-600 hover:bg-gold-100"
+      <LayoutGroup id="category-pills">
+        <div
+          className="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-2 [mask-image:linear-gradient(to_right,transparent,black_16px,black_calc(100%-16px),transparent)] sm:mx-0 sm:px-0 sm:pb-0 sm:[mask-image:none] lg:flex-wrap"
+          role="tablist"
+          aria-label="Trip categories"
         >
-          {tripCategoryMeta("Customized")?.icon(16)}
-          Customized Packages
-        </Link>
-      </div>
+          <CategoryPill active={active === ALL_KEY} onClick={() => setActive(ALL_KEY)}>
+            <MotionIcon preset="pop">
+              <LayoutGrid size={16} className={active === ALL_KEY ? "text-gold-400" : "text-forest-600"} />
+            </MotionIcon>
+            All Trips
+          </CategoryPill>
+          {availableCategories.map((c) => (
+            <CategoryPill key={c.key} active={active === c.key} onClick={() => setActive(c.key)}>
+              <span className={active === c.key ? "text-gold-400" : "text-forest-600"}>{c.icon(16)}</span>
+              {c.label}
+            </CategoryPill>
+          ))}
+          <Link
+            href="/packages/customize"
+            className="inline-flex shrink-0 items-center gap-2 rounded-full border border-dashed border-gold-500 bg-gold-50 px-4 py-2 text-sm font-semibold text-gold-800 transition-all duration-300 hover:border-gold-600 hover:bg-gold-100"
+          >
+            {tripCategoryMeta("Customized")?.icon(16)}
+            Customized Packages
+          </Link>
+        </div>
+      </LayoutGroup>
 
-      <p className="mt-4 text-sm text-charcoal-500">{tripCategoryMeta(active)?.blurb}</p>
+      <AnimatePresence mode="wait">
+        <motion.p
+          key={active || "all"}
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 4 }}
+          transition={{ duration: 0.2 }}
+          className="mt-4 text-sm text-charcoal-500"
+        >
+          {active === ALL_KEY
+            ? "Every trip style we run, in one place — filter to narrow it down."
+            : tripCategoryMeta(active)?.blurb}
+        </motion.p>
+      </AnimatePresence>
 
-      <div className="mt-6 rounded-2xl border border-forest-100 bg-white">
+      <div className="mt-6 overflow-hidden rounded-2xl border border-forest-100 bg-white">
         <button
           type="button"
           onClick={() => setShowFilters((v) => !v)}
@@ -139,12 +161,18 @@ export function PackagesBrowser({
             <SlidersHorizontal size={16} className="text-gold-600" />
             Advanced filters
             {activeFilterCount > 0 && (
-              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gold-600 px-1.5 text-xs font-bold text-forest-950">
+              <motion.span
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gold-600 px-1.5 text-xs font-bold text-forest-950"
+              >
                 {activeFilterCount}
-              </span>
+              </motion.span>
             )}
           </span>
-          <ChevronDown size={16} className={`transition-transform duration-300 ${showFilters ? "rotate-180" : ""}`} />
+          <MotionIcon preset="tilt">
+            <ChevronDown size={16} className={`transition-transform duration-300 ${showFilters ? "rotate-180" : ""}`} />
+          </MotionIcon>
         </button>
 
         <AnimatePresence initial={false}>
@@ -157,11 +185,11 @@ export function PackagesBrowser({
               className="overflow-hidden"
             >
               <div className="grid gap-4 border-t border-forest-100 p-5 sm:grid-cols-2 lg:grid-cols-5">
-                <FilterSelect label="Budget" value={budget} onChange={setBudget} options={BUDGET_BANDS} />
-                <FilterSelect label="Duration" value={duration} onChange={setDuration} options={DURATION_BUCKETS} />
+                <FilterSelect icon={<Wallet size={13} />} label="Budget" value={budget} onChange={setBudget} options={BUDGET_BANDS} />
+                <FilterSelect icon={<Clock3 size={13} />} label="Duration" value={duration} onChange={setDuration} options={DURATION_BUCKETS} />
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
-                    Travellers
+                  <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+                    <Users2 size={13} /> Travellers
                   </label>
                   <input
                     type="number"
@@ -174,8 +202,8 @@ export function PackagesBrowser({
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">
-                    Vehicle type
+                  <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+                    <Car size={13} /> Vehicle type
                   </label>
                   <GlassSelect
                     value={vehicleType}
@@ -186,11 +214,42 @@ export function PackagesBrowser({
                     ]}
                   />
                 </div>
-                <FilterSelect label="Sort by" value={sort} onChange={setSort} options={SORTS.map((s) => ({ key: s.key, label: s.label }))} />
+                <FilterSelect
+                  icon={<ArrowUpDown size={13} />}
+                  label="Sort by"
+                  value={sort}
+                  onChange={setSort}
+                  options={SORTS.map((s) => ({ key: s.key, label: s.label }))}
+                />
               </div>
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={filtered.length}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.2 }}
+            className="text-sm font-medium text-forest-800"
+          >
+            {filtered.length} {filtered.length === 1 ? "trip" : "trips"} found
+          </motion.p>
+        </AnimatePresence>
+        {hasAnyFilters && (
+          <button
+            type="button"
+            onClick={clearAll}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-charcoal-500 transition-colors hover:text-red-600"
+          >
+            <X size={13} />
+            Clear all filters
+          </button>
+        )}
       </div>
 
       <AnimatePresence mode="wait">
@@ -200,20 +259,32 @@ export function PackagesBrowser({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.35, ease }}
-          className="mt-8 grid gap-6 lg:grid-cols-3"
+          className="mt-4 grid gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
         >
           {filtered.map((p, i) => (
             <motion.div
               key={p.slug}
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.06, ease }}
+              transition={{ duration: 0.4, delay: i * 0.05, ease }}
             >
               <PackageCard pkg={p} />
             </motion.div>
           ))}
           {filtered.length === 0 && (
-            <p className="text-sm text-charcoal-500">No packages match these filters yet — try widening your search.</p>
+            <div className="col-span-full flex flex-col items-center gap-3 rounded-3xl border border-dashed border-forest-200 py-16 text-center">
+              <MotionIcon preset="wiggle" loop>
+                <SlidersHorizontal size={28} className="text-forest-300" />
+              </MotionIcon>
+              <p className="text-sm text-charcoal-500">No packages match these filters yet — try widening your search.</p>
+              <button
+                type="button"
+                onClick={clearAll}
+                className="text-sm font-semibold text-gold-700 hover:underline"
+              >
+                Clear all filters
+              </button>
+            </div>
           )}
         </motion.div>
       </AnimatePresence>
@@ -221,12 +292,45 @@ export function PackagesBrowser({
   );
 }
 
+function CategoryPill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={`relative inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors duration-300 ${
+        active ? "border-forest-900 text-ivory-50" : "border-forest-200 bg-white text-forest-800 hover:border-forest-400"
+      }`}
+    >
+      {active && (
+        <motion.span
+          layoutId="active-category-bg"
+          className="absolute inset-0 rounded-full bg-forest-900 shadow-[0_10px_24px_-10px_rgba(11,59,46,0.5)]"
+          transition={{ type: "spring", stiffness: 400, damping: 32 }}
+        />
+      )}
+      <span className="relative z-10 inline-flex items-center gap-2">{children}</span>
+    </button>
+  );
+}
+
 function FilterSelect({
+  icon,
   label,
   value,
   onChange,
   options,
 }: {
+  icon?: React.ReactNode;
   label: string;
   value: string;
   onChange: (v: string) => void;
@@ -234,7 +338,10 @@ function FilterSelect({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-charcoal-500">{label}</label>
+      <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+        {icon}
+        {label}
+      </label>
       <GlassSelect value={value} onChange={onChange} options={options.map((o) => ({ value: o.key, label: o.label }))} />
     </div>
   );

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
 
-type Variant = "gold" | "forest" | "ghost" | "outline";
+type Variant = "gold" | "forest" | "ghost" | "outline" | "outline-invert";
 
 const base =
   "group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-5 py-3 text-[13px] font-semibold tracking-wide transition-all duration-300 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:pointer-events-none sm:gap-2 sm:px-7 sm:py-3.5 sm:text-sm";
@@ -15,6 +15,9 @@ const variants: Record<Variant, string> = {
   ghost: "text-forest-900 hover:bg-forest-100",
   outline:
     "border border-forest-300 text-forest-900 hover:border-gold-600 hover:bg-gold-50",
+  /** Same as outline, but readable on dark/night backgrounds — light border and text instead of dark-on-dark. */
+  "outline-invert":
+    "border border-ivory-50/40 text-ivory-50 hover:border-gold-400 hover:bg-ivory-50/10",
 };
 
 interface CommonProps {

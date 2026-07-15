@@ -93,11 +93,7 @@ export default async function PackageDetailPage({ params }: { params: Params }) 
           <LinkButton href={`/booking?package=${pkg.slug}`} variant="gold">
             Book This Package
           </LinkButton>
-          <LinkButton
-            href={`/packages/customize?package=${pkg.slug}`}
-            variant="outline"
-            className="border-forest-600 text-ivory-50 hover:border-gold-500 hover:bg-forest-800"
-          >
+          <LinkButton href={`/packages/customize?package=${pkg.slug}`} variant="outline-invert">
             Customize This Package
           </LinkButton>
           <LinkButton

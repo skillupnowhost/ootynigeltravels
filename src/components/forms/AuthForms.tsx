@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
-import { Phone, Lock, User as UserIcon, Mail, AlertCircle } from "lucide-react";
+import { Phone, Lock, User as UserIcon, Mail, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { loginAction, registerAction, type AuthFormState } from "@/lib/actions/account";
 import { Button } from "@/components/ui/Button";
 import { MotionIcon } from "@/components/ui/MotionIcon";
@@ -16,7 +16,7 @@ export function LoginForm() {
   return (
     <form action={formAction} className="space-y-5">
       <Field label="Phone number" name="phone" type="tel" icon={<Phone size={16} />} />
-      <Field label="Password" name="password" type="password" icon={<Lock size={16} />} />
+      <PasswordField label="Password" name="password" icon={<Lock size={16} />} />
       {state.error && <FormError message={state.error} />}
       <Button type="submit" variant="gold" disabled={pending} className="w-full justify-center">
         {pending ? "Signing in..." : "Sign In"}
@@ -40,8 +40,8 @@ export function RegisterForm() {
       <Field label="Full name" name="name" icon={<UserIcon size={16} />} />
       <Field label="Phone number" name="phone" type="tel" icon={<Phone size={16} />} />
       <Field label="Email (optional)" name="email" type="email" required={false} icon={<Mail size={16} />} />
-      <Field label="Password" name="password" type="password" icon={<Lock size={16} />} />
-      <Field label="Confirm password" name="confirmPassword" type="password" icon={<Lock size={16} />} />
+      <PasswordField label="Password" name="password" icon={<Lock size={16} />} />
+      <PasswordField label="Confirm password" name="confirmPassword" icon={<Lock size={16} />} />
       {state.error && <FormError message={state.error} />}
       <p className="text-xs text-charcoal-500">
         Any bookings you&apos;ve already made as a guest with this phone number will
@@ -92,6 +92,51 @@ function Field({
           required={required}
           className={`input-field${icon ? " pl-10" : ""}`}
         />
+      </div>
+    </div>
+  );
+}
+
+export function PasswordField({
+  label,
+  name,
+  required = true,
+  icon,
+}: {
+  label: string;
+  name: string;
+  required?: boolean;
+  icon?: React.ReactNode;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div>
+      <label className="mb-1.5 block text-sm font-medium text-forest-900" htmlFor={name}>
+        {label}
+      </label>
+      <div className="relative">
+        {icon && (
+          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-forest-500">
+            <MotionIcon preset="tilt">{icon}</MotionIcon>
+          </span>
+        )}
+        <input
+          id={name}
+          name={name}
+          type={visible ? "text" : "password"}
+          required={required}
+          className={`input-field${icon ? " pl-10" : ""} pr-10`}
+        />
+        <button
+          type="button"
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? "Hide password" : "Show password"}
+          aria-pressed={visible}
+          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-forest-500 hover:text-gold-700"
+        >
+          <MotionIcon preset="tilt">{visible ? <EyeOff size={16} /> : <Eye size={16} />}</MotionIcon>
+        </button>
       </div>
     </div>
   );

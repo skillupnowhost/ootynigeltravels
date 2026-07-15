@@ -127,6 +127,50 @@ export async function deleteStaffUserAction(formData: FormData): Promise<void> {
   revalidatePath("/admin/users");
 }
 
+const createCustomerSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  phone: z.string().trim().min(6).max(20),
+  email: z.string().trim().email().optional().or(z.literal("")),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+export async function createCustomerAction(
+  _prev: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  const actor = await requireRole(["admin", "manager"]);
+
+  const parsed = createCustomerSchema.safeParse({
+    name: formData.get("name"),
+    phone: formData.get("phone"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
+
+  if (await getUserByPhone(parsed.data.phone)) {
+    return { ok: false, error: "A user with this phone number already exists." };
+  }
+
+  const customer = await createUser({
+    role: "customer",
+    name: parsed.data.name,
+    phone: parsed.data.phone,
+    email: parsed.data.email || null,
+    passwordHash: hashPassword(parsed.data.password),
+  });
+
+  await recordAuditLog({
+    actor_user_id: actor.id,
+    actor_name: actor.name,
+    action: "create",
+    entity_type: "customer",
+    entity_id: customer.id,
+  });
+  revalidatePath("/admin/customers");
+  return { ok: true };
+}
+
 const updateCustomerSchema = z.object({
   id: z.coerce.number().int().positive(),
   name: z.string().trim().min(2).max(120),

@@ -43,6 +43,7 @@
 
   html {
     scroll-behavior: auto;
+    overflow-x: hidden;
   }
 
   html[data-scroll-behavior="smooth"] {
@@ -53,6 +54,7 @@
     background-color: var(--color-ivory-50);
     color: var(--color-charcoal-900);
     font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, .font-display {

@@ -106,7 +106,7 @@ export function TripStylesShowcase() {
                 <div className="flex flex-1 flex-col p-5">
                   <h3 className="font-display text-lg text-ivory-50">{c.label}</h3>
                   <p className="mt-2 text-xs leading-relaxed text-forest-300">{c.blurb}</p>
-                  <span className="mt-auto inline-flex w-fit items-center gap-1.5 pt-5 text-xs font-semibold text-gold-400 transition-colors group-hover:text-gold-300">
+                  <span className="mt-auto inline-flex w-fit items-center gap-1.5 self-center pt-5 text-xs font-semibold text-gold-400 transition-colors group-hover:text-gold-300">
                     <span className="rounded-full border border-gold-500/40 px-3 py-1.5 transition-all duration-300 group-hover:border-gold-400 group-hover:bg-gold-500/10">
                       Explore
                     </span>

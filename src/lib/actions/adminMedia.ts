@@ -1,11 +1,9 @@
 "use server";
 
-import fs from "node:fs/promises";
-import path from "node:path";
-import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth/rbac";
+import { saveUploadedFile } from "@/lib/uploads";
 import { recordAuditLog } from "@/lib/db/queries/auditLogs";
 import { destinationsRepo } from "@/lib/db/queries/destinations";
 import {
@@ -28,26 +26,6 @@ import { ATTRACTION_CATEGORIES } from "@/lib/data/attractionCategories";
 export type AdminActionState = { ok: boolean; error?: string };
 
 const MANAGE_ROLES = ["admin", "manager"] as const;
-
-const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
-const ALLOWED_MIME_EXT: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-};
-
-async function saveUploadedFile(file: File, section: "destinations" | "attractions", slug: string): Promise<string> {
-  const ext = ALLOWED_MIME_EXT[file.type];
-  if (!ext) throw new Error("Only JPEG, PNG or WebP images are allowed.");
-  if (file.size > MAX_UPLOAD_BYTES) throw new Error("Image must be 5MB or smaller.");
-
-  const dir = path.join(process.cwd(), "public", "uploads", section, slug);
-  await fs.mkdir(dir, { recursive: true });
-  const filename = `${Date.now()}-${randomUUID().slice(0, 8)}.${ext}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(path.join(dir, filename), buffer);
-  return `/uploads/${section}/${slug}/${filename}`;
-}
 
 // ---------- Destinations (card text fields) ----------
 const destinationSchema = z.object({

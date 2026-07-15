@@ -271,3 +271,5 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   meta           TEXT,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT;

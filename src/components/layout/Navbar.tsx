@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Menu, X, User as UserIcon, ChevronDown, LayoutDashboard, LogOut } from "lucide-react";
+import { Menu, X, User as UserIcon, ChevronDown, LayoutDashboard, LogOut, MapPinned, ShieldCheck } from "lucide-react";
 import { logoutAction } from "@/lib/actions/account";
 
 const LINKS = [
@@ -18,7 +18,25 @@ const LINKS = [
   { href: "/contact", label: "Contact" },
 ];
 
-type SessionUser = { name: string; role: string } | null;
+type SessionUser = { name: string; role: string; avatar: string | null } | null;
+
+function AvatarBadge({ user, size = 32 }: { user: NonNullable<SessionUser>; size?: number }) {
+  if (user.avatar) {
+    return (
+      <span className="relative inline-block shrink-0 overflow-hidden rounded-full" style={{ width: size, height: size }}>
+        <Image src={user.avatar} alt={user.name} fill sizes={`${size}px`} className="object-cover" />
+      </span>
+    );
+  }
+  return (
+    <span
+      className="flex shrink-0 items-center justify-center rounded-full bg-forest-900 font-semibold text-gold-400"
+      style={{ width: size, height: size, fontSize: size * 0.4 }}
+    >
+      {user.name.slice(0, 1).toUpperCase()}
+    </span>
+  );
+}
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -158,15 +176,33 @@ export function Navbar() {
               </Link>
               {user ? (
                 <>
+                  <div className="mt-2 flex items-center gap-3 rounded-2xl border border-forest-200 px-4 py-2.5 text-sm font-medium text-forest-900">
+                    <AvatarBadge user={user} />
+                    {user.name.split(" ")[0]}&rsquo;s Account
+                  </div>
                   <Link
                     href="/account"
-                    className="mt-2 flex items-center gap-3 rounded-full border border-forest-200 px-4 py-2.5 text-sm font-medium text-forest-900"
+                    className="flex items-center gap-2.5 rounded-lg px-3 py-3 text-base font-medium text-forest-900 hover:bg-forest-100"
                   >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-forest-900 text-xs font-semibold text-gold-400">
-                      {user.name.slice(0, 1).toUpperCase()}
-                    </span>
-                    {user.name.split(" ")[0]}&rsquo;s Account
+                    <LayoutDashboard size={17} className="text-forest-600" />
+                    Dashboard
                   </Link>
+                  <Link
+                    href="/account/trips"
+                    className="flex items-center gap-2.5 rounded-lg px-3 py-3 text-base font-medium text-forest-900 hover:bg-forest-100"
+                  >
+                    <MapPinned size={17} className="text-forest-600" />
+                    My Trips
+                  </Link>
+                  {user.role !== "customer" && (
+                    <Link
+                      href="/admin"
+                      className="flex items-center gap-2.5 rounded-lg px-3 py-3 text-base font-medium text-forest-900 hover:bg-forest-100"
+                    >
+                      <ShieldCheck size={17} className="text-forest-600" />
+                      Admin Panel
+                    </Link>
+                  )}
                   <form action={logoutAction}>
                     <button
                       type="submit"
@@ -224,9 +260,7 @@ function AuthControl({ user }: { user: SessionUser }) {
           aria-label={`${user.name}'s account menu`}
           className="flex items-center gap-2 rounded-full border border-forest-200 py-1.5 pl-1.5 pr-3 transition-all hover:border-gold-400"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-forest-900 text-sm font-semibold text-gold-400">
-            {user.name.slice(0, 1).toUpperCase()}
-          </span>
+          <AvatarBadge user={user} />
           <span className="max-w-[7rem] truncate text-sm font-medium text-forest-900">{user.name.split(" ")[0]}</span>
           <ChevronDown size={14} className={`text-forest-500 transition-transform ${open ? "rotate-180" : ""}`} />
         </button>
@@ -246,8 +280,27 @@ function AuthControl({ user }: { user: SessionUser }) {
                 className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-forest-900 hover:bg-forest-50"
               >
                 <LayoutDashboard size={16} className="text-forest-600" />
-                My Account
+                Dashboard
               </Link>
+              <Link
+                href="/account/trips"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-forest-900 hover:bg-forest-50"
+              >
+                <MapPinned size={16} className="text-forest-600" />
+                My Trips
+              </Link>
+              {user.role !== "customer" && (
+                <Link
+                  href="/admin"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-forest-900 hover:bg-forest-50"
+                >
+                  <ShieldCheck size={16} className="text-forest-600" />
+                  Admin Panel
+                </Link>
+              )}
+              <div className="my-1 border-t border-forest-100" />
               <form action={logoutAction}>
                 <button
                   type="submit"

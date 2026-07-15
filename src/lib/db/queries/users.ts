@@ -83,6 +83,10 @@ export async function updateUser(
   }
 }
 
+export async function updateUserAvatar(id: number, avatar: string): Promise<void> {
+  await db.prepare("UPDATE users SET avatar = ? WHERE id = ?").run(avatar, id);
+}
+
 export async function deleteUser(id: number): Promise<void> {
   await db.prepare("DELETE FROM users WHERE id = ?").run(id);
 }

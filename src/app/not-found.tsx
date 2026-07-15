@@ -26,11 +26,7 @@ export default function NotFound() {
             <LinkButton href="/" variant="gold">
               Back to Home
             </LinkButton>
-            <LinkButton
-              href="/packages"
-              variant="outline"
-              className="border-forest-600 text-ivory-50 hover:border-gold-500 hover:bg-forest-800"
-            >
+            <LinkButton href="/packages" variant="outline-invert">
               Browse Packages
             </LinkButton>
           </div>

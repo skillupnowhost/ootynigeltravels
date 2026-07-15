@@ -3,6 +3,7 @@ import { listCustomers } from "@/lib/db/queries/users";
 import { listBookingsForCustomer } from "@/lib/db/queries/bookings";
 import { deleteCustomerAction } from "@/lib/actions/adminUsers";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { CustomerCreateForm } from "@/components/admin/CustomerCreateForm";
 import { formatDate } from "@/lib/format";
 import { requireRole } from "@/lib/auth/rbac";
 import { Reveal } from "@/components/ui/Reveal";
@@ -29,6 +30,10 @@ export default async function AdminCustomersPage() {
         <p className="mt-1 text-sm text-charcoal-500">
           Registered accounts only — most bookings come from guests who never create one.
         </p>
+
+        <div className="mt-4 sm:mt-6">
+          <CustomerCreateForm />
+        </div>
 
         {/* Card list on small screens */}
         <div className="mt-4 divide-y divide-forest-50 rounded-2xl border border-forest-100 bg-white sm:hidden">

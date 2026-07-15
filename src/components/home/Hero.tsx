@@ -164,11 +164,15 @@ export function Hero({
           </RevealGroup>
 
           <Reveal delay={0.3}>
-            <div className="mt-9 flex gap-3 sm:flex-wrap sm:gap-4">
+            <div className="mt-9 flex flex-wrap gap-3 sm:gap-4">
               <LinkButton href="/booking" variant="gold" className="flex-1 sm:flex-none">
                 Plan Your Journey
               </LinkButton>
-              <LinkButton href="/packages" variant="outline" className="flex-1 sm:flex-none">
+              <LinkButton
+                href="/packages"
+                variant={isNight ? "outline-invert" : "outline"}
+                className="flex-1 sm:flex-none"
+              >
                 Explore Packages
               </LinkButton>
             </div>

@@ -7,6 +7,7 @@ export interface User {
   phone: string;
   email: string | null;
   password_hash: string;
+  avatar: string | null;
   created_at: string;
 }
 

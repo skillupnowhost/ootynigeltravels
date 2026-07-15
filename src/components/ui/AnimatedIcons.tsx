@@ -68,22 +68,22 @@ export function SparkleBurstIcon({ size = 18, className, loop = true }: Animated
       <motion.path
         d={star}
         fill="currentColor"
-        transform="translate(12 11)"
+        style={{ x: 12, y: 11 }}
         animate={loop ? { scale: [1, 1.25, 1], opacity: [1, 0.7, 1] } : undefined}
         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.path
         d={star}
         fill="currentColor"
-        transform="translate(19 6) scale(0.5)"
-        animate={loop ? { scale: [0.5, 0.75, 0.5], opacity: [0.6, 1, 0.6] } : undefined}
+        style={{ x: 19, y: 6 }}
+        animate={loop ? { scale: [0.5, 0.75, 0.5], opacity: [0.6, 1, 0.6] } : { scale: 0.5 }}
         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
       />
       <motion.path
         d={star}
         fill="currentColor"
-        transform="translate(5 17) scale(0.4)"
-        animate={loop ? { scale: [0.4, 0.6, 0.4], opacity: [0.5, 0.9, 0.5] } : undefined}
+        style={{ x: 5, y: 17 }}
+        animate={loop ? { scale: [0.4, 0.6, 0.4], opacity: [0.5, 0.9, 0.5] } : { scale: 0.4 }}
         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
       />
     </svg>
