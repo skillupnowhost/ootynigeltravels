@@ -2,10 +2,16 @@ import type { Metadata } from "next";
 import { Award } from "lucide-react";
 import { PageHero } from "@/components/ui/PageHero";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/Reveal";
-import { Counter } from "@/components/ui/Counter";
 import { MotionIcon } from "@/components/ui/MotionIcon";
-import { ShieldBadgeIcon, HeartBeatIcon, MapPinDropIcon } from "@/components/ui/AnimatedIcons";
+import { ShieldBadgeIcon, HeartBeatIcon, MapPinDropIcon, CarDriveIcon, CalendarCheckIcon } from "@/components/ui/AnimatedIcons";
 import { site } from "@/lib/config/site";
+
+const highlights = [
+  { render: () => <CarDriveIcon size={20} />, label: "Private, chauffeur-driven — never shared" },
+  { render: () => <MapPinDropIcon size={20} />, label: "Locally based in Ooty, not an aggregator" },
+  { render: () => <CalendarCheckIcon size={20} />, label: "Itineraries built around your dates" },
+  { render: () => <Award size={20} />, label: "Every vehicle inspected before pickup" },
+];
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -60,11 +66,10 @@ export default function AboutPage() {
               {site.name} began as a small, family-run taxi service in Ooty, built on a
               simple premise: travellers arriving in the Nilgiris deserve a driver who
               actually knows the roads, the seasons, and the quiet viewpoints — not
-              just a vehicle. Over {site.stats.yearsExperience}+ years, that premise
-              grew into a full fleet and a roster of signature circuits, but the core
-              hasn&apos;t changed. Every booking still gets a private, chauffeur-driven
-              vehicle — never a shared one — and an itinerary shaped around your dates,
-              not a fixed departure calendar.
+              just a vehicle. That premise grew into a full fleet and a roster of
+              signature circuits, but the core hasn&apos;t changed. Every booking still
+              gets a private, chauffeur-driven vehicle — never a shared one — and an
+              itinerary shaped around your dates, not a fixed departure calendar.
             </p>
             <p className="mt-4 text-base leading-relaxed text-charcoal-700">
               Today we coordinate everything from solo airport transfers to
@@ -75,12 +80,16 @@ export default function AboutPage() {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <div className="grid grid-cols-1 gap-6 rounded-3xl border border-forest-100 bg-forest-50 p-6 sm:grid-cols-2 sm:p-8">
-              <Stat value={site.stats.yearsExperience} suffix="+" label="Years on the road" />
-              <Stat value={site.stats.happyTravellers} suffix="+" label="Happy travellers" />
-              <Stat value={site.stats.toursCompleted} suffix="+" label="Tours completed" />
-              <Stat value={site.stats.fleetSize} suffix="+" label="Vehicles in fleet" />
-            </div>
+            <RevealGroup className="grid grid-cols-1 gap-5 rounded-3xl border border-forest-100 bg-forest-50 p-6 sm:grid-cols-2 sm:p-8" stagger={0.08}>
+              {highlights.map((h) => (
+                <RevealItem key={h.label} className="flex items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-900 text-gold-400">
+                    {h.render()}
+                  </span>
+                  <p className="pt-2 text-sm leading-snug text-charcoal-700">{h.label}</p>
+                </RevealItem>
+              ))}
+            </RevealGroup>
           </Reveal>
         </div>
 
@@ -100,14 +109,5 @@ export default function AboutPage() {
         </RevealGroup>
       </section>
     </>
-  );
-}
-
-function Stat({ value, suffix, label }: { value: number; suffix: string; label: string }) {
-  return (
-    <div>
-      <Counter value={value} suffix={suffix} className="block font-display text-3xl text-forest-950" />
-      <p className="mt-1 text-xs uppercase tracking-wide text-charcoal-500">{label}</p>
-    </div>
   );
 }

@@ -70,8 +70,19 @@ export function Footer() {
           </LinkButton>
         </Reveal>
 
-        <Reveal delay={0.1} className="mt-10 sm:mt-12">
+        <Reveal delay={0.1} className="relative mt-10 sm:mt-12">
           <div className="h-[3px] w-full road-texture animate-road-dash opacity-80" />
+          <div className="pointer-events-none absolute inset-x-0 -top-3 h-6 overflow-hidden sm:-top-4 sm:h-8" aria-hidden>
+            <div className="absolute w-11 sm:w-[59px] animate-drive-loop">
+              <Image
+                src="/images/brand/car-footer.png"
+                alt=""
+                width={640}
+                height={348}
+                className="h-6 w-11 animate-bob drop-shadow-[0_6px_8px_rgba(0,0,0,0.4)] sm:h-8 sm:w-[59px]"
+              />
+            </div>
+          </div>
         </Reveal>
 
         <RevealGroup

@@ -193,105 +193,391 @@ insertIfEmpty(
 );
 
 // ---------- Destinations ----------
+// Ordered per the homepage brief: Ooty first, then Mudumalai, Pykara, Coonoor,
+// Avalanche, then the remaining nearby sites.
+const DESTINATIONS_SEED = [
+  {
+    slug: "ooty",
+    name: "Ooty (Udhagamandalam)",
+    region: "The Nilgiris",
+    description:
+      "The Queen of Hill Stations — misty botanical gardens, a colonial-era toy train, and Doddabetta's panoramic summit.",
+    image: "/images/destinations/ooty.jpg",
+    highlights: ["Government Botanical Garden", "Ooty Lake", "Doddabetta Peak", "Nilgiri Mountain Railway"],
+    best_season: "October to June",
+    distance_from_ooty: "0 km",
+    images: [
+      { src: "/images/destinations/ooty.jpg", alt: "Ooty town wrapped in evening mist" },
+      { src: "/images/attractions/rose-garden.jpg", alt: "Terraced blooms at the Government Rose Garden" },
+      { src: "/images/attractions/botanical-garden.jpg", alt: "Government Botanical Garden lawns" },
+      { src: "/images/attractions/nilgiris.jpg", alt: "Rolling green hills around Ooty" },
+      { src: "/images/attractions/shooting-point.jpg", alt: "Shooting Point valley view" },
+    ],
+  },
+  {
+    slug: "mudumalai",
+    name: "Mudumalai National Park",
+    region: "Nilgiri Biosphere",
+    description:
+      "Dense deciduous forest at the Tamil Nadu–Karnataka–Kerala tri-junction, home to elephant herds, tigers and langurs.",
+    image: "/images/destinations/mudumalai.jpg",
+    highlights: ["Jeep safari", "Elephant camp", "Moyar river gorge"],
+    best_season: "November to April",
+    distance_from_ooty: "65 km",
+    images: [
+      { src: "/images/destinations/mudumalai.jpg", alt: "Mudumalai National Park forest canopy" },
+      { src: "/images/destinations/mudumalai-2.jpg", alt: "Wild elephant herd in Mudumalai National Park" },
+      { src: "/images/destinations/mudumalai-3.jpg", alt: "Jeep safari track through Mudumalai forest" },
+      { src: "/images/destinations/mudumalai-4.jpg", alt: "Spotted deer grazing in Mudumalai National Park" },
+    ],
+  },
+  {
+    slug: "pykara-lake",
+    name: "Pykara Lake",
+    region: "The Nilgiris",
+    description:
+      "Pine-fringed waters, a golden-hour boat ride, and one of the Nilgiris' most cinematic drives out of Ooty.",
+    image: "/images/attractions/pykara-lake.jpg",
+    highlights: ["Pykara boat house", "Pykara Falls", "Pine forest drive"],
+    best_season: "October to May",
+    distance_from_ooty: "19 km",
+    images: [
+      { src: "/images/attractions/pykara-lake.jpg", alt: "Pykara Lake boat jetty at sunrise" },
+      { src: "/images/destinations/pykara-lake-2.jpg", alt: "Pine-fringed shoreline at Pykara Lake" },
+      { src: "/images/destinations/pykara-lake-3.jpg", alt: "Boating on Pykara Lake" },
+      { src: "/images/destinations/pykara-lake-4.jpg", alt: "Pykara Falls cascading through the pines" },
+      { src: "/images/destinations/pykara-lake-5.jpg", alt: "Misty pine forest drive near Pykara" },
+    ],
+  },
+  {
+    slug: "coonoor",
+    name: "Coonoor",
+    region: "The Nilgiris",
+    description:
+      "A quieter, greener hill town wrapped in tea estates, with Sim's Park and dramatic viewpoints over the Nilgiri escarpment.",
+    image: "/images/destinations/coonoor.jpg",
+    highlights: ["Sim's Park", "Lamb's Rock", "Dolphin's Nose", "Tea factory tours"],
+    best_season: "September to May",
+    distance_from_ooty: "19 km",
+    images: [
+      { src: "/images/destinations/coonoor.jpg", alt: "Coonoor hill town at dusk" },
+      { src: "/images/attractions/sims-park.jpg", alt: "Terraced botanical garden at Sim's Park" },
+      { src: "/images/attractions/dolphins-nose.jpg", alt: "Dolphin's Nose viewpoint over the escarpment" },
+      { src: "/images/attractions/tea-gardens.jpg", alt: "Terraced tea gardens near Coonoor" },
+      { src: "/images/attractions/tea-factory-museum.jpg", alt: "Working tea factory floor near Coonoor" },
+    ],
+  },
+  {
+    slug: "avalanche-lake",
+    name: "Avalanche & Emerald Lake",
+    region: "The Nilgiris",
+    description:
+      "A restricted-access, forest-department-permitted valley of untouched shola forest and glassy reservoirs — the Nilgiris few visitors see.",
+    image: "/images/destinations/avalanche-lake.jpg",
+    highlights: ["Shola forest trekking", "Emerald Lake boating", "Birdwatching"],
+    best_season: "December to April",
+    distance_from_ooty: "28 km",
+    images: [
+      { src: "/images/destinations/avalanche-lake.jpg", alt: "Avalanche Lake framed by shola forest" },
+      { src: "/images/destinations/avalanche-lake-2.jpg", alt: "Emerald Lake still waters at Avalanche" },
+      { src: "/images/destinations/avalanche-lake-3.jpg", alt: "Shola forest trekking trail near Avalanche" },
+      { src: "/images/destinations/avalanche-lake-4.jpg", alt: "Reflections on Avalanche Lake at dawn" },
+      { src: "/images/destinations/avalanche-lake-5.jpg", alt: "Dense shola forest canopy near Avalanche valley" },
+    ],
+  },
+  {
+    slug: "kotagiri",
+    name: "Kotagiri",
+    region: "The Nilgiris",
+    description:
+      "The oldest of the Nilgiri hill towns — fewer crowds, cooler air, and the thundering Catherine Falls nearby.",
+    image: "/images/destinations/kotagiri.jpg",
+    highlights: ["Catherine Falls", "Elk Falls", "Kodanad Viewpoint"],
+    best_season: "October to May",
+    distance_from_ooty: "28 km",
+    images: [
+      { src: "/images/destinations/kotagiri.jpg", alt: "Kotagiri tea gardens in morning light" },
+      { src: "/images/attractions/kodanad-viewpoint.jpg", alt: "Kodanad Viewpoint over the Nilgiri escarpment" },
+      { src: "/images/attractions/catherine-falls.jpg", alt: "Catherine Falls cascading through the forest" },
+      { src: "/images/attractions/elk-falls.jpg", alt: "Elk Falls tucked into the forest near Kotagiri" },
+      { src: "/images/destinations/kotagiri-5.jpg", alt: "Kotagiri hill town skyline" },
+    ],
+  },
+  {
+    slug: "ooty-lake",
+    name: "Ooty Lake",
+    region: "The Nilgiris",
+    description:
+      "A serene, artificial lake at the heart of Ooty town, framed by eucalyptus groves — the classic boat-ride stop on every itinerary.",
+    image: "/images/destinations/ooty-lake.jpg",
+    highlights: ["Boat House pedal & row boats", "Lakeside toy train halt", "Eucalyptus-lined walking paths"],
+    best_season: "October to June",
+    distance_from_ooty: "2 km",
+    images: [
+      { src: "/images/destinations/ooty-lake.jpg", alt: "Boats on Ooty Lake" },
+      { src: "/images/destinations/ooty-lake-2.jpg", alt: "Pedal boats on Ooty Lake" },
+      { src: "/images/destinations/ooty-lake-3.jpg", alt: "Eucalyptus-lined walking path by Ooty Lake" },
+      { src: "/images/destinations/ooty-lake-4.jpg", alt: "Ooty Lake at sunset" },
+      { src: "/images/destinations/ooty-lake-5.jpg", alt: "Toy train halt beside Ooty Lake" },
+    ],
+  },
+  {
+    slug: "coimbatore",
+    name: "Coimbatore",
+    region: "Gateway city",
+    description:
+      "The nearest major airport and railhead — our most-booked airport & railway transfer route into the Nilgiris.",
+    image: "/images/destinations/coimbatore.jpg",
+    highlights: ["Coimbatore International Airport", "Coimbatore Junction"],
+    best_season: "Year-round",
+    distance_from_ooty: "88 km",
+    images: [
+      { src: "/images/destinations/coimbatore.jpg", alt: "Coimbatore gateway city skyline" },
+      { src: "/images/destinations/coimbatore-2.jpg", alt: "Coimbatore International Airport terminal" },
+      { src: "/images/destinations/coimbatore-3.jpg", alt: "Coimbatore city streets by night" },
+      { src: "/images/destinations/coimbatore-4.jpg", alt: "Marudhamalai temple hilltop near Coimbatore" },
+      { src: "/images/destinations/coimbatore-5.jpg", alt: "Coimbatore Junction railway station" },
+    ],
+  },
+  {
+    slug: "pine-forest",
+    name: "Pine Forest",
+    region: "The Nilgiris",
+    description:
+      "A hauntingly beautiful, dense plantation of tall pines just outside Ooty — a favourite for quiet walks and cinematic photography.",
+    image: "/images/attractions/pine-forest.jpg",
+    highlights: ["Elevated walking trails", "Popular film-shoot location", "Golden-hour light through the canopy"],
+    best_season: "September to May",
+    distance_from_ooty: "7 km",
+    images: [
+      { src: "/images/attractions/pine-forest.jpg", alt: "Tall pine grove near Ooty" },
+      { src: "/images/destinations/pine-forest-2.jpg", alt: "Sunlight filtering through the pine forest canopy" },
+      { src: "/images/destinations/pine-forest-3.jpg", alt: "Quiet walking trail through the pine forest" },
+      { src: "/images/destinations/pine-forest-4.jpg", alt: "Misty pine forest at golden hour" },
+      { src: "/images/destinations/pine-forest-5.jpg", alt: "Tall pine trunks lining a forest path near Ooty" },
+    ],
+  },
+];
+
 insertIfEmpty(
   "destinations",
-  [
-    {
-      slug: "ooty",
-      name: "Ooty (Udhagamandalam)",
-      region: "The Nilgiris",
-      description:
-        "The Queen of Hill Stations — misty botanical gardens, a colonial-era toy train, and Doddabetta's panoramic summit.",
-      image: "/images/destinations/ooty.jpg",
-      highlights: ["Government Botanical Garden", "Ooty Lake", "Doddabetta Peak", "Nilgiri Mountain Railway"],
-      best_season: "October to June",
-      distance_from_ooty: "0 km",
-    },
-    {
-      slug: "coonoor",
-      name: "Coonoor",
-      region: "The Nilgiris",
-      description:
-        "A quieter, greener hill town wrapped in tea estates, with Sim's Park and dramatic viewpoints over the Nilgiri escarpment.",
-      image: "/images/destinations/coonoor.jpg",
-      highlights: ["Sim's Park", "Lamb's Rock", "Dolphin's Nose", "Tea factory tours"],
-      best_season: "September to May",
-      distance_from_ooty: "19 km",
-    },
-    {
-      slug: "kotagiri",
-      name: "Kotagiri",
-      region: "The Nilgiris",
-      description:
-        "The oldest of the Nilgiri hill towns — fewer crowds, cooler air, and the thundering Catherine Falls nearby.",
-      image: "/images/destinations/kotagiri.jpg",
-      highlights: ["Catherine Falls", "Elk Falls", "Kodanad Viewpoint"],
-      best_season: "October to May",
-      distance_from_ooty: "28 km",
-    },
-    {
-      slug: "mudumalai",
-      name: "Mudumalai National Park",
-      region: "Nilgiri Biosphere",
-      description:
-        "Dense deciduous forest at the Tamil Nadu–Karnataka–Kerala tri-junction, home to elephant herds, tigers and langurs.",
-      image: "/images/destinations/mudumalai.jpg",
-      highlights: ["Jeep safari", "Elephant camp", "Moyar river gorge"],
-      best_season: "November to April",
-      distance_from_ooty: "65 km",
-    },
-    {
-      slug: "avalanche-lake",
-      name: "Avalanche & Emerald Lake",
-      region: "The Nilgiris",
-      description:
-        "A restricted-access, forest-department-permitted valley of untouched shola forest and glassy reservoirs — the Nilgiris few visitors see.",
-      image: "/images/destinations/avalanche-lake.jpg",
-      highlights: ["Shola forest trekking", "Emerald Lake boating", "Birdwatching"],
-      best_season: "December to April",
-      distance_from_ooty: "28 km",
-    },
-    {
-      slug: "coimbatore",
-      name: "Coimbatore",
-      region: "Gateway city",
-      description:
-        "The nearest major airport and railhead — our most-booked airport & railway transfer route into the Nilgiris.",
-      image: "/images/destinations/coimbatore.jpg",
-      highlights: ["Coimbatore International Airport", "Coimbatore Junction"],
-      best_season: "Year-round",
-      distance_from_ooty: "88 km",
-    },
-    {
-      slug: "ooty-lake",
-      name: "Ooty Lake",
-      region: "The Nilgiris",
-      description:
-        "A serene, artificial lake at the heart of Ooty town, framed by eucalyptus groves — the classic boat-ride stop on every itinerary.",
-      image: "/images/destinations/ooty-lake.jpg",
-      highlights: ["Boat House pedal & row boats", "Lakeside toy train halt", "Eucalyptus-lined walking paths"],
-      best_season: "October to June",
-      distance_from_ooty: "2 km",
-    },
-    {
-      slug: "pine-forest",
-      name: "Pine Forest",
-      region: "The Nilgiris",
-      description:
-        "A hauntingly beautiful, dense plantation of tall pines just outside Ooty — a favourite for quiet walks and cinematic photography.",
-      image: "/images/attractions/pine-forest.jpg",
-      highlights: ["Elevated walking trails", "Popular film-shoot location", "Golden-hour light through the canopy"],
-      best_season: "September to May",
-      distance_from_ooty: "7 km",
-    },
-  ],
-  (d) =>
-    db
+  DESTINATIONS_SEED.map((d, i) => ({ ...d, sort_order: i })),
+  (d) => {
+    const result = db
       .prepare(
-        `INSERT INTO destinations (slug, name, region, description, image, highlights, best_season, distance_from_ooty)
-         VALUES (@slug, @name, @region, @description, @image, @highlights, @best_season, @distance_from_ooty)`
+        `INSERT INTO destinations (slug, name, region, description, image, highlights, best_season, distance_from_ooty, sort_order)
+         VALUES (@slug, @name, @region, @description, @image, @highlights, @best_season, @distance_from_ooty, @sort_order)`
       )
-      .run({ ...d, highlights: JSON.stringify(d.highlights) })
+      .run({
+        slug: d.slug,
+        name: d.name,
+        region: d.region,
+        description: d.description,
+        image: d.image,
+        highlights: JSON.stringify(d.highlights),
+        best_season: d.best_season,
+        distance_from_ooty: d.distance_from_ooty,
+        sort_order: d.sort_order,
+      });
+    const destinationId = Number(result.lastInsertRowid);
+    const imgStmt = db.prepare(
+      `INSERT INTO destination_images (destination_id, src, alt, sort_order) VALUES (@destination_id, @src, @alt, @sort_order)`
+    );
+    let sortOrder = 0;
+    for (const img of d.images) {
+      if (!fs.existsSync(path.join(ROOT, "public", img.src))) continue;
+      imgStmt.run({ destination_id: destinationId, src: img.src, alt: img.alt, sort_order: sortOrder });
+      sortOrder += 1;
+    }
+  }
+);
+
+// ---------- Hidden gems (attractions) ----------
+const ATTRACTIONS_SEED = [
+  {
+    slug: "ooty",
+    name: "Ooty (Udhagamandalam)",
+    category: "Hill Town",
+    blurb: "The Queen of Hill Stations — misty lakes, colonial charm and the Nilgiris' liveliest town centre.",
+    image: "/images/destinations/ooty.jpg",
+  },
+  {
+    slug: "nilgiris",
+    name: "The Nilgiris",
+    category: "Region",
+    blurb: "Rolling blue hills, shola forests and tea country stretching across three hill towns.",
+    image: "/images/attractions/nilgiris.jpg",
+  },
+  {
+    slug: "coonoor",
+    name: "Coonoor",
+    category: "Hill Town",
+    blurb: "A quieter, greener hill town wrapped in tea estates and dramatic escarpment views.",
+    image: "/images/destinations/coonoor.jpg",
+  },
+  {
+    slug: "kotagiri",
+    name: "Kotagiri",
+    category: "Hill Town",
+    blurb: "The oldest Nilgiri hill town — cooler air, fewer crowds, and Catherine Falls close by.",
+    image: "/images/destinations/kotagiri.jpg",
+  },
+  {
+    slug: "doddabetta-peak",
+    name: "Doddabetta Peak",
+    category: "Viewpoint",
+    blurb: "The highest point in the Nilgiris — a 360° panorama over the entire hill range.",
+    image: "/images/attractions/doddabetta-peak.jpg",
+  },
+  {
+    slug: "pykara-lake",
+    name: "Pykara Lake",
+    category: "Lake",
+    blurb: "Pine-fringed waters, a golden-hour boat ride, and the Nilgiris' most cinematic drive.",
+    image: "/images/attractions/pykara-lake.jpg",
+  },
+  {
+    slug: "avalanche-lake",
+    name: "Avalanche Lake",
+    category: "Lake",
+    blurb: "A restricted-access valley of untouched shola forest and glassy reservoirs.",
+    image: "/images/destinations/avalanche-lake.jpg",
+  },
+  {
+    slug: "tea-gardens",
+    name: "Tea Gardens",
+    category: "Tea Culture",
+    blurb: "Emerald rows of working tea estates threaded through Coonoor's ridgelines.",
+    image: "/images/attractions/tea-gardens.jpg",
+  },
+  {
+    slug: "pine-forest",
+    name: "Pine Forest",
+    category: "Forest",
+    blurb: "Tall, whispering pine groves near Pykara — a favourite quiet-walk photo stop.",
+    image: "/images/attractions/pine-forest.jpg",
+  },
+  {
+    slug: "botanical-garden",
+    name: "Botanical Garden",
+    category: "Garden",
+    blurb: "Terraced Government Botanical Garden — rare blooms, a fossil tree, and Italian-style lawns.",
+    image: "/images/attractions/botanical-garden.jpg",
+  },
+  {
+    slug: "rose-garden",
+    name: "Rose Garden",
+    category: "Garden",
+    blurb: "Asia's largest rose garden — thousands of varieties terraced down a hillside.",
+    image: "/images/attractions/rose-garden.jpg",
+  },
+  {
+    slug: "shooting-point",
+    name: "Shooting Point",
+    category: "Viewpoint",
+    blurb: "A classic film-shoot backdrop on the Pykara road — sweeping valley and forest views.",
+    image: "/images/attractions/shooting-point.jpg",
+  },
+  {
+    slug: "dolphins-nose",
+    name: "Dolphin's Nose",
+    category: "Viewpoint",
+    blurb: "A dramatic cliff-edge lookout over Coonoor's valley and the Catherine Falls gorge.",
+    image: "/images/attractions/dolphins-nose.jpg",
+  },
+  {
+    slug: "catherine-falls",
+    name: "Catherine Falls",
+    category: "Waterfall",
+    blurb: "A two-tiered, thundering waterfall tucked into the forest near Kotagiri.",
+    image: "/images/attractions/catherine-falls.jpg",
+  },
+  {
+    slug: "mudumalai-national-park",
+    name: "Mudumalai National Park",
+    category: "Wildlife",
+    blurb: "Dense deciduous forest home to elephant herds, tigers, and a dawn jeep safari.",
+    image: "/images/destinations/mudumalai.jpg",
+  },
+  {
+    slug: "wenlock-downs",
+    name: "Wenlock Downs",
+    category: "Grassland",
+    blurb: "Open rolling grassland once used for horse racing — now a golf course and picnic favourite.",
+    image: "/images/attractions/wenlock-downs.jpg",
+  },
+  {
+    slug: "tea-factory-museum",
+    name: "Tea Factory & Museum",
+    category: "Tea Culture",
+    blurb: "Watch withering, rolling and grading up close, then taste freshly graded Nilgiri leaf.",
+    image: "/images/attractions/tea-factory-museum.jpg",
+  },
+  {
+    slug: "ooty-lake",
+    name: "Ooty Lake",
+    category: "Lake",
+    blurb: "A serene, eucalyptus-fringed lake at the heart of town — the classic boat-ride stop.",
+    image: "/images/destinations/ooty-lake.jpg",
+  },
+  {
+    slug: "nilgiri-mountain-railway",
+    name: "Nilgiri Mountain Railway",
+    category: "Heritage",
+    blurb: "A UNESCO World Heritage steam toy train, switchbacking through 46 tunnels up the ghats.",
+    image: "/images/attractions/nilgiri-mountain-railway.jpg",
+  },
+  {
+    slug: "sims-park",
+    name: "Sim's Park",
+    category: "Garden",
+    blurb: "A terraced botanical park in Coonoor, laid out along a natural ravine.",
+    image: "/images/attractions/sims-park.jpg",
+  },
+  {
+    slug: "kodanad-viewpoint",
+    name: "Kodanad Viewpoint",
+    category: "Viewpoint",
+    blurb: "Sweeping sunrise views over the Nilgiri foothills and the Moyar river valley below.",
+    image: "/images/attractions/kodanad-viewpoint.jpg",
+  },
+  {
+    slug: "elk-falls",
+    name: "Elk Falls",
+    category: "Waterfall",
+    blurb: "A tucked-away cascade near Kotagiri, framed by dense forest and few crowds.",
+    image: "/images/attractions/elk-falls.jpg",
+  },
+];
+
+// Extra angles fetched by scripts/fetch-card-images.mjs (Wikimedia Commons)
+// fill slots 2-5 for every hidden gem, at these predictable filenames — only
+// rows for files that actually downloaded successfully get inserted, so a
+// search that came up short never leaves a broken image reference behind.
+const EXTRA_ANGLE_LABELS = ["a wider view", "a closer detail", "a different season", "a different time of day"];
+
+insertIfEmpty(
+  "attractions",
+  ATTRACTIONS_SEED.map((a, i) => ({ ...a, sort_order: i })),
+  (a) => {
+    const result = db
+      .prepare(
+        `INSERT INTO attractions (slug, name, category, blurb, sort_order) VALUES (@slug, @name, @category, @blurb, @sort_order)`
+      )
+      .run({ slug: a.slug, name: a.name, category: a.category, blurb: a.blurb, sort_order: a.sort_order });
+    const attractionId = Number(result.lastInsertRowid);
+    const imgStmt = db.prepare(
+      `INSERT INTO attraction_images (attraction_id, src, alt, sort_order) VALUES (@attraction_id, @src, @alt, @sort_order)`
+    );
+    imgStmt.run({ attraction_id: attractionId, src: a.image, alt: `${a.name} — ${a.category}`, sort_order: 0 });
+    let sortOrder = 1;
+    EXTRA_ANGLE_LABELS.forEach((label, idx) => {
+      const src = `/images/attractions/${a.slug}-${idx + 2}.jpg`;
+      if (!fs.existsSync(path.join(ROOT, "public", src))) return;
+      imgStmt.run({ attraction_id: attractionId, src, alt: `${a.name} — ${label}`, sort_order: sortOrder });
+      sortOrder += 1;
+    });
+  }
 );
 
 // ---------- Packages ----------

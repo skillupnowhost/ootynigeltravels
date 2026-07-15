@@ -46,7 +46,7 @@ export default function ReviewsPage() {
               >
                 <div className="flex gap-0.5 text-gold-500">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <GlowStarIcon key={i} size={14} loop={false} className={i < r.rating ? "opacity-100" : "opacity-30"} />
+                    <GlowStarIcon key={i} size={14} loop={i < r.rating} className={i < r.rating ? "opacity-100" : "opacity-30"} />
                   ))}
                 </div>
                 <p className="mt-3 text-sm leading-relaxed text-charcoal-700">&ldquo;{r.comment}&rdquo;</p>

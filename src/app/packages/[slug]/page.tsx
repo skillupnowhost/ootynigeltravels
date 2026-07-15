@@ -283,7 +283,7 @@ export default async function PackageDetailPage({ params }: { params: Params }) 
                       <div key={r.id} className="rounded-2xl border border-forest-100 p-5">
                         <div className="flex gap-0.5 text-gold-500">
                           {Array.from({ length: 5 }).map((_, i) => (
-                            <GlowStarIcon key={i} size={13} loop={false} className={i < r.rating ? "opacity-100" : "opacity-30"} />
+                            <GlowStarIcon key={i} size={13} loop={i < r.rating} className={i < r.rating ? "opacity-100" : "opacity-30"} />
                           ))}
                         </div>
                         <p className="mt-2.5 text-sm leading-relaxed text-charcoal-700">&ldquo;{r.comment}&rdquo;</p>

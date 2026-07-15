@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { X, Send } from "lucide-react";
+import { X, Send, Compass } from "lucide-react";
 import { AIAgentIcon } from "@/components/ui/AnimatedIcons";
 import { site, waLink } from "@/lib/config/site";
 
@@ -12,6 +13,81 @@ const GREETING: ChatMessage = {
   role: "assistant",
   content: `Vanakkam! I'm Nigel, your ${site.name} travel concierge. Ask me about packages, the fleet, destinations around Ooty, or how booking works.`,
 };
+
+const NAV_LINKS: { label: string; href: string }[] = [
+  { label: "Packages", href: "/packages" },
+  { label: "Destinations", href: "/destinations" },
+  { label: "Fleet", href: "/fleet" },
+  { label: "Book Now", href: "/booking" },
+  { label: "FAQs", href: "/faq" },
+];
+
+const STARTER_SUGGESTIONS = [
+  "Show me your signature packages",
+  "What's the best time to visit Ooty?",
+  "What vehicles are in your fleet?",
+  "How does booking work?",
+];
+
+const FOLLOWUP_POOL = [
+  "Any family-friendly packages?",
+  "Do you cover Coonoor and Kotagiri too?",
+  "What's included in the package price?",
+  "Can I customize my itinerary?",
+  "Do you offer airport pickup?",
+  "How do I pay for my booking?",
+  "What if I need to reschedule?",
+  "Can I speak to a human?",
+];
+
+function pickSuggestions(pool: string[], count: number): string[] {
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
+
+/** Renders **bold** text and [label](/path) or [label](https://...) links from otherwise plain text. */
+function renderMessageContent(content: string, keyPrefix: string): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  const linkRegex = /\[([^\]]+)\]\((\/[^\s)]+|https?:\/\/[^\s)]+)\)/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  let i = 0;
+
+  while ((match = linkRegex.exec(content))) {
+    if (match.index > lastIndex) {
+      nodes.push(...renderInline(content.slice(lastIndex, match.index), `${keyPrefix}-t${i}`));
+    }
+    const [, label, href] = match;
+    const linkClass = "font-semibold text-forest-900 underline decoration-gold-500 decoration-2 underline-offset-2 hover:text-forest-700";
+    nodes.push(
+      href.startsWith("http") ? (
+        <a key={`${keyPrefix}-l${i}`} href={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
+          {label}
+        </a>
+      ) : (
+        <Link key={`${keyPrefix}-l${i}`} href={href} className={linkClass}>
+          {label}
+        </Link>
+      )
+    );
+    lastIndex = match.index + match[0].length;
+    i++;
+  }
+  if (lastIndex < content.length) {
+    nodes.push(...renderInline(content.slice(lastIndex), `${keyPrefix}-t${i}`));
+  }
+  return nodes;
+}
+
+function renderInline(text: string, keyPrefix: string): ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, idx) =>
+    part.startsWith("**") && part.endsWith("**") ? (
+      <strong key={`${keyPrefix}-b${idx}`}>{part.slice(2, -2)}</strong>
+    ) : (
+      <span key={`${keyPrefix}-s${idx}`}>{part}</span>
+    )
+  );
+}
 
 function BotAvatar({ size = 32 }: { size?: number }) {
   return (
@@ -48,6 +124,7 @@ export function ChatWidget() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>(STARTER_SUGGESTIONS);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -103,6 +180,8 @@ export function ChatWidget() {
       if (!streamedAny) {
         throw new Error("The concierge didn't respond. Please try again.");
       }
+
+      setSuggestions(pickSuggestions(FOLLOWUP_POOL, 4));
     } catch (err) {
       // Drop the empty assistant placeholder bubble left behind by a failed/aborted stream.
       setMessages((prev) => (prev[prev.length - 1]?.role === "assistant" && prev[prev.length - 1]?.content === "" ? prev.slice(0, -1) : prev));
@@ -158,7 +237,7 @@ export function ChatWidget() {
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 8, scale: 0.9 }}
               transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              className="pointer-events-none absolute right-full mr-3 whitespace-nowrap rounded-full bg-forest-950 px-4 py-2 text-xs font-semibold text-gold-300 shadow-[0_10px_24px_-8px_rgba(11,59,46,0.5)]"
+              className="pointer-events-none absolute right-full mr-3 hidden whitespace-nowrap rounded-full bg-forest-950 px-4 py-2 text-xs font-semibold text-gold-300 shadow-[0_10px_24px_-8px_rgba(11,59,46,0.5)] sm:block"
             >
               Ask Nigel, our AI concierge
             </motion.span>
@@ -194,14 +273,36 @@ export function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-card fixed bottom-[9.5rem] right-4 z-40 flex h-[min(70vh,560px)] w-[min(92vw,380px)] flex-col overflow-hidden rounded-3xl border border-forest-100 shadow-[0_30px_70px_-30px_rgba(11,59,46,0.45)]"
+            className="glass-card fixed bottom-[9.5rem] right-3 left-3 z-40 mx-auto flex h-[min(70dvh,560px,calc(100dvh_-_11rem))] w-auto max-w-[380px] flex-col overflow-hidden rounded-3xl border border-forest-100 shadow-[0_30px_70px_-30px_rgba(11,59,46,0.45)] sm:left-auto sm:right-4 sm:mx-0 sm:w-[380px]"
           >
-            <div className="flex items-center gap-3 border-b border-forest-100 bg-forest-950 px-5 py-4 text-ivory-50">
+            <div className="flex shrink-0 items-center gap-3 border-b border-forest-100 bg-forest-950 px-5 py-4 text-ivory-50">
               <BotAvatar />
-              <div className="min-w-0">
-                <p className="font-display text-base leading-tight">Nigel · Travel Concierge</p>
-                <p className="text-xs text-forest-300">Usually replies in seconds</p>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-display text-base leading-tight">Nigel · Travel Concierge</p>
+                <p className="text-xs text-forest-300">{pending ? "Nigel is typing…" : "Usually replies in seconds"}</p>
               </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Close chat"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-forest-300 transition-colors hover:bg-forest-900 hover:text-ivory-50"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2 overflow-x-auto border-b border-forest-100 bg-forest-50/60 px-3 py-2">
+              <Compass size={14} className="shrink-0 text-forest-500" aria-hidden />
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className="shrink-0 whitespace-nowrap rounded-full border border-forest-200 bg-white/80 px-3 py-1 text-[11px] font-semibold text-forest-800 transition-colors hover:border-gold-400 hover:text-gold-700"
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
 
             <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
@@ -209,13 +310,17 @@ export function ChatWidget() {
                 <div key={i} className={`flex items-end gap-2 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
                   {m.role === "assistant" && <BotAvatar size={26} />}
                   <div
-                    className={`max-w-[80%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                    className={`max-w-[80%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                       m.role === "user"
                         ? "rounded-br-sm bg-gold-600 text-forest-950"
                         : "rounded-bl-sm bg-forest-50 text-charcoal-900"
                     }`}
                   >
-                    {m.content || (pending && i === messages.length - 1 ? <TypingDots /> : null)}
+                    {m.content
+                      ? renderMessageContent(m.content, `m${i}`)
+                      : pending && i === messages.length - 1
+                        ? <TypingDots />
+                        : null}
                   </div>
                 </div>
               ))}
@@ -244,12 +349,27 @@ export function ChatWidget() {
               )}
             </div>
 
+            {!pending && !error && suggestions.length > 0 && (
+              <div className="flex shrink-0 items-center gap-2 overflow-x-auto border-t border-forest-100 bg-white px-3 pt-2.5">
+                {suggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => sendMessage(s)}
+                    className="shrink-0 whitespace-nowrap rounded-full border border-forest-200 bg-forest-50 px-3.5 py-1.5 text-xs font-medium text-forest-800 transition-colors hover:border-gold-400 hover:bg-gold-50 hover:text-gold-800"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 sendMessage(input);
               }}
-              className="flex items-center gap-2 border-t border-forest-100 bg-white px-3 py-3"
+              className="flex shrink-0 items-center gap-2 border-t border-forest-100 bg-white px-3 py-3"
             >
               <input
                 value={input}

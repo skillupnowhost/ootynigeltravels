@@ -12,6 +12,8 @@ import {
   ScrollText,
   ShieldCheck,
   MapPinned,
+  Compass,
+  Sparkles,
   Image as ImageIcon,
   type LucideIcon,
 } from "lucide-react";
@@ -49,6 +51,8 @@ export const ADMIN_NAV_SECTIONS: readonly AdminNavSection[] = [
     label: "Content",
     items: [
       { href: "/admin/packages", label: "Packages", icon: Package, roles: ["admin", "manager"] },
+      { href: "/admin/destinations", label: "Destinations", icon: Compass, roles: ["admin", "manager"] },
+      { href: "/admin/hidden-gems", label: "Hidden Gems", icon: Sparkles, roles: ["admin", "manager"] },
       { href: "/admin/gallery", label: "Gallery", icon: ImageIcon, roles: ["admin", "manager"] },
       { href: "/admin/coupons", label: "Coupons", icon: Ticket, roles: ["admin", "manager"] },
       { href: "/admin/reviews", label: "Reviews", icon: Star, roles: ["admin", "manager"] },

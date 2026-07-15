@@ -29,15 +29,16 @@ export function nowIso(): string {
 export function createSlugRepo<T extends { id: number; slug: string; active?: number }>(
   db: import("./client").WrappedDb,
   table: string,
-  jsonKeys: (keyof T)[]
+  jsonKeys: (keyof T)[],
+  orderBy = "id DESC"
 ) {
   const mapRow = (row: Record<string, unknown>): T => parseJsonColumns<T>(row, jsonKeys);
 
   return {
     list(activeOnly = false): T[] {
       const sql = activeOnly
-        ? `SELECT * FROM ${table} WHERE active = 1 ORDER BY id DESC`
-        : `SELECT * FROM ${table} ORDER BY id DESC`;
+        ? `SELECT * FROM ${table} WHERE active = 1 ORDER BY ${orderBy}`
+        : `SELECT * FROM ${table} ORDER BY ${orderBy}`;
       return (db.prepare(sql).all() as Record<string, unknown>[]).map(mapRow);
     },
     getBySlug(slug: string): T | undefined {

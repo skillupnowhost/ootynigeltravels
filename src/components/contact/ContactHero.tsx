@@ -208,7 +208,7 @@ export function ContactHero() {
             Book Now
           </Link>
           <a
-            href="#enquiry-form"
+            href="#channels"
             className="group inline-flex items-center gap-2 rounded-full border border-ivory-50/30 bg-ivory-50/[0.06] px-6 py-3.5 text-sm font-semibold text-ivory-50 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-400/70 hover:bg-ivory-50/10"
           >
             Contact Us

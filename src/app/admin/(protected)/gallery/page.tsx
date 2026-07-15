@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Plus, Star } from "lucide-react";
 import { listGalleryImages } from "@/lib/db/queries/galleryImages";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { GalleryReorderButtons } from "@/components/admin/GalleryReorderButtons";
 import { deleteGalleryImageAction } from "@/lib/actions/adminContent";
 import { requireRole } from "@/lib/auth/rbac";
 import { Reveal } from "@/components/ui/Reveal";
@@ -14,6 +15,14 @@ export const dynamic = "force-dynamic";
 export default async function AdminGalleryPage() {
   await requireRole(["admin", "manager"]);
   const images = listGalleryImages();
+  const siblingIdsByCategory = new Map<string, number[]>();
+  for (const img of images) {
+    const list = siblingIdsByCategory.get(img.category) ?? [];
+    list.push(img.id);
+    siblingIdsByCategory.set(img.category, list);
+  }
+  const indexInCategory = (img: (typeof images)[number]) =>
+    (siblingIdsByCategory.get(img.category) ?? []).indexOf(img.id);
 
   return (
     <div>
@@ -48,6 +57,11 @@ export default async function AdminGalleryPage() {
                   {img.active ? "Active" : "Hidden"}
                 </span>
               </div>
+              <GalleryReorderButtons
+                category={img.category}
+                siblingIds={siblingIdsByCategory.get(img.category) ?? []}
+                index={indexInCategory(img)}
+              />
               <DeleteButton action={deleteGalleryImageAction} id={img.id} confirmLabel={`Delete this photo?`} />
             </div>
           ))}
@@ -85,8 +99,15 @@ export default async function AdminGalleryPage() {
                       {img.active ? "Active" : "Hidden"}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-right">
-                    <DeleteButton action={deleteGalleryImageAction} id={img.id} confirmLabel={`Delete this photo?`} />
+                  <td className="px-5 py-3">
+                    <div className="flex items-center justify-end gap-1">
+                      <GalleryReorderButtons
+                        category={img.category}
+                        siblingIds={siblingIdsByCategory.get(img.category) ?? []}
+                        index={indexInCategory(img)}
+                      />
+                      <DeleteButton action={deleteGalleryImageAction} id={img.id} confirmLabel={`Delete this photo?`} />
+                    </div>
                   </td>
                 </tr>
               ))}

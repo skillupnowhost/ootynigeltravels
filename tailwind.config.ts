@@ -18,10 +18,14 @@ const config: Config = {
         },
         gold: {
           900: "#6e5220",
+          800: "#8a672a",
           700: "#a67c34",
           600: "#c8a15c",
+          500: "#d2b174",
           400: "#dcc08b",
+          300: "#e6d1a8",
           200: "#efe1c4",
+          100: "#f5ecd8",
           50: "#fbf6ec",
         },
         ivory: {
@@ -97,6 +101,10 @@ const config: Config = {
           "0%": { backgroundPosition: "0 0" },
           "100%": { backgroundPosition: "-60px 220px" },
         },
+        "drive-loop": {
+          "0%": { left: "-15%" },
+          "100%": { left: "115%" },
+        },
       },
       animation: {
         float: "float 6s ease-in-out infinite",
@@ -113,6 +121,7 @@ const config: Config = {
         "pop-in": "pop-in 0.5s cubic-bezier(0.22,1,0.36,1) both",
         "cloud-drift": "cloud-drift 60s linear infinite",
         "rain-fall": "rain-fall 0.45s linear infinite",
+        "drive-loop": "drive-loop 13s linear infinite",
       },
     },
   },

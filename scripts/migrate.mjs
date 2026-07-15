@@ -68,6 +68,14 @@ for (const [column, def] of Object.entries(newTripRequestColumns)) {
   }
 }
 
+const destinationColumns = new Set(
+  db.prepare("PRAGMA table_info(destinations)").all().map((c) => c.name)
+);
+if (!destinationColumns.has("sort_order")) {
+  db.exec("ALTER TABLE destinations ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0");
+  console.log("added column destinations.sort_order");
+}
+
 const blogPostColumns = new Set(
   db.prepare("PRAGMA table_info(blog_posts)").all().map((c) => c.name)
 );

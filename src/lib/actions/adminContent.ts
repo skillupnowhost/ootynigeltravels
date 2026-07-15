@@ -8,7 +8,12 @@ import { fleetRepo } from "@/lib/db/queries/fleet";
 import { packagesRepo } from "@/lib/db/queries/packages";
 import { createDriver, updateDriver, deleteDriver } from "@/lib/db/queries/drivers";
 import { createCoupon, setCouponActive, updateCoupon, deleteCoupon } from "@/lib/db/queries/coupons";
-import { createGalleryImage, updateGalleryImage, removeGalleryImage } from "@/lib/db/queries/galleryImages";
+import {
+  createGalleryImage,
+  updateGalleryImage,
+  removeGalleryImage,
+  reorderGalleryImages,
+} from "@/lib/db/queries/galleryImages";
 import { GALLERY_CATEGORIES } from "@/lib/data/galleryCategories";
 
 export type AdminActionState = { ok: boolean; error?: string };
@@ -371,6 +376,20 @@ export async function deleteGalleryImageAction(formData: FormData): Promise<void
   const id = Number(formData.get("id"));
   removeGalleryImage(id);
   recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "gallery_image", entity_id: id });
+  revalidatePath("/admin/gallery");
+  revalidatePath("/gallery");
+}
+
+export async function reorderGalleryImagesAction(formData: FormData): Promise<void> {
+  const user = await requireRole([...MANAGE_ROLES]);
+  const category = String(formData.get("category") || "");
+  const orderedIds = String(formData.get("ordered_ids") || "")
+    .split(",")
+    .map((s) => Number(s.trim()))
+    .filter((n) => Number.isFinite(n));
+  if (!category || orderedIds.length === 0) return;
+  reorderGalleryImages(category, orderedIds);
+  recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "reorder", entity_type: "gallery_image", entity_id: category });
   revalidatePath("/admin/gallery");
   revalidatePath("/gallery");
 }

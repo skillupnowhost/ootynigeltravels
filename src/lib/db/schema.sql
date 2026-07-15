@@ -60,9 +60,45 @@ CREATE TABLE IF NOT EXISTS destinations (
   highlights          TEXT NOT NULL DEFAULT '[]',
   best_season         TEXT,
   distance_from_ooty  TEXT,
+  sort_order          INTEGER NOT NULL DEFAULT 0,
   active              INTEGER NOT NULL DEFAULT 1,
   created_at          TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
+
+CREATE TABLE IF NOT EXISTS destination_images (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  destination_id  INTEGER NOT NULL REFERENCES destinations(id) ON DELETE CASCADE,
+  src             TEXT NOT NULL,
+  alt             TEXT NOT NULL,
+  sort_order      INTEGER NOT NULL DEFAULT 0,
+  active          INTEGER NOT NULL DEFAULT 1,
+  created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_destination_images_destination ON destination_images(destination_id);
+
+CREATE TABLE IF NOT EXISTS attractions (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug        TEXT NOT NULL UNIQUE,
+  name        TEXT NOT NULL,
+  category    TEXT NOT NULL,
+  blurb       TEXT,
+  sort_order  INTEGER NOT NULL DEFAULT 0,
+  active      INTEGER NOT NULL DEFAULT 1,
+  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE TABLE IF NOT EXISTS attraction_images (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  attraction_id  INTEGER NOT NULL REFERENCES attractions(id) ON DELETE CASCADE,
+  src            TEXT NOT NULL,
+  alt            TEXT NOT NULL,
+  sort_order     INTEGER NOT NULL DEFAULT 0,
+  active         INTEGER NOT NULL DEFAULT 1,
+  created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_attraction_images_attraction ON attraction_images(attraction_id);
 
 CREATE TABLE IF NOT EXISTS packages (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,

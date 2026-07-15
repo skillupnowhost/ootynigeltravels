@@ -6,11 +6,15 @@ import { Navigation, Satellite, PersonStanding, ParkingCircle } from "lucide-rea
 import { MapPinDropIcon } from "@/components/ui/AnimatedIcons";
 import { MotionIcon } from "@/components/ui/MotionIcon";
 import { site, mapEmbedUrl, mapDirectionsUrl, mapSatelliteUrl, mapStreetViewUrl } from "@/lib/config/site";
-import { ATTRACTIONS } from "@/lib/config/attractions";
 
-const NEARBY = ATTRACTIONS.slice(0, 5);
+export interface NearbyAttraction {
+  slug: string;
+  name: string;
+  category: string;
+  image: string | null;
+}
 
-export function ContactMap() {
+export function ContactMap({ nearbyAttractions }: { nearbyAttractions: NearbyAttraction[] }) {
   return (
     <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
       <motion.div
@@ -103,10 +107,12 @@ export function ContactMap() {
         >
           <p className="font-display text-base text-forest-900">Nearby Attractions</p>
           <ul className="mt-3 space-y-3">
-            {NEARBY.map((a) => (
+            {nearbyAttractions.map((a) => (
               <li key={a.slug} className="group flex items-center gap-3">
-                <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl">
-                  <Image src={a.image} alt="" fill sizes="40px" className="object-cover transition-transform duration-300 group-hover:scale-110" />
+                <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-forest-50">
+                  {a.image && (
+                    <Image src={a.image} alt="" fill sizes="40px" className="object-cover transition-transform duration-300 group-hover:scale-110" />
+                  )}
                 </span>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium text-forest-950">{a.name}</p>

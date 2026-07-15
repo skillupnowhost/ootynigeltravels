@@ -4,7 +4,15 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { MotionIcon } from "@/components/ui/MotionIcon";
 import { WhatsAppGlyphIcon } from "@/components/ui/BrandIcons";
+import { ShieldBadgeIcon, HeadsetPulseIcon, CalendarCheckIcon } from "@/components/ui/AnimatedIcons";
+import { RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { site, waLink } from "@/lib/config/site";
+
+const TRUST_BADGES = [
+  { icon: <ShieldBadgeIcon size={16} loop={false} />, label: "Trusted local experts" },
+  { icon: <HeadsetPulseIcon size={16} loop={false} />, label: "24 × 7 support" },
+  { icon: <CalendarCheckIcon size={16} loop={false} />, label: "Itineraries built around you" },
+];
 
 export function CTABanner() {
   return (
@@ -65,6 +73,15 @@ export function CTABanner() {
             Chat on WhatsApp
           </a>
         </motion.div>
+
+        <RevealGroup className="mt-10 flex flex-wrap justify-center gap-x-8 gap-y-3 border-t border-ivory-50/10 pt-8" stagger={0.08}>
+          {TRUST_BADGES.map((b) => (
+            <RevealItem key={b.label} className="flex items-center gap-2 text-xs font-medium text-forest-300">
+              <span className="text-gold-400">{b.icon}</span>
+              {b.label}
+            </RevealItem>
+          ))}
+        </RevealGroup>
       </div>
     </section>
   );

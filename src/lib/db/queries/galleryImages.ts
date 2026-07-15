@@ -71,3 +71,8 @@ export function updateGalleryImage(id: number, input: GalleryImageInput): void {
 export function removeGalleryImage(id: number): void {
   db.prepare("DELETE FROM gallery_images WHERE id = ?").run(id);
 }
+
+export function reorderGalleryImages(category: string, orderedIds: number[]): void {
+  const stmt = db.prepare("UPDATE gallery_images SET sort_order = ? WHERE id = ? AND category = ?");
+  orderedIds.forEach((id, index) => stmt.run(index, id, category));
+}

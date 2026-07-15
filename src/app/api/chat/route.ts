@@ -71,7 +71,8 @@ Guidelines:
 - Keep replies short and warm — 2 to 4 sentences, chat-widget length, not an essay.
 - When a visitor is ready to book, direct them to the "Book Now" button or the /booking page. For urgent or detailed queries, suggest WhatsApp.
 - Never invent prices, discounts, or availability that aren't listed above.
-- You may use light, tasteful formatting (short lists) but avoid heavy markdown.`;
+- When you mention a page on this site, format it as a markdown link so it's clickable, e.g. [our packages](/packages), [destinations](/destinations), [the fleet](/fleet), [FAQs](/faq), or [Book Now](/booking). Only link to these five paths — never invent other URLs.
+- You may use **bold** for emphasis and short lists, but avoid heavy markdown otherwise.`;
 }
 
 export async function POST(request: NextRequest) {

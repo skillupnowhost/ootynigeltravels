@@ -61,6 +61,38 @@ export interface Destination {
   highlights: string[];
   best_season: string | null;
   distance_from_ooty: string | null;
+  sort_order: number;
+  active: number;
+  created_at: string;
+}
+
+export interface DestinationImage {
+  id: number;
+  destination_id: number;
+  src: string;
+  alt: string;
+  sort_order: number;
+  active: number;
+  created_at: string;
+}
+
+export interface Attraction {
+  id: number;
+  slug: string;
+  name: string;
+  category: string;
+  blurb: string | null;
+  sort_order: number;
+  active: number;
+  created_at: string;
+}
+
+export interface AttractionImage {
+  id: number;
+  attraction_id: number;
+  src: string;
+  alt: string;
+  sort_order: number;
   active: number;
   created_at: string;
 }
