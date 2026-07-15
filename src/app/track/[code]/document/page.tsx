@@ -19,11 +19,11 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function TripDocumentPage({ params }: { params: Params }) {
   const { code } = await params;
-  const booking = getBookingByCode(code);
+  const booking = await getBookingByCode(code);
   if (!booking) notFound();
 
-  const driver = booking.driver_id ? getDriverById(booking.driver_id) : undefined;
-  const vehicle = booking.fleet_id ? fleetRepo.getById(booking.fleet_id) : undefined;
+  const driver = booking.driver_id ? await getDriverById(booking.driver_id) : undefined;
+  const vehicle = booking.fleet_id ? await fleetRepo.getById(booking.fleet_id) : undefined;
 
   return (
     <section className="container-luxe max-w-3xl py-12 print:py-0">

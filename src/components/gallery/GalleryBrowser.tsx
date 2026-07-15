@@ -4,6 +4,7 @@ import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { CategoryPillNav } from "@/components/ui/CategoryPillNav";
+import { ExploreButton } from "@/components/home/ExploreButton";
 import { GalleryLightbox } from "./GalleryLightbox";
 import type { GalleryImage } from "@/lib/db/types";
 
@@ -87,6 +88,7 @@ export function GalleryBrowser({ groups }: { groups: GalleryGroup[] }) {
                       </span>
                     )}
                   </button>
+                  <ExploreButton placeName={img.alt} className="absolute right-3 top-3 z-10" />
                 </RevealItem>
               ))}
             </RevealGroup>

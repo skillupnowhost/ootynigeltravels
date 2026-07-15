@@ -26,7 +26,7 @@ type Params = Promise<{ slug: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
-  const pkg = packagesRepo.getBySlug(slug);
+  const pkg = await packagesRepo.getBySlug(slug);
   if (!pkg) return {};
   return {
     title: pkg.name,
@@ -37,13 +37,13 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function PackageDetailPage({ params }: { params: Params }) {
   const { slug } = await params;
-  const pkg = packagesRepo.getBySlug(slug);
+  const pkg = await packagesRepo.getBySlug(slug);
   if (!pkg || !pkg.active) notFound();
   const categoryMeta = tripCategoryMeta(pkg.category);
-  const matchingVehicles = fleetRepo.list(true).filter((v) => pkg.vehicle_options.includes(v.category));
-  const sampleDrivers = listDrivers({ activeOnly: true }).slice(0, 2);
-  const reviews = listReviewsForPackage(pkg.id, 6);
-  const related = relatedPackages(pkg, 3);
+  const matchingVehicles = (await fleetRepo.list(true)).filter((v) => pkg.vehicle_options.includes(v.category));
+  const sampleDrivers = (await listDrivers({ activeOnly: true })).slice(0, 2);
+  const reviews = await listReviewsForPackage(pkg.id, 6);
+  const related = await relatedPackages(pkg, 3);
   const hasDiscount = pkg.original_price != null && pkg.original_price > pkg.price_from;
   const discountPct = hasDiscount ? Math.round((1 - pkg.price_from / (pkg.original_price as number)) * 100) : 0;
 

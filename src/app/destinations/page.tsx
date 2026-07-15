@@ -15,8 +15,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/destinations" },
 };
 
-export default function DestinationsPage() {
-  const destinations = destinationsRepo.list(true);
+export default async function DestinationsPage() {
+  const destinations = await destinationsRepo.list(true);
 
   return (
     <>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PolicyPage } from "@/components/ui/PolicyPage";
+import { ClockHandsIcon, CalendarCheckIcon, MapPinDropIcon } from "@/components/ui/AnimatedIcons";
 
 export const metadata: Metadata = {
   title: "Cancellation Policy",
@@ -11,6 +12,14 @@ export default function CancellationPolicyPage() {
     <PolicyPage
       title="Cancellation Policy"
       updated="July 2026"
+      icon={<ClockHandsIcon size={16} loop={false} className="text-gold-400" />}
+      scenicVariant="tea-rows"
+      badge="Plans change — here's how cancellations work"
+      highlights={[
+        { icon: <ClockHandsIcon size={18} loop={false} />, label: "48+ hours before travel: fee-free" },
+        { icon: <CalendarCheckIcon size={18} loop={false} />, label: "Every request reviewed manually" },
+        { icon: <MapPinDropIcon size={18} loop={false} />, label: "Cancel anytime from Track a Booking" },
+      ]}
       sections={[
         {
           heading: "Requesting a cancellation",

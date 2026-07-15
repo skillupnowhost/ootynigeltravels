@@ -70,7 +70,7 @@ export async function createBookingAction(
   }
   const data = parsed.data;
 
-  const pkg = packagesRepo.getBySlug(data.packageSlug);
+  const pkg = await packagesRepo.getBySlug(data.packageSlug);
   if (!pkg) {
     return { ok: false, error: "Please choose a valid travel package." };
   }
@@ -78,7 +78,7 @@ export async function createBookingAction(
   const estimate = computeEstimate(pkg.price_from, data.adults, data.children);
   const user = await getCurrentUser();
 
-  const booking = createBooking({
+  const booking = await createBooking({
     guest_name: data.name,
     guest_phone: data.phone,
     guest_email: data.email || null,
@@ -114,7 +114,7 @@ export async function requestCancellationAction(
     return { ok: false, error: "Booking code and phone number are required." };
   }
 
-  const booking = getBookingByCode(code);
+  const booking = await getBookingByCode(code);
   if (!booking || booking.guest_phone !== phone) {
     return { ok: false, error: "We couldn't verify that booking — check the code and phone number." };
   }
@@ -122,6 +122,6 @@ export async function requestCancellationAction(
     return { ok: false, error: `This booking is already ${booking.status.toLowerCase()}.` };
   }
 
-  requestCancellation(booking.id);
+  await requestCancellation(booking.id);
   return { ok: true };
 }

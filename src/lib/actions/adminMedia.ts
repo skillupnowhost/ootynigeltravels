@@ -86,11 +86,11 @@ export async function saveDestinationAction(_prev: AdminActionState, formData: F
   };
 
   if (id) {
-    destinationsRepo.update(id, fields);
+    await destinationsRepo.update(id, fields);
   } else {
-    destinationsRepo.create(fields);
+    await destinationsRepo.create(fields);
   }
-  recordAuditLog({
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: id ? "update" : "create",
@@ -106,8 +106,8 @@ export async function saveDestinationAction(_prev: AdminActionState, formData: F
 export async function deleteDestinationAction(formData: FormData): Promise<void> {
   const user = await requireRole([...MANAGE_ROLES]);
   const id = Number(formData.get("id"));
-  destinationsRepo.remove(id);
-  recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "destination", entity_id: id });
+  await destinationsRepo.remove(id);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "destination", entity_id: id });
   revalidatePath("/admin/destinations");
   revalidatePath("/");
   revalidatePath("/destinations");
@@ -120,7 +120,7 @@ export async function uploadDestinationImageAction(
 ): Promise<AdminActionState> {
   const user = await requireRole([...MANAGE_ROLES]);
   const destinationId = Number(formData.get("destination_id"));
-  const destination = destinationsRepo.getById(destinationId);
+  const destination = await destinationsRepo.getById(destinationId);
   if (!destination) return { ok: false, error: "Destination not found." };
 
   const file = formData.get("file");
@@ -134,14 +134,14 @@ export async function uploadDestinationImageAction(
   }
 
   const alt = String(formData.get("alt") || "").trim() || `${destination.name} — Ooty Nigel Travels`;
-  const existing = listDestinationImages(destinationId);
-  const image = createDestinationImage({
+  const existing = await listDestinationImages(destinationId);
+  const image = await createDestinationImage({
     destination_id: destinationId,
     src,
     alt,
     sort_order: existing.length,
   });
-  recordAuditLog({
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: "upload",
@@ -171,8 +171,8 @@ export async function updateDestinationImageAction(
   });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
 
-  updateDestinationImage(parsed.data.id, { alt: parsed.data.alt, active: parsed.data.active ? 1 : 0 });
-  recordAuditLog({
+  await updateDestinationImage(parsed.data.id, { alt: parsed.data.alt, active: parsed.data.active ? 1 : 0 });
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: "update",
@@ -187,8 +187,8 @@ export async function updateDestinationImageAction(
 export async function deleteDestinationImageAction(formData: FormData): Promise<void> {
   const user = await requireRole([...MANAGE_ROLES]);
   const id = Number(formData.get("id"));
-  removeDestinationImage(id);
-  recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "destination_image", entity_id: id });
+  await removeDestinationImage(id);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "destination_image", entity_id: id });
   revalidatePath("/admin/destinations");
   revalidatePath("/");
 }
@@ -200,8 +200,8 @@ export async function reorderDestinationImagesAction(formData: FormData): Promis
     .split(",")
     .map((s) => Number(s.trim()))
     .filter((n) => Number.isFinite(n));
-  reorderDestinationImages(destinationId, orderedIds);
-  recordAuditLog({
+  await reorderDestinationImages(destinationId, orderedIds);
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: "reorder",
@@ -244,11 +244,11 @@ export async function saveAttractionAction(_prev: AdminActionState, formData: Fo
   };
 
   if (id) {
-    attractionsRepo.update(id, fields);
+    await attractionsRepo.update(id, fields);
   } else {
-    attractionsRepo.create(fields);
+    await attractionsRepo.create(fields);
   }
-  recordAuditLog({
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: id ? "update" : "create",
@@ -263,8 +263,8 @@ export async function saveAttractionAction(_prev: AdminActionState, formData: Fo
 export async function deleteAttractionAction(formData: FormData): Promise<void> {
   const user = await requireRole([...MANAGE_ROLES]);
   const id = Number(formData.get("id"));
-  attractionsRepo.remove(id);
-  recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "attraction", entity_id: id });
+  await attractionsRepo.remove(id);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "attraction", entity_id: id });
   revalidatePath("/admin/hidden-gems");
   revalidatePath("/");
 }
@@ -276,7 +276,7 @@ export async function uploadAttractionImageAction(
 ): Promise<AdminActionState> {
   const user = await requireRole([...MANAGE_ROLES]);
   const attractionId = Number(formData.get("attraction_id"));
-  const attraction = attractionsRepo.getById(attractionId);
+  const attraction = await attractionsRepo.getById(attractionId);
   if (!attraction) return { ok: false, error: "Hidden gem not found." };
 
   const file = formData.get("file");
@@ -290,14 +290,14 @@ export async function uploadAttractionImageAction(
   }
 
   const alt = String(formData.get("alt") || "").trim() || `${attraction.name} — Ooty Nigel Travels`;
-  const existing = listAttractionImages(attractionId);
-  const image = createAttractionImage({
+  const existing = await listAttractionImages(attractionId);
+  const image = await createAttractionImage({
     attraction_id: attractionId,
     src,
     alt,
     sort_order: existing.length,
   });
-  recordAuditLog({
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: "upload",
@@ -327,8 +327,8 @@ export async function updateAttractionImageAction(
   });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
 
-  updateAttractionImage(parsed.data.id, { alt: parsed.data.alt, active: parsed.data.active ? 1 : 0 });
-  recordAuditLog({
+  await updateAttractionImage(parsed.data.id, { alt: parsed.data.alt, active: parsed.data.active ? 1 : 0 });
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: "update",
@@ -343,8 +343,8 @@ export async function updateAttractionImageAction(
 export async function deleteAttractionImageAction(formData: FormData): Promise<void> {
   const user = await requireRole([...MANAGE_ROLES]);
   const id = Number(formData.get("id"));
-  removeAttractionImage(id);
-  recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "attraction_image", entity_id: id });
+  await removeAttractionImage(id);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "attraction_image", entity_id: id });
   revalidatePath("/admin/hidden-gems");
   revalidatePath("/");
 }
@@ -356,8 +356,8 @@ export async function reorderAttractionImagesAction(formData: FormData): Promise
     .split(",")
     .map((s) => Number(s.trim()))
     .filter((n) => Number.isFinite(n));
-  reorderAttractionImages(attractionId, orderedIds);
-  recordAuditLog({
+  await reorderAttractionImages(attractionId, orderedIds);
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: "reorder",

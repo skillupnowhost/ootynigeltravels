@@ -11,7 +11,7 @@ type Params = Promise<{ id: string }>;
 export default async function EditStaffUserPage({ params }: { params: Params }) {
   await requireRole(["admin"]);
   const { id } = await params;
-  const user = getUserById(Number(id));
+  const user = await getUserById(Number(id));
   if (!user || user.role === "customer") notFound();
 
   return (

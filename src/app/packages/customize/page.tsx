@@ -19,10 +19,10 @@ type SearchParams = Promise<{ package?: string }>;
 
 export default async function CustomizeTripPage({ searchParams }: { searchParams: SearchParams }) {
   const { package: packageSlug } = await searchParams;
-  const pkg = packageSlug ? packagesRepo.getBySlug(packageSlug) : undefined;
+  const pkg = packageSlug ? await packagesRepo.getBySlug(packageSlug) : undefined;
 
   if (pkg && pkg.active) {
-    const fleet = fleetRepo.list(true);
+    const fleet = await fleetRepo.list(true);
     return (
       <>
         <PageHero
@@ -44,7 +44,7 @@ export default async function CustomizeTripPage({ searchParams }: { searchParams
     );
   }
 
-  const destinations = destinationsRepo.list(true);
+  const destinations = await destinationsRepo.list(true);
 
   return (
     <>

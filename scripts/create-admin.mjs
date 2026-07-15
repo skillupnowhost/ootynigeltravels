@@ -26,20 +26,20 @@ if (!["admin", "manager", "staff"].includes(role)) {
   process.exit(1);
 }
 
-const db = openDb();
-const existing = db.prepare("SELECT id FROM users WHERE phone = ?").get(phone);
+const db = await openDb();
+const existing = await db.prepare("SELECT id FROM users WHERE phone = ?").get(phone);
 if (existing) {
   console.error(`A user with phone ${phone} already exists (id ${existing.id}).`);
-  db.close();
+  await db.close();
   process.exit(1);
 }
 
 const hash = hashPassword(password);
-const result = db
+const created = await db
   .prepare(
-    "INSERT INTO users (role, name, phone, password_hash) VALUES (?, ?, ?, ?)"
+    "INSERT INTO users (role, name, phone, password_hash) VALUES (?, ?, ?, ?) RETURNING *"
   )
-  .run(role, name, phone, hash);
+  .get(role, name, phone, hash);
 
-console.log(`Created ${role} user "${name}" (id ${result.lastInsertRowid}, phone ${phone}).`);
-db.close();
+console.log(`Created ${role} user "${name}" (id ${created.id}, phone ${phone}).`);
+await db.close();

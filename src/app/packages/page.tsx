@@ -14,9 +14,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/packages" },
 };
 
-export default function PackagesPage() {
-  const packages = packagesRepo.list(true);
-  const vehicleCategories = Array.from(new Set(fleetRepo.list(true).map((v) => v.category)));
+export default async function PackagesPage() {
+  const [packages, fleet] = await Promise.all([packagesRepo.list(true), fleetRepo.list(true)]);
+  const vehicleCategories = Array.from(new Set(fleet.map((v) => v.category)));
 
   return (
     <>

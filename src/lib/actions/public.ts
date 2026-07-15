@@ -43,7 +43,7 @@ export async function submitContactMessage(
     return { ok: false, error: "Please check the form — some fields look invalid." };
   }
 
-  createContactMessage({
+  await createContactMessage({
     name: parsed.data.name,
     email: parsed.data.email || null,
     phone: parsed.data.phone || null,
@@ -80,7 +80,7 @@ export async function submitReview(
     return { ok: false, error: "Please check the form — a name, rating and comment are required." };
   }
 
-  createReview({
+  await createReview({
     customer_name: parsed.data.customer_name,
     rating: parsed.data.rating,
     comment: parsed.data.comment,
@@ -139,7 +139,7 @@ export async function submitTripRequest(
     return { ok: false, error: "Please check the form — some fields look invalid." };
   }
 
-  const request = createTripRequest({
+  const request = await createTripRequest({
     name: parsed.data.name,
     phone: parsed.data.phone,
     email: parsed.data.email || null,

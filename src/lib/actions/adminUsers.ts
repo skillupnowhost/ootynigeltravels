@@ -38,18 +38,18 @@ export async function createStaffUserAction(
   });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
 
-  if (getUserByPhone(parsed.data.phone)) {
+  if (await getUserByPhone(parsed.data.phone)) {
     return { ok: false, error: "A user with this phone number already exists." };
   }
 
-  const user = createUser({
+  const user = await createUser({
     role: parsed.data.role,
     name: parsed.data.name,
     phone: parsed.data.phone,
     passwordHash: hashPassword(parsed.data.password),
   });
 
-  recordAuditLog({
+  await recordAuditLog({
     actor_user_id: actor.id,
     actor_name: actor.name,
     action: "create",
@@ -84,24 +84,24 @@ export async function updateStaffUserAction(
   });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
 
-  const target = getUserById(parsed.data.id);
+  const target = await getUserById(parsed.data.id);
   if (!target || target.role === "customer") return { ok: false, error: "User not found." };
 
-  const existingByPhone = getUserByPhone(parsed.data.phone);
+  const existingByPhone = await getUserByPhone(parsed.data.phone);
   if (existingByPhone && existingByPhone.id !== target.id) {
     return { ok: false, error: "A user with this phone number already exists." };
   }
 
-  if (target.role === "admin" && parsed.data.role !== "admin" && countByRole("admin") <= 1) {
+  if (target.role === "admin" && parsed.data.role !== "admin" && (await countByRole("admin")) <= 1) {
     return { ok: false, error: "Can't demote the last remaining admin." };
   }
 
-  updateUser(target.id, { name: parsed.data.name, phone: parsed.data.phone, role: parsed.data.role });
+  await updateUser(target.id, { name: parsed.data.name, phone: parsed.data.phone, role: parsed.data.role });
   if (parsed.data.password) {
-    updateUserPassword(target.id, hashPassword(parsed.data.password));
+    await updateUserPassword(target.id, hashPassword(parsed.data.password));
   }
 
-  recordAuditLog({
+  await recordAuditLog({
     actor_user_id: actor.id,
     actor_name: actor.name,
     action: "update",
@@ -117,13 +117,13 @@ export async function deleteStaffUserAction(formData: FormData): Promise<void> {
   const actor = await requireRole(["admin"]);
   const id = Number(formData.get("id"));
 
-  const target = getUserById(id);
+  const target = await getUserById(id);
   if (!target || target.role === "customer") return;
   if (target.id === actor.id) return;
-  if (target.role === "admin" && countByRole("admin") <= 1) return;
+  if (target.role === "admin" && (await countByRole("admin")) <= 1) return;
 
-  deleteUser(id);
-  recordAuditLog({ actor_user_id: actor.id, actor_name: actor.name, action: "delete", entity_type: "staff_user", entity_id: id });
+  await deleteUser(id);
+  await recordAuditLog({ actor_user_id: actor.id, actor_name: actor.name, action: "delete", entity_type: "staff_user", entity_id: id });
   revalidatePath("/admin/users");
 }
 
@@ -148,17 +148,17 @@ export async function updateCustomerAction(
   });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
 
-  const target = getUserById(parsed.data.id);
+  const target = await getUserById(parsed.data.id);
   if (!target || target.role !== "customer") return { ok: false, error: "Customer not found." };
 
-  const existingByPhone = getUserByPhone(parsed.data.phone);
+  const existingByPhone = await getUserByPhone(parsed.data.phone);
   if (existingByPhone && existingByPhone.id !== target.id) {
     return { ok: false, error: "A user with this phone number already exists." };
   }
 
-  updateUser(target.id, { name: parsed.data.name, phone: parsed.data.phone, email: parsed.data.email || null });
+  await updateUser(target.id, { name: parsed.data.name, phone: parsed.data.phone, email: parsed.data.email || null });
 
-  recordAuditLog({
+  await recordAuditLog({
     actor_user_id: actor.id,
     actor_name: actor.name,
     action: "update",
@@ -173,10 +173,10 @@ export async function deleteCustomerAction(formData: FormData): Promise<void> {
   const actor = await requireRole(["admin", "manager"]);
   const id = Number(formData.get("id"));
 
-  const target = getUserById(id);
+  const target = await getUserById(id);
   if (!target || target.role !== "customer") return;
 
-  deleteUser(id);
-  recordAuditLog({ actor_user_id: actor.id, actor_name: actor.name, action: "delete", entity_type: "customer", entity_id: id });
+  await deleteUser(id);
+  await recordAuditLog({ actor_user_id: actor.id, actor_name: actor.name, action: "delete", entity_type: "customer", entity_id: id });
   revalidatePath("/admin/customers");
 }

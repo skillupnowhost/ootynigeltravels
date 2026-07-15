@@ -10,7 +10,7 @@ type Params = Promise<{ id: string }>;
 export default async function EditGalleryImagePage({ params }: { params: Params }) {
   await requireRole(["admin", "manager"]);
   const { id } = await params;
-  const image = getGalleryImageById(Number(id));
+  const image = await getGalleryImageById(Number(id));
   if (!image) notFound();
 
   return (

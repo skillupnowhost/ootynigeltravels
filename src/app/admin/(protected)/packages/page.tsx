@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPackagesPage() {
   await requireRole(["admin", "manager"]);
-  const packages = packagesRepo.list();
+  const packages = await packagesRepo.list();
 
   return (
     <div>

@@ -34,7 +34,7 @@ function paymentBadgeClass(status: string) {
 
 export default async function AdminBookingsPage({ searchParams }: { searchParams: SearchParams }) {
   const { status, q } = await searchParams;
-  const bookings = listAllBookings({
+  const bookings = await listAllBookings({
     status: status && BOOKING_STATUSES.includes(status as BookingStatus) ? (status as BookingStatus) : undefined,
     search: q,
   });

@@ -10,7 +10,7 @@ type Params = Promise<{ id: string }>;
 export default async function EditFleetPage({ params }: { params: Params }) {
   await requireRole(["admin", "manager"]);
   const { id } = await params;
-  const vehicle = fleetRepo.getById(Number(id));
+  const vehicle = await fleetRepo.getById(Number(id));
   if (!vehicle) notFound();
 
   return (

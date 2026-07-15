@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminAuditLogPage() {
   await requireRole(["admin"]);
-  const logs = listAuditLogs();
+  const logs = await listAuditLogs();
 
   return (
     <div>

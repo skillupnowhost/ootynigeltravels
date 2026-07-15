@@ -10,7 +10,7 @@ type Params = Promise<{ id: string }>;
 export default async function EditCustomerPage({ params }: { params: Params }) {
   await requireRole(["admin", "manager"]);
   const { id } = await params;
-  const customer = getUserById(Number(id));
+  const customer = await getUserById(Number(id));
   if (!customer || customer.role !== "customer") notFound();
 
   return (

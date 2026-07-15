@@ -13,9 +13,8 @@ export const packagesRepo = createSlugRepo<TourPackage>(db, "packages", [
   "places_covered",
 ]);
 
-export function relatedPackages(pkg: TourPackage, limit = 3): TourPackage[] {
-  return packagesRepo
-    .list(true)
+export async function relatedPackages(pkg: TourPackage, limit = 3): Promise<TourPackage[]> {
+  return (await packagesRepo.list(true))
     .filter((p) => p.category === pkg.category && p.slug !== pkg.slug)
     .slice(0, limit);
 }

@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminReviewsPage() {
   await requireRole(["admin", "manager"]);
-  const reviews = listAllReviews();
+  const reviews = await listAllReviews();
 
   return (
     <div>

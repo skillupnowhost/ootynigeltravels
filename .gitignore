@@ -34,11 +34,7 @@ yarn-error.log*
 .env*
 !.env.example
 
-# runtime data store (bookings, messages, coupons, etc.)
-/data/*.db
-/data/*.db-journal
-/data/*.db-wal
-/data/*.db-shm
+# local pg_dump backups (scripts/db:backup)
 /data/backups/
 
 # vercel

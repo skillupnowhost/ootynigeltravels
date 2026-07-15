@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PolicyPage } from "@/components/ui/PolicyPage";
+import { WalletIcon, ClockHandsIcon, HeadsetPulseIcon } from "@/components/ui/AnimatedIcons";
 import { site } from "@/lib/config/site";
 
 export const metadata: Metadata = {
@@ -12,6 +13,14 @@ export default function RefundPolicyPage() {
     <PolicyPage
       title="Refund Policy"
       updated="July 2026"
+      icon={<WalletIcon size={16} loop={false} className="text-gold-400" />}
+      scenicVariant="lake"
+      badge="Eligible refunds, processed without the runaround"
+      highlights={[
+        { icon: <WalletIcon size={18} loop={false} />, label: "Refunded to your original payment method" },
+        { icon: <ClockHandsIcon size={18} loop={false} />, label: "Processed within 5–7 business days" },
+        { icon: <HeadsetPulseIcon size={18} loop={false} />, label: "48-hour window to flag service issues" },
+      ]}
       sections={[
         {
           heading: "Eligible refunds",

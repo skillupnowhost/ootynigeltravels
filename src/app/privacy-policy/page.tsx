@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PolicyPage } from "@/components/ui/PolicyPage";
+import { ShieldBadgeIcon, ClockHandsIcon, HeadsetPulseIcon } from "@/components/ui/AnimatedIcons";
 import { site } from "@/lib/config/site";
 
 export const metadata: Metadata = {
@@ -12,6 +13,14 @@ export default function PrivacyPolicyPage() {
     <PolicyPage
       title="Privacy Policy"
       updated="July 2026"
+      icon={<ShieldBadgeIcon size={16} loop={false} className="text-gold-400" />}
+      scenicVariant="forest"
+      badge="Your data, handled with the same care as your trip"
+      highlights={[
+        { icon: <ShieldBadgeIcon size={18} loop={false} />, label: "Passwords hashed, never stored in plain text" },
+        { icon: <ClockHandsIcon size={18} loop={false} />, label: "No card details collected on this site" },
+        { icon: <HeadsetPulseIcon size={18} loop={false} />, label: "Data requests handled personally by our team" },
+      ]}
       sections={[
         {
           heading: "What we collect",

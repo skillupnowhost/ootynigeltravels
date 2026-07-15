@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDriversPage() {
   await requireRole(["admin", "manager"]);
-  const drivers = listDrivers();
+  const drivers = await listDrivers();
 
   return (
     <div>

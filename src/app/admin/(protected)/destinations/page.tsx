@@ -13,8 +13,8 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDestinationsPage() {
   await requireRole(["admin", "manager"]);
-  const destinations = destinationsRepo.list();
-  const allImages = listAllDestinationImages();
+  const destinations = await destinationsRepo.list();
+  const allImages = await listAllDestinationImages();
   const imagesByDestination = new Map<number, typeof allImages>();
   for (const img of allImages) {
     const list = imagesByDestination.get(img.destination_id) ?? [];

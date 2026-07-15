@@ -28,7 +28,7 @@ export async function loginAction(_prev: AuthFormState, formData: FormData): Pro
   });
   if (!parsed.success) return { ok: false, error: "Enter your phone number and password." };
 
-  const user = getUserByPhone(parsed.data.phone);
+  const user = await getUserByPhone(parsed.data.phone);
   if (!user || user.role !== "customer" || !verifyPassword(parsed.data.password, user.password_hash)) {
     return { ok: false, error: "Invalid phone number or password." };
   }
@@ -70,12 +70,12 @@ export async function registerAction(_prev: AuthFormState, formData: FormData): 
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Please check the form." };
   }
 
-  const existing = getUserByPhone(parsed.data.phone);
+  const existing = await getUserByPhone(parsed.data.phone);
   if (existing) {
     return { ok: false, error: "An account with this phone number already exists." };
   }
 
-  const user = createUser({
+  const user = await createUser({
     role: "customer",
     name: parsed.data.name,
     phone: parsed.data.phone,
@@ -85,7 +85,7 @@ export async function registerAction(_prev: AuthFormState, formData: FormData): 
 
   // Guest bookings made with this phone number before signing up now show
   // up in the account dashboard — no OTP verification, matched by phone.
-  linkBookingsToCustomer(parsed.data.phone, user.id);
+  await linkBookingsToCustomer(parsed.data.phone, user.id);
 
   await establishSession(user.id);
   redirect("/account");

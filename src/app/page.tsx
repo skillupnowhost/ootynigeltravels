@@ -24,18 +24,22 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const destinations = destinationsRepo.list(true);
-  const destinationsWithImages = destinations.map((d) => {
-    const images = listDestinationImages(d.id, true).map((img) => ({ src: img.src, alt: img.alt }));
-    return { ...d, images: images.length > 0 ? images : d.image ? [{ src: d.image, alt: d.name }] : [] };
-  });
-  const attractions = attractionsRepo.list(true);
-  const attractionsWithImages = attractions.map((a) => ({
-    ...a,
-    images: listAttractionImages(a.id, true).map((img) => ({ src: img.src, alt: img.alt })),
-  }));
-  const packages = packagesRepo.list(true);
-  const posts = blogRepo.list();
+  const destinations = await destinationsRepo.list(true);
+  const destinationsWithImages = await Promise.all(
+    destinations.map(async (d) => {
+      const images = (await listDestinationImages(d.id, true)).map((img) => ({ src: img.src, alt: img.alt }));
+      return { ...d, images: images.length > 0 ? images : d.image ? [{ src: d.image, alt: d.name }] : [] };
+    })
+  );
+  const attractions = await attractionsRepo.list(true);
+  const attractionsWithImages = await Promise.all(
+    attractions.map(async (a) => ({
+      ...a,
+      images: (await listAttractionImages(a.id, true)).map((img) => ({ src: img.src, alt: img.alt })),
+    }))
+  );
+  const packages = await packagesRepo.list(true);
+  const posts = await blogRepo.list();
   const weather = await getOotyWeather();
 
   const destinationsJsonLd = {

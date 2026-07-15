@@ -12,7 +12,7 @@ type Params = Promise<{ slug: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
-  const post = blogRepo.getBySlug(slug);
+  const post = await blogRepo.getBySlug(slug);
   if (!post) return {};
   return {
     title: post.title,
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function BlogPostPage({ params }: { params: Params }) {
   const { slug } = await params;
-  const post = blogRepo.getBySlug(slug);
+  const post = await blogRepo.getBySlug(slug);
   if (!post) notFound();
 
   const jsonLd = {

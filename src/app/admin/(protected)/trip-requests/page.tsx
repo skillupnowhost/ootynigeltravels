@@ -17,7 +17,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default async function AdminTripRequestsPage() {
   await requireRole(["admin", "manager", "staff"]);
-  const requests = listTripRequests();
+  const requests = await listTripRequests();
 
   return (
     <div>

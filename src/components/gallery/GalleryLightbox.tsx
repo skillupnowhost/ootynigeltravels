@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize, Minimize, Share2, Link2 } from "lucide-react";
 import type { GalleryImage } from "@/lib/db/types";
 import { galleryCategoryLabel } from "@/lib/data/galleryCategories";
+import { ExploreButton } from "@/components/home/ExploreButton";
 
 export function GalleryLightbox({
   image,
@@ -171,6 +172,7 @@ export function GalleryLightbox({
               {image.alt}
               {image.credit && <span className="text-forest-400"> · {image.credit}</span>}
             </p>
+            <ExploreButton placeName={image.alt} className="mx-auto mt-3" />
             <AnimatePresence>
               {copied && (
                 <motion.p

@@ -19,8 +19,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/blog" },
 };
 
-export default function BlogPage() {
-  const posts = blogRepo.list();
+export default async function BlogPage() {
+  const posts = await blogRepo.list();
 
   const groups = BLOG_CATEGORIES.map((category) => ({
     slug: category.toLowerCase().replace(/\s+/g, "-"),

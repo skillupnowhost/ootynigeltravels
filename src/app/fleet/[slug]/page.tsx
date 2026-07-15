@@ -17,7 +17,7 @@ type Params = Promise<{ slug: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
-  const vehicle = fleetRepo.getBySlug(slug);
+  const vehicle = await fleetRepo.getBySlug(slug);
   if (!vehicle) return {};
   return {
     title: vehicle.name,
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function FleetDetailPage({ params }: { params: Params }) {
   const { slug } = await params;
-  const vehicle = fleetRepo.getBySlug(slug);
+  const vehicle = await fleetRepo.getBySlug(slug);
   if (!vehicle || !vehicle.active) notFound();
 
   const jsonLd = {

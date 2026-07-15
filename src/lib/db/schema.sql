@@ -1,26 +1,26 @@
--- Ooty Nigel Travels — SQLite schema
+-- Ooty Nigel Travels — Postgres schema
 -- Applied idempotently by scripts/migrate.mjs
 
 CREATE TABLE IF NOT EXISTS users (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  id            SERIAL PRIMARY KEY,
   role          TEXT NOT NULL CHECK (role IN ('admin','manager','staff','customer')),
   name          TEXT NOT NULL,
   phone         TEXT NOT NULL UNIQUE,
   email         TEXT,
   password_hash TEXT NOT NULL,
-  created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
   id          TEXT PRIMARY KEY,
   token_hash  TEXT NOT NULL UNIQUE,
   user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  expires_at  TEXT NOT NULL,
-  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  expires_at  TIMESTAMPTZ NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS drivers (
-  id                INTEGER PRIMARY KEY AUTOINCREMENT,
+  id                SERIAL PRIMARY KEY,
   slug              TEXT NOT NULL UNIQUE,
   name              TEXT NOT NULL,
   phone             TEXT NOT NULL,
@@ -31,11 +31,11 @@ CREATE TABLE IF NOT EXISTS drivers (
   rating            REAL NOT NULL DEFAULT 4.8,
   bio               TEXT,
   active            INTEGER NOT NULL DEFAULT 1,
-  created_at        TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS fleet (
-  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  id             SERIAL PRIMARY KEY,
   slug           TEXT NOT NULL UNIQUE,
   name           TEXT NOT NULL,
   category       TEXT NOT NULL,
@@ -47,11 +47,11 @@ CREATE TABLE IF NOT EXISTS fleet (
   gallery        TEXT NOT NULL DEFAULT '[]',
   features       TEXT NOT NULL DEFAULT '[]',
   active         INTEGER NOT NULL DEFAULT 1,
-  created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS destinations (
-  id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+  id                  SERIAL PRIMARY KEY,
   slug                TEXT NOT NULL UNIQUE,
   name                TEXT NOT NULL,
   region              TEXT,
@@ -62,46 +62,46 @@ CREATE TABLE IF NOT EXISTS destinations (
   distance_from_ooty  TEXT,
   sort_order          INTEGER NOT NULL DEFAULT 0,
   active              INTEGER NOT NULL DEFAULT 1,
-  created_at          TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS destination_images (
-  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  id              SERIAL PRIMARY KEY,
   destination_id  INTEGER NOT NULL REFERENCES destinations(id) ON DELETE CASCADE,
   src             TEXT NOT NULL,
   alt             TEXT NOT NULL,
   sort_order      INTEGER NOT NULL DEFAULT 0,
   active          INTEGER NOT NULL DEFAULT 1,
-  created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_destination_images_destination ON destination_images(destination_id);
 
 CREATE TABLE IF NOT EXISTS attractions (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  id          SERIAL PRIMARY KEY,
   slug        TEXT NOT NULL UNIQUE,
   name        TEXT NOT NULL,
   category    TEXT NOT NULL,
   blurb       TEXT,
   sort_order  INTEGER NOT NULL DEFAULT 0,
   active      INTEGER NOT NULL DEFAULT 1,
-  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS attraction_images (
-  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  id             SERIAL PRIMARY KEY,
   attraction_id  INTEGER NOT NULL REFERENCES attractions(id) ON DELETE CASCADE,
   src            TEXT NOT NULL,
   alt            TEXT NOT NULL,
   sort_order     INTEGER NOT NULL DEFAULT 0,
   active         INTEGER NOT NULL DEFAULT 1,
-  created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_attraction_images_attraction ON attraction_images(attraction_id);
 
 CREATE TABLE IF NOT EXISTS packages (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  id            SERIAL PRIMARY KEY,
   slug          TEXT NOT NULL UNIQUE,
   name          TEXT NOT NULL,
   tagline       TEXT,
@@ -129,21 +129,21 @@ CREATE TABLE IF NOT EXISTS packages (
   best_time        TEXT,
   places_covered   TEXT NOT NULL DEFAULT '[]',
   active        INTEGER NOT NULL DEFAULT 1,
-  created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS coupons (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  id          SERIAL PRIMARY KEY,
   code        TEXT NOT NULL UNIQUE,
   pct         INTEGER NOT NULL,
   active      INTEGER NOT NULL DEFAULT 1,
   note        TEXT,
-  expires_at  TEXT,
-  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  expires_at  TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS bookings (
-  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  id               SERIAL PRIMARY KEY,
   booking_code     TEXT NOT NULL UNIQUE,
   customer_id      INTEGER REFERENCES users(id) ON DELETE SET NULL,
   guest_name       TEXT NOT NULL,
@@ -152,8 +152,8 @@ CREATE TABLE IF NOT EXISTS bookings (
   package_id       INTEGER REFERENCES packages(id) ON DELETE SET NULL,
   fleet_id         INTEGER REFERENCES fleet(id) ON DELETE SET NULL,
   destination      TEXT,
-  travel_date      TEXT NOT NULL,
-  end_date         TEXT,
+  travel_date      DATE NOT NULL,
+  end_date         DATE,
   pickup_location  TEXT NOT NULL,
   pickup_time      TEXT,
   adults           INTEGER NOT NULL DEFAULT 1,
@@ -167,45 +167,45 @@ CREATE TABLE IF NOT EXISTS bookings (
   remarks          TEXT,
   itinerary        TEXT NOT NULL DEFAULT '[]',
   cancel_requested INTEGER NOT NULL DEFAULT 0,
-  created_at       TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-  updated_at       TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_bookings_phone ON bookings(guest_phone);
 CREATE INDEX IF NOT EXISTS idx_bookings_customer ON bookings(customer_id);
 
 CREATE TABLE IF NOT EXISTS booking_history (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  id          SERIAL PRIMARY KEY,
   booking_id  INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
   status      TEXT NOT NULL,
   note        TEXT,
-  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS reviews (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  id            SERIAL PRIMARY KEY,
   customer_name TEXT NOT NULL,
   rating        INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
   comment       TEXT NOT NULL,
   package_id    INTEGER REFERENCES packages(id) ON DELETE SET NULL,
   source        TEXT NOT NULL DEFAULT 'website',
   approved      INTEGER NOT NULL DEFAULT 1,
-  created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS contact_messages (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  id          SERIAL PRIMARY KEY,
   name        TEXT NOT NULL,
   email       TEXT,
   phone       TEXT,
   subject     TEXT,
   message     TEXT NOT NULL,
   handled     INTEGER NOT NULL DEFAULT 0,
-  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS blog_posts (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  id            SERIAL PRIMARY KEY,
   slug          TEXT NOT NULL UNIQUE,
   title         TEXT NOT NULL,
   excerpt       TEXT,
@@ -215,11 +215,11 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   read_minutes  INTEGER NOT NULL DEFAULT 4,
   tags          TEXT NOT NULL DEFAULT '[]',
   category      TEXT NOT NULL DEFAULT 'Guides',
-  published_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  published_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS gallery_images (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  id          SERIAL PRIMARY KEY,
   category    TEXT NOT NULL,
   src         TEXT NOT NULL,
   alt         TEXT NOT NULL,
@@ -228,13 +228,13 @@ CREATE TABLE IF NOT EXISTS gallery_images (
   featured    INTEGER NOT NULL DEFAULT 0,
   sort_order  INTEGER NOT NULL DEFAULT 0,
   active      INTEGER NOT NULL DEFAULT 1,
-  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_gallery_images_category ON gallery_images(category);
 
 CREATE TABLE IF NOT EXISTS faqs (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  id          SERIAL PRIMARY KEY,
   category    TEXT NOT NULL DEFAULT 'General',
   question    TEXT NOT NULL,
   answer      TEXT NOT NULL,
@@ -242,7 +242,7 @@ CREATE TABLE IF NOT EXISTS faqs (
 );
 
 CREATE TABLE IF NOT EXISTS trip_requests (
-  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  id             SERIAL PRIMARY KEY,
   name           TEXT NOT NULL,
   phone          TEXT NOT NULL,
   email          TEXT,
@@ -258,16 +258,16 @@ CREATE TABLE IF NOT EXISTS trip_requests (
   hotel_category TEXT,
   computed_total INTEGER,
   status         TEXT NOT NULL DEFAULT 'New',
-  created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS audit_logs (
-  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  id             SERIAL PRIMARY KEY,
   actor_user_id  INTEGER,
   actor_name     TEXT,
   action         TEXT NOT NULL,
   entity_type    TEXT NOT NULL,
   entity_id      TEXT,
   meta           TEXT,
-  created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );

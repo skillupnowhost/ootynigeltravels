@@ -11,7 +11,7 @@ type Params = Promise<{ id: string }>;
 export default async function EditDriverPage({ params }: { params: Params }) {
   await requireRole(["admin", "manager"]);
   const { id } = await params;
-  const driver = getDriverById(Number(id));
+  const driver = await getDriverById(Number(id));
   if (!driver) notFound();
 
   return (

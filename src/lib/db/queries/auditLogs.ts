@@ -1,15 +1,15 @@
 import { db } from "../client";
 import type { AuditLog } from "../types";
 
-export function recordAuditLog(input: {
+export async function recordAuditLog(input: {
   actor_user_id: number | null;
   actor_name: string | null;
   action: string;
   entity_type: string;
   entity_id?: string | number | null;
   meta?: Record<string, unknown>;
-}): void {
-  db.prepare(
+}): Promise<void> {
+  await db.prepare(
     `INSERT INTO audit_logs (actor_user_id, actor_name, action, entity_type, entity_id, meta)
      VALUES (@actor_user_id, @actor_name, @action, @entity_type, @entity_id, @meta)`
   ).run({
@@ -22,8 +22,8 @@ export function recordAuditLog(input: {
   });
 }
 
-export function listAuditLogs(limit = 200): AuditLog[] {
-  return db
+export async function listAuditLogs(limit = 200): Promise<AuditLog[]> {
+  return (await db
     .prepare("SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT ?")
-    .all(limit) as AuditLog[];
+    .all(limit)) as AuditLog[];
 }

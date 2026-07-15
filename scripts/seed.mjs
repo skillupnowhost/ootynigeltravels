@@ -3,33 +3,32 @@ import path from "node:path";
 import { openDb, ROOT } from "./lib/db.mjs";
 import { hashPassword } from "./lib/password.mjs";
 
-const db = openDb();
+const db = await openDb();
 
-function insertIfEmpty(table, rows, insertFn) {
-  const { c } = db.prepare(`SELECT COUNT(*) as c FROM ${table}`).get();
+async function insertIfEmpty(table, rows, insertFn) {
+  const { c } = await db.prepare(`SELECT COUNT(*) as c FROM ${table}`).get();
   if (c > 0) {
     console.log(`skip ${table} (already has ${c} rows)`);
     return;
   }
-  const tx = db.prepare("SAVEPOINT seed");
-  tx.run();
+  await db.exec("BEGIN");
   try {
-    for (const row of rows) insertFn(row);
-    db.prepare("RELEASE seed").run();
+    for (const row of rows) await insertFn(row);
+    await db.exec("COMMIT");
     console.log(`seeded ${table}: ${rows.length} rows`);
   } catch (err) {
-    db.prepare("ROLLBACK TO seed").run();
+    await db.exec("ROLLBACK");
     throw err;
   }
 }
 
 // ---------- Admin user ----------
 {
-  const { c } = db.prepare("SELECT COUNT(*) as c FROM users WHERE role = 'admin'").get();
+  const { c } = await db.prepare("SELECT COUNT(*) as c FROM users WHERE role = 'admin'").get();
   if (c === 0) {
     const password = "OotyNigel@" + Math.random().toString(36).slice(2, 8);
     const hash = hashPassword(password);
-    db.prepare(
+    await db.prepare(
       `INSERT INTO users (role, name, phone, email, password_hash) VALUES ('admin', 'Site Administrator', '9000000000', 'admin@ootynigeltravels.com', ?)`
     ).run(hash);
     console.log("\n=== ADMIN ACCOUNT CREATED ===");
@@ -42,7 +41,7 @@ function insertIfEmpty(table, rows, insertFn) {
 }
 
 // ---------- Drivers ----------
-insertIfEmpty(
+await insertIfEmpty(
   "drivers",
   [
     {
@@ -89,7 +88,7 @@ insertIfEmpty(
 );
 
 // ---------- Fleet ----------
-insertIfEmpty(
+await insertIfEmpty(
   "fleet",
   [
     {
@@ -359,16 +358,17 @@ const DESTINATIONS_SEED = [
   },
 ];
 
-insertIfEmpty(
+await insertIfEmpty(
   "destinations",
   DESTINATIONS_SEED.map((d, i) => ({ ...d, sort_order: i })),
-  (d) => {
-    const result = db
+  async (d) => {
+    const result = await db
       .prepare(
         `INSERT INTO destinations (slug, name, region, description, image, highlights, best_season, distance_from_ooty, sort_order)
-         VALUES (@slug, @name, @region, @description, @image, @highlights, @best_season, @distance_from_ooty, @sort_order)`
+         VALUES (@slug, @name, @region, @description, @image, @highlights, @best_season, @distance_from_ooty, @sort_order)
+         RETURNING *`
       )
-      .run({
+      .get({
         slug: d.slug,
         name: d.name,
         region: d.region,
@@ -379,14 +379,14 @@ insertIfEmpty(
         distance_from_ooty: d.distance_from_ooty,
         sort_order: d.sort_order,
       });
-    const destinationId = Number(result.lastInsertRowid);
+    const destinationId = result.id;
     const imgStmt = db.prepare(
       `INSERT INTO destination_images (destination_id, src, alt, sort_order) VALUES (@destination_id, @src, @alt, @sort_order)`
     );
     let sortOrder = 0;
     for (const img of d.images) {
       if (!fs.existsSync(path.join(ROOT, "public", img.src))) continue;
-      imgStmt.run({ destination_id: destinationId, src: img.src, alt: img.alt, sort_order: sortOrder });
+      await imgStmt.run({ destination_id: destinationId, src: img.src, alt: img.alt, sort_order: sortOrder });
       sortOrder += 1;
     }
   }
@@ -556,27 +556,28 @@ const ATTRACTIONS_SEED = [
 // search that came up short never leaves a broken image reference behind.
 const EXTRA_ANGLE_LABELS = ["a wider view", "a closer detail", "a different season", "a different time of day"];
 
-insertIfEmpty(
+await insertIfEmpty(
   "attractions",
   ATTRACTIONS_SEED.map((a, i) => ({ ...a, sort_order: i })),
-  (a) => {
-    const result = db
+  async (a) => {
+    const result = await db
       .prepare(
-        `INSERT INTO attractions (slug, name, category, blurb, sort_order) VALUES (@slug, @name, @category, @blurb, @sort_order)`
+        `INSERT INTO attractions (slug, name, category, blurb, sort_order) VALUES (@slug, @name, @category, @blurb, @sort_order)
+         RETURNING *`
       )
-      .run({ slug: a.slug, name: a.name, category: a.category, blurb: a.blurb, sort_order: a.sort_order });
-    const attractionId = Number(result.lastInsertRowid);
+      .get({ slug: a.slug, name: a.name, category: a.category, blurb: a.blurb, sort_order: a.sort_order });
+    const attractionId = result.id;
     const imgStmt = db.prepare(
       `INSERT INTO attraction_images (attraction_id, src, alt, sort_order) VALUES (@attraction_id, @src, @alt, @sort_order)`
     );
-    imgStmt.run({ attraction_id: attractionId, src: a.image, alt: `${a.name} — ${a.category}`, sort_order: 0 });
+    await imgStmt.run({ attraction_id: attractionId, src: a.image, alt: `${a.name} — ${a.category}`, sort_order: 0 });
     let sortOrder = 1;
-    EXTRA_ANGLE_LABELS.forEach((label, idx) => {
+    for (const [idx, label] of EXTRA_ANGLE_LABELS.entries()) {
       const src = `/images/attractions/${a.slug}-${idx + 2}.jpg`;
-      if (!fs.existsSync(path.join(ROOT, "public", src))) return;
-      imgStmt.run({ attraction_id: attractionId, src, alt: `${a.name} — ${label}`, sort_order: sortOrder });
+      if (!fs.existsSync(path.join(ROOT, "public", src))) continue;
+      await imgStmt.run({ attraction_id: attractionId, src, alt: `${a.name} — ${label}`, sort_order: sortOrder });
       sortOrder += 1;
-    });
+    }
   }
 );
 
@@ -1161,7 +1162,7 @@ const insertPackage = db.prepare(
 for (const p of packages) {
   const serialized = { ...p };
   for (const col of jsonPackageColumns) serialized[col] = JSON.stringify(p[col] ?? []);
-  insertPackage.run(serialized);
+  await insertPackage.run(serialized);
 }
 console.log(`seeded/updated packages: ${packages.length} rows`);
 
@@ -1171,12 +1172,12 @@ console.log(`seeded/updated packages: ${packages.length} rows`);
 const legacyDuplicateSlugs = ["ooty-sightseeing", "coonoor-ride", "tea-estate-tour"];
 const deactivate = db.prepare("UPDATE packages SET active = 0 WHERE slug = ? AND active = 1");
 for (const slug of legacyDuplicateSlugs) {
-  const result = deactivate.run(slug);
-  if (result.changes > 0) console.log(`deactivated legacy duplicate package: ${slug}`);
+  const result = await deactivate.run(slug);
+  if (result.rowCount > 0) console.log(`deactivated legacy duplicate package: ${slug}`);
 }
 
 // ---------- Coupons ----------
-insertIfEmpty(
+await insertIfEmpty(
   "coupons",
   [
     { code: "WELCOME10", pct: 10, note: "First-booking welcome offer" },
@@ -1189,7 +1190,7 @@ insertIfEmpty(
 );
 
 // ---------- Reviews ----------
-insertIfEmpty(
+await insertIfEmpty(
   "reviews",
   [
     { customer_name: "Ananya R.", rating: 5, comment: "The GLS pickup at Coimbatore airport made the whole trip feel five-star from minute one. Suresh was a wonderful, unhurried driver.", source: "website" },
@@ -1293,6 +1294,66 @@ const blogPosts = [
       tags: ["updates", "fleet"],
       category: "Updates",
     },
+    {
+      slug: "doddabetta-peak-guide",
+      title: "Doddabetta Peak: Sunrise, Views and the Telescope House",
+      excerpt: "The Nilgiris' highest point, and exactly when to go to have it mostly to yourself.",
+      content:
+        "At 2,637 metres, Doddabetta is the highest peak in the Nilgiris, and on a clear day the view from the telescope house stretches past Mysore towards the Western Ghats. The catch is that 'clear day' — cloud cover rolls in fast after mid-morning, especially between June and September.\n\nArrive before 7am and you'll not only beat the crowds bussed up from Ooty town, you'll catch the valley while it's still filling with mist rather than obscured by it. The paid telescope house is worth the small entry fee on a good day, but the car park just below it offers nearly the same panorama for free.\n\nCarry a light jacket even in summer — the wind at the summit is noticeably colder than in Ooty town, ten minutes down the road. Most of our Ooty and Nilgiri Grand Circuit itineraries build in a Doddabetta stop early in the day for exactly this reason.",
+      cover_image: "/images/attractions/doddabetta-peak.jpg",
+      author: "Ooty Nigel Travels Desk",
+      read_minutes: 4,
+      tags: ["doddabetta", "viewpoints", "tips"],
+      category: "Guides",
+    },
+    {
+      slug: "nilgiri-waterfalls-guide",
+      title: "Chasing Waterfalls: Catherine Falls, Elk Falls and Beyond",
+      excerpt: "Which Nilgiri waterfall to visit in which season, and how close you can actually get.",
+      content:
+        "Catherine Falls, a two-tier drop near Coonoor, is the most photogenic of the region's waterfalls but also the least accessible — the viewpoint requires a short, occasionally slippery walk down from the road, so proper footwear matters more here than almost anywhere else on a Nilgiri itinerary.\n\nElk Falls sits closer to Kotagiri and is an easier stop — a short walk from the parking area to a fenced viewpoint, making it the better choice if you're travelling with young children or elderly family members.\n\nMonsoon season (June-September) is when both falls are at their most dramatic, but also their most dangerous — barricades exist for a reason, and we don't recommend crossing them for a photo. Post-monsoon, October through December, still gives you strong flow with far safer footing, which is why it's the window we build into most of our waterfall-inclusive packages.",
+      cover_image: "/images/attractions/catherine-falls.jpg",
+      author: "Ooty Nigel Travels Desk",
+      read_minutes: 4,
+      tags: ["waterfalls", "coonoor", "kotagiri"],
+      category: "Guides",
+    },
+    {
+      slug: "avalanche-lake-trek-guide",
+      title: "Avalanche Lake & the Emerald Valley: What the Permit Process Actually Involves",
+      excerpt: "Forest permits, trek timing and why you can't just drive up on a whim.",
+      content:
+        "Avalanche Lake sits inside the Nilgiris Forest Division's reserve area, which means — unlike most stops on a Nilgiri itinerary — you can't simply drive up and park. A forest department permit is required, numbers are capped per day, and the checkpoint closes access once the daily quota is reached, sometimes by mid-morning in peak season.\n\nThe reward for the extra planning is real: a genuinely quiet, emerald-green lake ringed by shola forest, with none of the crowd-noise of Ooty or Pykara. The full loop trek takes roughly 2-3 hours at an easy pace, and the forest floor can stay muddy well after the monsoon has technically ended.\n\nWe arrange the permit in advance as part of our Wildlife & Waterfalls and Nilgiri Grand Circuit packages, which avoids the single most common way this stop goes wrong for independent travellers: arriving after the day's permits are gone.",
+      cover_image: "/images/destinations/avalanche-lake.jpg",
+      author: "Ooty Nigel Travels Desk",
+      read_minutes: 5,
+      tags: ["avalanche", "trekking", "permits"],
+      category: "Tips",
+    },
+    {
+      slug: "coonoor-in-a-day",
+      title: "Coonoor in a Day: Sim's Park, Dolphin's Nose & Lamb's Rock",
+      excerpt: "A quieter alternative to Ooty, and how to see its highlights without rushing.",
+      content:
+        "Coonoor gets a fraction of Ooty's tourist traffic despite sitting only 20km away, which makes it the better choice if you want viewpoints and gardens without the queue. Sim's Park, a terraced botanical garden dating to 1874, is at its best in the first hour after opening, before the day's tour groups arrive.\n\nDolphin's Nose and Lamb's Rock are best visited back-to-back — they're a short drive apart, both offer sweeping views over the escarpment towards the plains, and the light is noticeably better in the late afternoon than at midday, when haze tends to flatten the view.\n\nCoonoor's tea estates are also more accessible for a genuine working-estate visit than Ooty's — several still run public tours with an actual factory walkthrough, not just a retail counter. Our Tea Trail Weekend package is built around exactly this loop.",
+      cover_image: "/images/attractions/dolphins-nose.jpg",
+      author: "Ooty Nigel Travels Desk",
+      read_minutes: 4,
+      tags: ["coonoor", "viewpoints", "tea"],
+      category: "Guides",
+    },
+    {
+      slug: "family-trip-tips-ooty",
+      title: "Family Trips to Ooty: Practical Tips for Travelling with Kids or Elderly Parents",
+      excerpt: "Altitude, easy-access viewpoints and pacing a Nilgiri itinerary for every generation in the car.",
+      content:
+        "Ooty sits at roughly 2,240 metres, and the elevation gain from Coimbatore — around 1,500 metres over just a couple of hours of driving — is enough to leave some travellers lightheaded on arrival. Building in a slow first evening rather than a packed itinerary on day one makes a real difference, especially for elderly parents or very young children.\n\nNot every attraction is equally accessible. Elk Falls and the Botanical Garden involve minimal walking and are easy for most mobility levels; Avalanche's forest trek and Catherine Falls' viewpoint steps are better suited to travellers who are comfortable on uneven ground.\n\nA private vehicle with a driver who knows which stops to skip on a tired afternoon — rather than a fixed group-tour schedule — is genuinely the biggest comfort factor for multi-generational trips. It's also why we build flexibility into every family package rather than a rigid hour-by-hour plan.",
+      cover_image: "/images/attractions/botanical-garden.jpg",
+      author: "Ooty Nigel Travels Desk",
+      read_minutes: 4,
+      tags: ["family", "tips", "accessibility"],
+      category: "Tips",
+    },
   ];
 const blogPostColumns = ["slug", "title", "excerpt", "content", "cover_image", "author", "read_minutes", "tags", "category"];
 const insertBlogPost = db.prepare(
@@ -1302,12 +1363,12 @@ const insertBlogPost = db.prepare(
    ${blogPostColumns.filter((c) => c !== "slug").map((c) => `${c} = @${c}`).join(", ")}`
 );
 for (const b of blogPosts) {
-  insertBlogPost.run({ ...b, tags: JSON.stringify(b.tags) });
+  await insertBlogPost.run({ ...b, tags: JSON.stringify(b.tags) });
 }
 console.log(`seeded/updated blog_posts: ${blogPosts.length} rows`);
 
 // ---------- FAQs ----------
-insertIfEmpty(
+await insertIfEmpty(
   "faqs",
   [
     { category: "Booking", question: "Do I need to create an account to book?", answer: "No — every package and transfer can be booked as a guest. Creating an account afterwards links your existing bookings automatically by phone number.", sort_order: 1 },
@@ -1337,52 +1398,131 @@ const galleryImages = [
     { src: "/images/attractions/botanical-garden.jpg", alt: "Government Botanical Garden lawns" },
     { src: "/images/attractions/nilgiris.jpg", alt: "Rolling green hills around Ooty" },
     { src: "/images/attractions/shooting-point.jpg", alt: "Shooting Point valley view" },
+    { src: "/images/attractions/ooty-2.jpg", alt: "Ooty town streets in the afternoon light" },
+    { src: "/images/attractions/ooty-3.jpg", alt: "Ooty town streets in the afternoon light" },
+    { src: "/images/attractions/ooty-4.jpg", alt: "Ooty town streets in the afternoon light" },
+    { src: "/images/attractions/ooty-5.jpg", alt: "Ooty town streets in the afternoon light" },
+    { src: "/images/attractions/nilgiri-mountain-railway.jpg", alt: "The Nilgiri Mountain Railway toy train" },
   ]),
   ...gallery("coonoor", [
     { src: "/images/destinations/coonoor.jpg", alt: "Coonoor hill town at dusk", featured: 1 },
     { src: "/images/attractions/sims-park.jpg", alt: "Terraced botanical garden at Sim's Park" },
     { src: "/images/attractions/dolphins-nose.jpg", alt: "Dolphin's Nose viewpoint over the escarpment" },
+    { src: "/images/attractions/coonoor-2.jpg", alt: "Coonoor hill town scenery" },
+    { src: "/images/attractions/coonoor-3.jpg", alt: "Coonoor hill town scenery" },
+    { src: "/images/attractions/coonoor-4.jpg", alt: "Coonoor hill town scenery" },
+    { src: "/images/attractions/coonoor-5.jpg", alt: "Coonoor hill town scenery" },
+    { src: "/images/attractions/sims-park-2.jpg", alt: "Terraced lawns at Sim's Park" },
+    { src: "/images/attractions/sims-park-3.jpg", alt: "Terraced lawns at Sim's Park" },
+    { src: "/images/attractions/sims-park-4.jpg", alt: "Terraced lawns at Sim's Park" },
   ]),
   ...gallery("kotagiri", [
     { src: "/images/destinations/kotagiri.jpg", alt: "Kotagiri tea gardens in morning light", featured: 1 },
     { src: "/images/attractions/kodanad-viewpoint.jpg", alt: "Kodanad Viewpoint over the Nilgiri escarpment" },
+    { src: "/images/attractions/kotagiri-2.jpg", alt: "Kotagiri tea country" },
+    { src: "/images/attractions/kotagiri-3.jpg", alt: "Kotagiri tea country" },
+    { src: "/images/attractions/kotagiri-4.jpg", alt: "Kotagiri tea country" },
+    { src: "/images/attractions/kotagiri-5.jpg", alt: "Kotagiri tea country" },
+    { src: "/images/attractions/nilgiris-2.jpg", alt: "Hills wrapped in mist near Kotagiri" },
+    { src: "/images/attractions/nilgiris-3.jpg", alt: "Hills wrapped in mist near Kotagiri" },
+    { src: "/images/attractions/nilgiris-4.jpg", alt: "Hills wrapped in mist near Kotagiri" },
+    { src: "/images/attractions/nilgiris-5.jpg", alt: "Hills wrapped in mist near Kotagiri" },
   ]),
   ...gallery("avalanche", [
     { src: "/images/destinations/avalanche-lake.jpg", alt: "Avalanche Lake framed by shola forest", featured: 1 },
+    { src: "/images/attractions/avalanche-lake-2.jpg", alt: "Avalanche Lake framed by shola forest" },
+    { src: "/images/attractions/avalanche-lake-3.jpg", alt: "Avalanche Lake framed by shola forest" },
+    { src: "/images/attractions/avalanche-lake-4.jpg", alt: "Avalanche Lake framed by shola forest" },
+    { src: "/images/attractions/avalanche-lake-5.jpg", alt: "Avalanche Lake framed by shola forest" },
+    { src: "/images/destinations/avalanche-lake-2.jpg", alt: "Avalanche Lake's emerald water" },
+    { src: "/images/destinations/avalanche-lake-3.jpg", alt: "Avalanche Lake's emerald water" },
+    { src: "/images/destinations/avalanche-lake-4.jpg", alt: "Avalanche Lake's emerald water" },
+    { src: "/images/destinations/avalanche-lake-5.jpg", alt: "Avalanche Lake's emerald water" },
+    { src: "/images/gallery/avalanche/1.jpg", alt: "Misty shola forest around Avalanche Lake", credit: "Photo via Unsplash" },
   ]),
   ...gallery("pykara", [
     { src: "/images/attractions/pykara-lake.jpg", alt: "Pykara Lake boat jetty at sunrise", featured: 1 },
+    { src: "/images/attractions/pykara-lake-2.jpg", alt: "Pykara Lake and boat jetty" },
+    { src: "/images/attractions/pykara-lake-3.jpg", alt: "Pykara Lake and boat jetty" },
+    { src: "/images/attractions/pykara-lake-4.jpg", alt: "Pykara Lake and boat jetty" },
+    { src: "/images/attractions/pykara-lake-5.jpg", alt: "Pykara Lake and boat jetty" },
+    { src: "/images/destinations/pykara-lake-2.jpg", alt: "Pykara Lake boating deck" },
+    { src: "/images/destinations/pykara-lake-3.jpg", alt: "Pykara Lake boating deck" },
+    { src: "/images/destinations/pykara-lake-4.jpg", alt: "Pykara Lake boating deck" },
+    { src: "/images/destinations/pykara-lake-5.jpg", alt: "Pykara Lake boating deck" },
+    { src: "/images/gallery/pykara/1.jpg", alt: "Boats docked on Pykara Lake", credit: "Photo via Unsplash" },
   ]),
   ...gallery("doddabetta", [
     { src: "/images/attractions/doddabetta-peak.jpg", alt: "Doddabetta Peak, the Nilgiris' highest point", featured: 1 },
+    { src: "/images/attractions/doddabetta-peak-2.jpg", alt: "Doddabetta Peak, the Nilgiris' highest point" },
+    { src: "/images/attractions/doddabetta-peak-3.jpg", alt: "Doddabetta Peak, the Nilgiris' highest point" },
+    { src: "/images/attractions/doddabetta-peak-4.jpg", alt: "Doddabetta Peak, the Nilgiris' highest point" },
+    { src: "/images/attractions/doddabetta-peak-5.jpg", alt: "Doddabetta Peak, the Nilgiris' highest point" },
+    { src: "/images/gallery/doddabetta/1.jpg", alt: "Doddabetta Peak telescope house", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/doddabetta/2.jpg", alt: "Sunrise view from Doddabetta Peak", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/doddabetta/3.jpg", alt: "Panoramic view from the Nilgiris' highest peak", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/doddabetta/4.jpg", alt: "Misty mountain peak in the Nilgiris", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/doddabetta/5.jpg", alt: "Forest trail up to Doddabetta Peak", credit: "Photo via Unsplash" },
   ]),
   ...gallery("tea-estates", [
     { src: "/images/attractions/tea-gardens.jpg", alt: "Terraced tea gardens near Coonoor", featured: 1 },
     { src: "/images/attractions/tea-factory-museum.jpg", alt: "Working tea factory floor" },
-    { src: "/images/gallery/tea-estates/1.jpg", alt: "Tea pickers working the terraces", credit: "Photo via Unsplash" },
-    { src: "/images/gallery/tea-estates/2.jpg", alt: "Tea leaves being processed at a local factory", credit: "Photo via Unsplash" },
+    { src: "/images/attractions/tea-gardens-2.jpg", alt: "Terraced tea gardens near Coonoor" },
+    { src: "/images/attractions/tea-gardens-3.jpg", alt: "Terraced tea gardens near Coonoor" },
+    { src: "/images/attractions/tea-gardens-4.jpg", alt: "Terraced tea gardens near Coonoor" },
+    { src: "/images/attractions/tea-gardens-5.jpg", alt: "Terraced tea gardens near Coonoor" },
+    { src: "/images/attractions/tea-factory-museum-2.jpg", alt: "Working tea factory floor" },
+    { src: "/images/attractions/tea-factory-museum-3.jpg", alt: "Working tea factory floor" },
+    { src: "/images/attractions/tea-factory-museum-4.jpg", alt: "Working tea factory floor" },
+    { src: "/images/attractions/tea-factory-museum-5.jpg", alt: "Working tea factory floor" },
   ]),
   ...gallery("waterfalls", [
     { src: "/images/attractions/catherine-falls.jpg", alt: "Catherine Falls cascading through the forest", featured: 1 },
     { src: "/images/attractions/elk-falls.jpg", alt: "Elk Falls in full monsoon flow" },
-    { src: "/images/gallery/waterfalls/1.jpg", alt: "A forest waterfall cascading over rocks", credit: "Photo via Unsplash" },
-    { src: "/images/gallery/waterfalls/2.jpg", alt: "Stream tumbling over mossy boulders", credit: "Photo via Unsplash" },
+    { src: "/images/attractions/catherine-falls-2.jpg", alt: "Catherine Falls cascading through the forest" },
+    { src: "/images/attractions/catherine-falls-3.jpg", alt: "Catherine Falls cascading through the forest" },
+    { src: "/images/attractions/catherine-falls-4.jpg", alt: "Catherine Falls cascading through the forest" },
+    { src: "/images/attractions/catherine-falls-5.jpg", alt: "Catherine Falls cascading through the forest" },
+    { src: "/images/gallery/waterfalls/1.jpg", alt: "Kalhatti Falls in the Nilgiris", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/waterfalls/2.jpg", alt: "Pykara Falls in full flow", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/waterfalls/3.jpg", alt: "Kattery Falls near Coonoor", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/waterfalls/4.jpg", alt: "A forest waterfall in the Western Ghats", credit: "Photo via Unsplash" },
   ]),
   ...gallery("lakes", [
     { src: "/images/destinations/ooty-lake.jpg", alt: "Boats on Ooty Lake", featured: 1 },
-    { src: "/images/attractions/pykara-lake.jpg", alt: "Still water at Pykara Lake" },
-    { src: "/images/destinations/avalanche-lake.jpg", alt: "Avalanche Lake's emerald water" },
+    { src: "/images/destinations/ooty-lake-2.jpg", alt: "Boats on Ooty Lake" },
+    { src: "/images/destinations/ooty-lake-3.jpg", alt: "Boats on Ooty Lake" },
+    { src: "/images/destinations/ooty-lake-4.jpg", alt: "Boats on Ooty Lake" },
+    { src: "/images/destinations/ooty-lake-5.jpg", alt: "Boats on Ooty Lake" },
+    { src: "/images/gallery/lakes/1.jpg", alt: "A mountain lake reflecting the hills", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/lakes/2.jpg", alt: "Boating at sunrise on a hill-station lake", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/lakes/3.jpg", alt: "Still lake water framed by mountains", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/lakes/4.jpg", alt: "Misty lakeshore in the hills", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/lakes/5.jpg", alt: "A rowing boat crossing a mountain lake", credit: "Photo via Unsplash" },
   ]),
   ...gallery("forest", [
     { src: "/images/attractions/pine-forest.jpg", alt: "Sunlight through a pine forest", featured: 1 },
     { src: "/images/attractions/wenlock-downs.jpg", alt: "Open grassland at Wenlock Downs" },
     { src: "/images/destinations/pine-forest.jpg", alt: "Misty pine forest trail" },
+    { src: "/images/attractions/pine-forest-2.jpg", alt: "Sunlight through a pine forest" },
+    { src: "/images/attractions/pine-forest-3.jpg", alt: "Sunlight through a pine forest" },
+    { src: "/images/attractions/pine-forest-4.jpg", alt: "Sunlight through a pine forest" },
+    { src: "/images/attractions/pine-forest-5.jpg", alt: "Sunlight through a pine forest" },
+    { src: "/images/attractions/wenlock-downs-2.jpg", alt: "Open grassland at Wenlock Downs" },
+    { src: "/images/attractions/wenlock-downs-3.jpg", alt: "Open grassland at Wenlock Downs" },
+    { src: "/images/attractions/wenlock-downs-4.jpg", alt: "Open grassland at Wenlock Downs" },
   ]),
   ...gallery("adventure", [
     { src: "/images/trip-styles/Adventure.jpg", alt: "Friends hiking a forest trail", featured: 1 },
     { src: "/images/gallery/adventure/1.jpg", alt: "Hikers on a mountain trail", credit: "Photo via Unsplash" },
     { src: "/images/gallery/adventure/2.jpg", alt: "Zipline adventure through the forest canopy", credit: "Photo via Unsplash" },
     { src: "/images/gallery/adventure/3.jpg", alt: "Camping under the Nilgiri night sky", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/adventure/4.jpg", alt: "Mountain biking a forest trail", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/adventure/5.jpg", alt: "Rock climbing a Nilgiri cliff face", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/adventure/6.jpg", alt: "River rafting through the hills", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/adventure/7.jpg", alt: "Rappelling down a forest waterfall", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/adventure/8.jpg", alt: "Off-road jeep trail through the forest", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/adventure/9.jpg", alt: "Paragliding over the Nilgiri hills", credit: "Photo via Unsplash" },
   ]),
   ...gallery("wildlife", [
     { src: "/images/destinations/mudumalai.jpg", alt: "Mudumalai National Park grassland", featured: 1 },
@@ -1390,6 +1530,11 @@ const galleryImages = [
     { src: "/images/gallery/wildlife/2.jpg", alt: "Spotted deer at a wildlife sanctuary", credit: "Photo via Unsplash" },
     { src: "/images/gallery/wildlife/3.jpg", alt: "Indian gaur grazing near the forest edge", credit: "Photo via Unsplash" },
     { src: "/images/gallery/wildlife/4.jpg", alt: "Nilgiri langur in the forest canopy", credit: "Photo via Unsplash" },
+    { src: "/images/destinations/mudumalai-2.jpg", alt: "Mudumalai National Park grassland" },
+    { src: "/images/destinations/mudumalai-3.jpg", alt: "Mudumalai National Park grassland" },
+    { src: "/images/destinations/mudumalai-4.jpg", alt: "Mudumalai National Park grassland" },
+    { src: "/images/gallery/wildlife/5.jpg", alt: "Sambar deer in Mudumalai forest", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/wildlife/6.jpg", alt: "Hornbill in the Nilgiri forest canopy", credit: "Photo via Unsplash" },
   ]),
   ...gallery("vehicles", [
     { src: "/images/fleet/audi-a3-three-quarter.png", alt: "Audi A3 Premium — three-quarter view", featured: 1 },
@@ -1400,6 +1545,8 @@ const galleryImages = [
     { src: "/images/fleet/maruti-dzire-three-quarter.png", alt: "Maruti Suzuki Dzire — three-quarter view" },
     { src: "/images/fleet/maruti-dzire-left.png", alt: "Maruti Suzuki Dzire — left profile" },
     { src: "/images/fleet/maruti-dzire-front.png", alt: "Maruti Suzuki Dzire — front" },
+    { src: "/images/gallery/vehicles/1.jpg", alt: "Chauffeur-driven car on a hill road", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/vehicles/2.jpg", alt: "Family sedan on a mountain drive", credit: "Photo via Unsplash" },
   ]),
   ...gallery(
     "customer-memories",
@@ -1414,35 +1561,72 @@ const galleryImages = [
     { src: "/images/gallery/drone-photography/2.jpg", alt: "Aerial view of tea plantations", credit: "Photo via Unsplash" },
     { src: "/images/gallery/drone-photography/3.jpg", alt: "Aerial view of a mountain valley road", credit: "Photo via Unsplash" },
     { src: "/images/gallery/drone-photography/4.jpg", alt: "Aerial view of a lake surrounded by forest", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/drone-photography/5.jpg", alt: "Aerial view of a winding mountain road", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/drone-photography/6.jpg", alt: "Aerial view of a forest reservoir", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/drone-photography/7.jpg", alt: "Aerial view of hairpin bends on a ghat road", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/drone-photography/8.jpg", alt: "Aerial view of green valley terraces", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/drone-photography/9.jpg", alt: "Drone shot of misty hills at sunrise", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/drone-photography/10.jpg", alt: "Aerial view of a small hill town", credit: "Photo via Unsplash" },
   ]),
   ...gallery("sunrise", [
     { src: "/images/gallery/sunrise/1.jpg", alt: "Sunrise over misty hills", credit: "Photo via Unsplash", featured: 1 },
     { src: "/images/gallery/sunrise/2.jpg", alt: "Sunrise over a tea plantation", credit: "Photo via Unsplash" },
     { src: "/images/gallery/sunrise/3.jpg", alt: "Sunrise fog filling a mountain valley", credit: "Photo via Unsplash" },
     { src: "/images/gallery/sunrise/4.jpg", alt: "Sunrise clouds over a hill station", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/sunrise/5.jpg", alt: "Golden sunrise light through a forest", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/sunrise/6.jpg", alt: "Sunrise over a valley of clouds", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/sunrise/7.jpg", alt: "Silhouetted trees at sunrise", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/sunrise/8.jpg", alt: "Sunrise reflected on a mountain lake", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/sunrise/9.jpg", alt: "Hikers watching the sunrise from a viewpoint", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/sunrise/10.jpg", alt: "Orange sky at sunrise over a hill station", credit: "Photo via Unsplash" },
   ]),
   ...gallery("sunset", [
     { src: "/images/gallery/sunset/1.jpg", alt: "Golden hour sunset over the hills", credit: "Photo via Unsplash", featured: 1 },
     { src: "/images/gallery/sunset/2.jpg", alt: "Sunset over a mountain lake", credit: "Photo via Unsplash" },
     { src: "/images/gallery/sunset/3.jpg", alt: "Silhouetted hills at sunset", credit: "Photo via Unsplash" },
     { src: "/images/gallery/sunset/4.jpg", alt: "Golden light over a tea garden", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/sunset/5.jpg", alt: "Sunset over a tea plantation", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/sunset/6.jpg", alt: "Silhouetted mountains at sunset", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/sunset/7.jpg", alt: "A road trip through the hills at sunset", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/sunset/8.jpg", alt: "Sunset clouds over a valley", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/sunset/9.jpg", alt: "Golden hour light through a forest", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/sunset/10.jpg", alt: "Sunset over a lake with boats", credit: "Photo via Unsplash" },
   ]),
   ...gallery("food", [
     { src: "/images/gallery/food/1.jpg", alt: "South Indian breakfast — dosa and idli", credit: "Photo via Unsplash", featured: 1 },
     { src: "/images/gallery/food/2.jpg", alt: "Filter coffee at a tea estate", credit: "Photo via Unsplash" },
     { src: "/images/gallery/food/3.jpg", alt: "A full South Indian thali", credit: "Photo via Unsplash" },
     { src: "/images/gallery/food/4.jpg", alt: "Homemade hill-station cooking", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/food/5.jpg", alt: "A banana-leaf South Indian meal", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/food/6.jpg", alt: "Masala chai at a hill-station stall", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/food/7.jpg", alt: "A fresh cup of Nilgiri tea", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/food/8.jpg", alt: "Indian street food and snacks", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/food/9.jpg", alt: "Homestyle curry and rice", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/food/10.jpg", alt: "Hot samosas with tea", credit: "Photo via Unsplash" },
   ]),
   ...gallery("hotels", [
     { src: "/images/gallery/hotels/2.jpg", alt: "Cozy mountain resort room", credit: "Photo via Unsplash", featured: 1 },
     { src: "/images/gallery/hotels/3.jpg", alt: "Hotel balcony with a mountain view", credit: "Photo via Unsplash" },
     { src: "/images/gallery/hotels/4.jpg", alt: "Resort swimming pool in the hills", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/hotels/5.jpg", alt: "Hotel room with a mountain-view window", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/hotels/6.jpg", alt: "Resort dining area in the hills", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/hotels/7.jpg", alt: "Cozy hotel lobby with a fireplace", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/hotels/8.jpg", alt: "Resort garden with a hill view", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/hotels/9.jpg", alt: "Hotel bedroom in a hill station", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/hotels/10.jpg", alt: "Mountain resort exterior in the evening", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/hotels/11.jpg", alt: "Boutique hotel room in the hills", credit: "Photo via Unsplash" },
   ]),
   ...gallery("festivals", [
     { src: "/images/gallery/festivals/1.jpg", alt: "Local festival celebration with colour", credit: "Photo via Unsplash", featured: 1 },
     { src: "/images/gallery/festivals/2.jpg", alt: "Diwali lights celebration", credit: "Photo via Unsplash" },
-    { src: "/images/gallery/festivals/3.jpg", alt: "Local festival dance performance", credit: "Photo via Unsplash" },
-    { src: "/images/gallery/festivals/4.jpg", alt: "Festival lanterns at night", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/festivals/3.jpg", alt: "South Indian temple festival colours", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/festivals/4.jpg", alt: "Diwali oil lamps at celebration", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/festivals/5.jpg", alt: "Holi colour festival crowd", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/festivals/6.jpg", alt: "Traditional festival dance performance", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/festivals/7.jpg", alt: "Flower rangoli festival decoration", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/festivals/8.jpg", alt: "Festival fireworks at night", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/festivals/9.jpg", alt: "Harvest festival celebration", credit: "Photo via Unsplash" },
+    { src: "/images/gallery/festivals/10.jpg", alt: "Festival street procession", credit: "Photo via Unsplash" },
   ]),
 ];
 
@@ -1466,8 +1650,8 @@ const insertGalleryImage = db.prepare(
 );
 let insertedGalleryRows = 0;
 for (const g of availableGalleryImages) {
-  if (existsBySrc.get(g.src)) continue;
-  insertGalleryImage.run(g);
+  if (await existsBySrc.get(g.src)) continue;
+  await insertGalleryImage.run(g);
   insertedGalleryRows++;
 }
 console.log(
@@ -1476,5 +1660,5 @@ console.log(
     : "skip gallery_images (no new rows)"
 );
 
-db.close();
+await db.close();
 console.log("\nSeed complete.");

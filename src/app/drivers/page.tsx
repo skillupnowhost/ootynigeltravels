@@ -14,8 +14,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/drivers" },
 };
 
-export default function DriversPage() {
-  const drivers = listDrivers({ activeOnly: true });
+export default async function DriversPage() {
+  const drivers = await listDrivers({ activeOnly: true });
 
   return (
     <>

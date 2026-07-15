@@ -18,9 +18,9 @@ type Params = Promise<{ id: string }>;
 export default async function EditDestinationPage({ params }: { params: Params }) {
   await requireRole(["admin", "manager"]);
   const { id } = await params;
-  const destination = destinationsRepo.getById(Number(id));
+  const destination = await destinationsRepo.getById(Number(id));
   if (!destination) notFound();
-  const images = listDestinationImages(destination.id);
+  const images = await listDestinationImages(destination.id);
 
   return (
     <div>

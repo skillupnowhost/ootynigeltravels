@@ -15,7 +15,7 @@ type Params = Promise<{ slug: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
-  const destination = destinationsRepo.getBySlug(slug);
+  const destination = await destinationsRepo.getBySlug(slug);
   if (!destination) return {};
   return {
     title: destination.name,
@@ -26,10 +26,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function DestinationDetailPage({ params }: { params: Params }) {
   const { slug } = await params;
-  const destination = destinationsRepo.getBySlug(slug);
+  const destination = await destinationsRepo.getBySlug(slug);
   if (!destination || !destination.active) notFound();
 
-  const relatedPackages = packagesRepo.list(true).slice(0, 3);
+  const relatedPackages = (await packagesRepo.list(true)).slice(0, 3);
 
   return (
     <>

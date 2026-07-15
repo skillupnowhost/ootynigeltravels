@@ -35,8 +35,8 @@ export async function updateBookingStatusAction(
   const note = String(formData.get("note") ?? "");
   if (!id || !status.success) return { ok: false, error: "Invalid status." };
 
-  updateBookingStatus(id, status.data, note || undefined);
-  recordAuditLog({
+  await updateBookingStatus(id, status.data, note || undefined);
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: "update_status",
@@ -59,8 +59,8 @@ export async function assignDriverAction(
   const vehicleNumber = String(formData.get("vehicleNumber") ?? "").trim() || null;
   if (!id) return { ok: false, error: "Invalid booking." };
 
-  assignDriverAndVehicle(id, driverId, vehicleNumber);
-  recordAuditLog({
+  await assignDriverAndVehicle(id, driverId, vehicleNumber);
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: "assign_driver",
@@ -81,8 +81,8 @@ export async function setPaymentStatusAction(
   const status = z.enum(PAYMENT_STATUSES).safeParse(formData.get("paymentStatus"));
   if (!id || !status.success) return { ok: false, error: "Invalid payment status." };
 
-  setPaymentStatus(id, status.data);
-  recordAuditLog({
+  await setPaymentStatus(id, status.data);
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: "set_payment_status",
@@ -103,9 +103,9 @@ export async function setRemarksAction(
   const remarks = String(formData.get("remarks") ?? "");
   if (!id) return { ok: false, error: "Invalid booking." };
 
-  setRemarks(id, remarks);
-  const booking = getBookingById(id);
-  recordAuditLog({
+  await setRemarks(id, remarks);
+  const booking = await getBookingById(id);
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: "set_remarks",
@@ -134,9 +134,9 @@ export async function setItineraryAction(
   const parsed = itinerarySchema.safeParse(raw);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid itinerary." };
 
-  setItinerary(id, parsed.data);
-  const booking = getBookingById(id);
-  recordAuditLog({
+  await setItinerary(id, parsed.data);
+  const booking = await getBookingById(id);
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: "set_itinerary",
@@ -153,9 +153,9 @@ export async function deleteBookingAction(formData: FormData): Promise<void> {
   const id = Number(formData.get("id"));
   if (!id) return;
 
-  const booking = getBookingById(id);
-  deleteBooking(id);
-  recordAuditLog({
+  const booking = await getBookingById(id);
+  await deleteBooking(id);
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: "delete",

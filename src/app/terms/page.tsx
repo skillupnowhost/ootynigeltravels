@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PolicyPage } from "@/components/ui/PolicyPage";
+import { CalendarCheckIcon, CarDriveIcon, RoadIcon } from "@/components/ui/AnimatedIcons";
 import { site } from "@/lib/config/site";
 
 export const metadata: Metadata = {
@@ -12,6 +13,14 @@ export default function TermsPage() {
     <PolicyPage
       title="Terms of Service"
       updated="July 2026"
+      icon={<CalendarCheckIcon size={16} loop={false} className="text-gold-400" />}
+      scenicVariant="mountains"
+      badge="The ground rules for booking and travelling with us"
+      highlights={[
+        { icon: <CalendarCheckIcon size={18} loop={false} />, label: "Bookings confirmed after availability check" },
+        { icon: <CarDriveIcon size={18} loop={false} />, label: "Fair-use conduct expected on every trip" },
+        { icon: <RoadIcon size={18} loop={false} />, label: "Not liable for delays outside our control" },
+      ]}
       sections={[
         {
           heading: "Bookings",

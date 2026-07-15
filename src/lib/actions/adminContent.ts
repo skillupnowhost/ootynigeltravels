@@ -66,11 +66,11 @@ export async function saveFleetAction(_prev: AdminActionState, formData: FormDat
   };
 
   if (id) {
-    fleetRepo.update(id, fields);
+    await fleetRepo.update(id, fields);
   } else {
-    fleetRepo.create(fields);
+    await fleetRepo.create(fields);
   }
-  recordAuditLog({
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: id ? "update" : "create",
@@ -84,8 +84,8 @@ export async function saveFleetAction(_prev: AdminActionState, formData: FormDat
 export async function deleteFleetAction(formData: FormData): Promise<void> {
   const user = await requireRole([...MANAGE_ROLES]);
   const id = Number(formData.get("id"));
-  fleetRepo.remove(id);
-  recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "fleet", entity_id: id });
+  await fleetRepo.remove(id);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "fleet", entity_id: id });
   revalidatePath("/admin/fleet");
 }
 
@@ -171,11 +171,11 @@ export async function savePackageAction(_prev: AdminActionState, formData: FormD
   };
 
   if (id) {
-    packagesRepo.update(id, fields);
+    await packagesRepo.update(id, fields);
   } else {
-    packagesRepo.create(fields);
+    await packagesRepo.create(fields);
   }
-  recordAuditLog({
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: id ? "update" : "create",
@@ -189,8 +189,8 @@ export async function savePackageAction(_prev: AdminActionState, formData: FormD
 export async function deletePackageAction(formData: FormData): Promise<void> {
   const user = await requireRole([...MANAGE_ROLES]);
   const id = Number(formData.get("id"));
-  packagesRepo.remove(id);
-  recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "package", entity_id: id });
+  await packagesRepo.remove(id);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "package", entity_id: id });
   revalidatePath("/admin/packages");
 }
 
@@ -230,11 +230,11 @@ export async function saveDriverAction(_prev: AdminActionState, formData: FormDa
   };
 
   if (id) {
-    updateDriver(id, fields);
+    await updateDriver(id, fields);
   } else {
-    createDriver(fields);
+    await createDriver(fields);
   }
-  recordAuditLog({
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: id ? "update" : "create",
@@ -248,8 +248,8 @@ export async function saveDriverAction(_prev: AdminActionState, formData: FormDa
 export async function deleteDriverAction(formData: FormData): Promise<void> {
   const user = await requireRole([...MANAGE_ROLES]);
   const id = Number(formData.get("id"));
-  deleteDriver(id);
-  recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "driver", entity_id: id });
+  await deleteDriver(id);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "driver", entity_id: id });
   revalidatePath("/admin/drivers");
 }
 
@@ -269,8 +269,8 @@ export async function createCouponAction(_prev: AdminActionState, formData: Form
   });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
 
-  const coupon = createCoupon({ code: parsed.data.code, pct: parsed.data.pct, note: parsed.data.note || null });
-  recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "create", entity_type: "coupon", entity_id: coupon.id });
+  const coupon = await createCoupon({ code: parsed.data.code, pct: parsed.data.pct, note: parsed.data.note || null });
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "create", entity_type: "coupon", entity_id: coupon.id });
   revalidatePath("/admin/coupons");
   return { ok: true };
 }
@@ -285,8 +285,8 @@ export async function updateCouponAction(_prev: AdminActionState, formData: Form
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
 
   const id = Number(formData.get("id"));
-  updateCoupon(id, { code: parsed.data.code, pct: parsed.data.pct, note: parsed.data.note || null });
-  recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "update", entity_type: "coupon", entity_id: id });
+  await updateCoupon(id, { code: parsed.data.code, pct: parsed.data.pct, note: parsed.data.note || null });
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "update", entity_type: "coupon", entity_id: id });
   revalidatePath("/admin/coupons");
   return { ok: true };
 }
@@ -295,8 +295,8 @@ export async function toggleCouponAction(formData: FormData): Promise<void> {
   const user = await requireRole([...MANAGE_ROLES]);
   const id = Number(formData.get("id"));
   const active = formData.get("active") === "1";
-  setCouponActive(id, !active);
-  recordAuditLog({
+  await setCouponActive(id, !active);
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: active ? "deactivate" : "activate",
@@ -309,8 +309,8 @@ export async function toggleCouponAction(formData: FormData): Promise<void> {
 export async function deleteCouponAction(formData: FormData): Promise<void> {
   const user = await requireRole([...MANAGE_ROLES]);
   const id = Number(formData.get("id"));
-  deleteCoupon(id);
-  recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "coupon", entity_id: id });
+  await deleteCoupon(id);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "coupon", entity_id: id });
   revalidatePath("/admin/coupons");
 }
 
@@ -355,11 +355,11 @@ export async function saveGalleryImageAction(_prev: AdminActionState, formData: 
   };
 
   if (id) {
-    updateGalleryImage(id, fields);
+    await updateGalleryImage(id, fields);
   } else {
-    createGalleryImage(fields);
+    await createGalleryImage(fields);
   }
-  recordAuditLog({
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: id ? "update" : "create",
@@ -374,8 +374,8 @@ export async function saveGalleryImageAction(_prev: AdminActionState, formData: 
 export async function deleteGalleryImageAction(formData: FormData): Promise<void> {
   const user = await requireRole([...MANAGE_ROLES]);
   const id = Number(formData.get("id"));
-  removeGalleryImage(id);
-  recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "gallery_image", entity_id: id });
+  await removeGalleryImage(id);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "gallery_image", entity_id: id });
   revalidatePath("/admin/gallery");
   revalidatePath("/gallery");
 }
@@ -388,8 +388,8 @@ export async function reorderGalleryImagesAction(formData: FormData): Promise<vo
     .map((s) => Number(s.trim()))
     .filter((n) => Number.isFinite(n));
   if (!category || orderedIds.length === 0) return;
-  reorderGalleryImages(category, orderedIds);
-  recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "reorder", entity_type: "gallery_image", entity_id: category });
+  await reorderGalleryImages(category, orderedIds);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "reorder", entity_type: "gallery_image", entity_id: category });
   revalidatePath("/admin/gallery");
   revalidatePath("/gallery");
 }

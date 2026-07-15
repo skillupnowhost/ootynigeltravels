@@ -11,11 +11,11 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminReportsPage() {
   await requireRole(["admin", "manager"]);
-  const stats = bookingStats();
-  const packages = popularPackages();
-  const fleet = popularFleet();
-  const revenue = revenueByMonth();
-  const { average, count } = averageRating();
+  const stats = await bookingStats();
+  const packages = await popularPackages();
+  const fleet = await popularFleet();
+  const revenue = await revenueByMonth();
+  const { average, count } = await averageRating();
 
   return (
     <div>

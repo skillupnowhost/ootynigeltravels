@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminGalleryPage() {
   await requireRole(["admin", "manager"]);
-  const images = listGalleryImages();
+  const images = await listGalleryImages();
   const siblingIdsByCategory = new Map<string, number[]>();
   for (const img of images) {
     const list = siblingIdsByCategory.get(img.category) ?? [];

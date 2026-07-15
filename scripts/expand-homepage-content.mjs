@@ -1,18 +1,16 @@
-import { DatabaseSync } from "node:sqlite";
-import path from "node:path";
+import { openDb } from "./lib/db.mjs";
 
-const DB_PATH = path.join(process.cwd(), "data", "ooty.db");
-const db = new DatabaseSync(DB_PATH);
+const db = await openDb();
 
-function insertIfMissing(table, slug, row, columns) {
-  const existing = db.prepare(`SELECT id FROM ${table} WHERE slug = ?`).get(slug);
+async function insertIfMissing(table, slug, row, columns) {
+  const existing = await db.prepare(`SELECT id FROM ${table} WHERE slug = ?`).get(slug);
   if (existing) {
     console.log(`skip ${table}.${slug} (already exists)`);
     return;
   }
   const cols = columns.join(", ");
   const placeholders = columns.map((c) => `@${c}`).join(", ");
-  db.prepare(`INSERT INTO ${table} (${cols}) VALUES (${placeholders})`).run(row);
+  await db.prepare(`INSERT INTO ${table} (${cols}) VALUES (${placeholders})`).run(row);
   console.log(`inserted ${table}.${slug}`);
 }
 
@@ -65,7 +63,7 @@ const newDestinations = [
 ];
 
 for (const d of newDestinations) {
-  insertIfMissing("destinations", d.slug, d, destinationColumns);
+  await insertIfMissing("destinations", d.slug, d, destinationColumns);
 }
 
 // ---------- New packages ----------
@@ -147,7 +145,7 @@ const newPackages = [
 ];
 
 for (const p of newPackages) {
-  insertIfMissing("packages", p.slug, p, packageColumns);
+  await insertIfMissing("packages", p.slug, p, packageColumns);
 }
 
 // ---------- Backfill hero_image on existing packages missing one ----------
@@ -166,8 +164,9 @@ const heroImageBySlug = {
 
 const updateHero = db.prepare("UPDATE packages SET hero_image = ? WHERE slug = ? AND hero_image IS NULL");
 for (const [slug, image] of Object.entries(heroImageBySlug)) {
-  const result = updateHero.run(image, slug);
-  if (result.changes > 0) console.log(`set hero_image for ${slug}`);
+  const result = await updateHero.run(image, slug);
+  if (result.rowCount > 0) console.log(`set hero_image for ${slug}`);
 }
 
+await db.close();
 console.log("Done.");

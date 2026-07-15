@@ -19,8 +19,8 @@ const ROLE_STYLES: Record<string, string> = {
 
 export default async function AdminUsersPage() {
   const actor = await requireRole(["admin"]);
-  const users = listStaffUsers();
-  const adminCount = countByRole("admin");
+  const users = await listStaffUsers();
+  const adminCount = await countByRole("admin");
 
   return (
     <div>

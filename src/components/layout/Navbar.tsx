@@ -75,7 +75,7 @@ export function Navbar() {
             height={1024}
             preload
             className={`w-auto transition-all duration-500 ${
-              scrolled ? "h-11 sm:h-12 lg:h-16" : "h-14 sm:h-16 lg:h-20"
+              scrolled ? "h-14 lg:h-[72px]" : "h-14 sm:h-16 lg:h-20"
             }`}
           />
         </Link>

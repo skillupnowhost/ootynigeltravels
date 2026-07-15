@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminCouponsPage() {
   await requireRole(["admin", "manager"]);
-  const coupons = listCoupons();
+  const coupons = await listCoupons();
 
   return (
     <div>

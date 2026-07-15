@@ -1,73 +1,72 @@
 import { db } from "../client";
 import type { User, UserRole } from "../types";
 
-export function getUserByPhone(phone: string): User | undefined {
-  return db.prepare("SELECT * FROM users WHERE phone = ?").get(phone) as
+export async function getUserByPhone(phone: string): Promise<User | undefined> {
+  return (await db.prepare("SELECT * FROM users WHERE phone = ?").get(phone)) as
     | User
     | undefined;
 }
 
-export function getUserById(id: number): User | undefined {
-  return db.prepare("SELECT * FROM users WHERE id = ?").get(id) as
+export async function getUserById(id: number): Promise<User | undefined> {
+  return (await db.prepare("SELECT * FROM users WHERE id = ?").get(id)) as
     | User
     | undefined;
 }
 
-export function createUser(input: {
+export async function createUser(input: {
   role: UserRole;
   name: string;
   phone: string;
   email?: string | null;
   passwordHash: string;
-}): User {
-  const result = db
+}): Promise<User> {
+  return (await db
     .prepare(
-      `INSERT INTO users (role, name, phone, email, password_hash) VALUES (?, ?, ?, ?, ?)`
+      `INSERT INTO users (role, name, phone, email, password_hash) VALUES (?, ?, ?, ?, ?) RETURNING *`
     )
-    .run(
+    .get(
       input.role,
       input.name,
       input.phone,
       input.email ?? null,
       input.passwordHash
-    );
-  return getUserById(Number(result.lastInsertRowid))!;
+    )) as User;
 }
 
-export function listStaffUsers(): User[] {
-  return db
+export async function listStaffUsers(): Promise<User[]> {
+  return (await db
     .prepare(
       "SELECT * FROM users WHERE role IN ('admin','manager','staff') ORDER BY created_at DESC"
     )
-    .all() as User[];
+    .all()) as User[];
 }
 
-export function listCustomers(): User[] {
-  return db
+export async function listCustomers(): Promise<User[]> {
+  return (await db
     .prepare("SELECT * FROM users WHERE role = 'customer' ORDER BY created_at DESC")
-    .all() as User[];
+    .all()) as User[];
 }
 
-export function countByRole(role: UserRole): number {
-  const row = db
+export async function countByRole(role: UserRole): Promise<number> {
+  const row = (await db
     .prepare("SELECT COUNT(*) as c FROM users WHERE role = ?")
-    .get(role) as { c: number };
+    .get(role)) as { c: number };
   return row.c;
 }
 
-export function updateUserPassword(id: number, passwordHash: string): void {
-  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(
+export async function updateUserPassword(id: number, passwordHash: string): Promise<void> {
+  await db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(
     passwordHash,
     id
   );
 }
 
-export function updateUser(
+export async function updateUser(
   id: number,
   fields: { name: string; phone: string; email?: string | null; role?: UserRole }
-): void {
+): Promise<void> {
   if (fields.role) {
-    db.prepare("UPDATE users SET name = ?, phone = ?, email = ?, role = ? WHERE id = ?").run(
+    await db.prepare("UPDATE users SET name = ?, phone = ?, email = ?, role = ? WHERE id = ?").run(
       fields.name,
       fields.phone,
       fields.email ?? null,
@@ -75,7 +74,7 @@ export function updateUser(
       id
     );
   } else {
-    db.prepare("UPDATE users SET name = ?, phone = ?, email = ? WHERE id = ?").run(
+    await db.prepare("UPDATE users SET name = ?, phone = ?, email = ? WHERE id = ?").run(
       fields.name,
       fields.phone,
       fields.email ?? null,
@@ -84,6 +83,6 @@ export function updateUser(
   }
 }
 
-export function deleteUser(id: number): void {
-  db.prepare("DELETE FROM users WHERE id = ?").run(id);
+export async function deleteUser(id: number): Promise<void> {
+  await db.prepare("DELETE FROM users WHERE id = ?").run(id);
 }

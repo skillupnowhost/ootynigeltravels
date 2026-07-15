@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/fleet" },
 };
 
-export default function FleetPage() {
-  const fleet = fleetRepo.list(true);
+export default async function FleetPage() {
+  const fleet = await fleetRepo.list(true);
 
   return (
     <>

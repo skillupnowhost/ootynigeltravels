@@ -9,14 +9,14 @@ export async function getCurrentUser(): Promise<User | null> {
   const store = await cookies();
   const raw = store.get(SESSION_COOKIE)?.value;
   if (!raw) return null;
-  const session = getSessionByRawToken(raw);
+  const session = await getSessionByRawToken(raw);
   if (!session) return null;
-  const user = getUserById(session.user_id);
+  const user = await getUserById(session.user_id);
   return user ?? null;
 }
 
 export async function establishSession(userId: number): Promise<void> {
-  const { rawToken, expiresAt } = createSession(userId);
+  const { rawToken, expiresAt } = await createSession(userId);
   const store = await cookies();
   store.set(SESSION_COOKIE, rawToken, {
     httpOnly: true,
@@ -30,7 +30,7 @@ export async function establishSession(userId: number): Promise<void> {
 export async function destroySession(): Promise<void> {
   const store = await cookies();
   const raw = store.get(SESSION_COOKIE)?.value;
-  if (raw) deleteSessionByRawToken(raw);
+  if (raw) await deleteSessionByRawToken(raw);
   store.delete(SESSION_COOKIE);
 }
 

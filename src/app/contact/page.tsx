@@ -27,17 +27,23 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contact" },
 };
 
-export default function ContactPage() {
-  const destinations = destinationsRepo.list(true);
-  const fleet = fleetRepo.list(true);
-  const faqs = listFaqs().slice(0, 8);
-  const reviews = listApprovedReviews(8);
-  const nearbyAttractions = attractionsRepo.list(true).slice(0, 5).map((a) => ({
-    slug: a.slug,
-    name: a.name,
-    category: a.category,
-    image: listAttractionImages(a.id, true)[0]?.src ?? null,
-  }));
+export default async function ContactPage() {
+  const [destinations, fleet, faqsList, reviews, attractions] = await Promise.all([
+    destinationsRepo.list(true),
+    fleetRepo.list(true),
+    listFaqs(),
+    listApprovedReviews(8),
+    attractionsRepo.list(true),
+  ]);
+  const faqs = faqsList.slice(0, 8);
+  const nearbyAttractions = await Promise.all(
+    attractions.slice(0, 5).map(async (a) => ({
+      slug: a.slug,
+      name: a.name,
+      category: a.category,
+      image: (await listAttractionImages(a.id, true))[0]?.src ?? null,
+    }))
+  );
 
   const jsonLd = {
     "@context": "https://schema.org",

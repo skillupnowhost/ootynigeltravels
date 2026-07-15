@@ -27,11 +27,11 @@ function statusBadgeClass(status: string) {
 
 export default async function AdminBookingDetailPage({ params }: { params: Params }) {
   const { id } = await params;
-  const booking = getBookingById(Number(id));
+  const booking = await getBookingById(Number(id));
   if (!booking) notFound();
 
-  const history = getBookingHistory(booking.id);
-  const drivers = listDrivers({ activeOnly: true });
+  const history = await getBookingHistory(booking.id);
+  const drivers = await listDrivers({ activeOnly: true });
   const actor = await getCurrentUser();
 
   return (

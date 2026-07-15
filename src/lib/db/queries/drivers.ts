@@ -6,26 +6,26 @@ function mapRow(row: Record<string, unknown>): Driver {
   return parseJsonColumns<Driver>(row, ["languages"]);
 }
 
-export function listDrivers(opts: { activeOnly?: boolean } = {}): Driver[] {
+export async function listDrivers(opts: { activeOnly?: boolean } = {}): Promise<Driver[]> {
   const rows = opts.activeOnly
-    ? (db
+    ? ((await db
         .prepare("SELECT * FROM drivers WHERE active = 1 ORDER BY rating DESC")
-        .all() as Record<string, unknown>[])
-    : (db
+        .all()) as Record<string, unknown>[])
+    : ((await db
         .prepare("SELECT * FROM drivers ORDER BY created_at DESC")
-        .all() as Record<string, unknown>[]);
+        .all()) as Record<string, unknown>[]);
   return rows.map(mapRow);
 }
 
-export function getDriverBySlug(slug: string): Driver | undefined {
-  const row = db.prepare("SELECT * FROM drivers WHERE slug = ?").get(slug) as
+export async function getDriverBySlug(slug: string): Promise<Driver | undefined> {
+  const row = (await db.prepare("SELECT * FROM drivers WHERE slug = ?").get(slug)) as
     | Record<string, unknown>
     | undefined;
   return row ? mapRow(row) : undefined;
 }
 
-export function getDriverById(id: number): Driver | undefined {
-  const row = db.prepare("SELECT * FROM drivers WHERE id = ?").get(id) as
+export async function getDriverById(id: number): Promise<Driver | undefined> {
+  const row = (await db.prepare("SELECT * FROM drivers WHERE id = ?").get(id)) as
     | Record<string, unknown>
     | undefined;
   return row ? mapRow(row) : undefined;
@@ -44,13 +44,14 @@ export interface DriverInput {
   active?: boolean;
 }
 
-export function createDriver(input: DriverInput): Driver {
-  const result = db
+export async function createDriver(input: DriverInput): Promise<Driver> {
+  const row = await db
     .prepare(
       `INSERT INTO drivers (slug, name, phone, license_no, photo, experience_years, languages, rating, bio, active)
-       VALUES (@slug, @name, @phone, @license_no, @photo, @experience_years, @languages, @rating, @bio, @active)`
+       VALUES (@slug, @name, @phone, @license_no, @photo, @experience_years, @languages, @rating, @bio, @active)
+       RETURNING *`
     )
-    .run({
+    .get({
       slug: input.slug,
       name: input.name,
       phone: input.phone,
@@ -62,14 +63,14 @@ export function createDriver(input: DriverInput): Driver {
       bio: input.bio ?? null,
       active: input.active === false ? 0 : 1,
     });
-  return getDriverById(Number(result.lastInsertRowid))!;
+  return mapRow(row);
 }
 
-export function updateDriver(id: number, input: Partial<DriverInput>): void {
-  const existing = getDriverById(id);
+export async function updateDriver(id: number, input: Partial<DriverInput>): Promise<void> {
+  const existing = await getDriverById(id);
   if (!existing) throw new Error("Driver not found");
   const merged = { ...existing, ...input };
-  db.prepare(
+  await db.prepare(
     `UPDATE drivers SET name=@name, phone=@phone, license_no=@license_no, photo=@photo,
      experience_years=@experience_years, languages=@languages, rating=@rating, bio=@bio, active=@active
      WHERE id=@id`
@@ -87,6 +88,6 @@ export function updateDriver(id: number, input: Partial<DriverInput>): void {
   });
 }
 
-export function deleteDriver(id: number): void {
-  db.prepare("DELETE FROM drivers WHERE id = ?").run(id);
+export async function deleteDriver(id: number): Promise<void> {
+  await db.prepare("DELETE FROM drivers WHERE id = ?").run(id);
 }

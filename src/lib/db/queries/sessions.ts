@@ -8,37 +8,37 @@ function hashToken(rawToken: string): string {
   return crypto.createHash("sha256").update(rawToken).digest("hex");
 }
 
-export function createSession(userId: number): { rawToken: string; expiresAt: string } {
+export async function createSession(userId: number): Promise<{ rawToken: string; expiresAt: string }> {
   const rawToken = crypto.randomBytes(32).toString("hex");
   const id = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
-  db.prepare(
+  await db.prepare(
     `INSERT INTO sessions (id, token_hash, user_id, expires_at) VALUES (?, ?, ?, ?)`
   ).run(id, hashToken(rawToken), userId, expiresAt);
   return { rawToken, expiresAt };
 }
 
-export function getSessionByRawToken(rawToken: string): Session | undefined {
+export async function getSessionByRawToken(rawToken: string): Promise<Session | undefined> {
   const tokenHash = hashToken(rawToken);
-  const session = db
+  const session = (await db
     .prepare("SELECT * FROM sessions WHERE token_hash = ?")
-    .get(tokenHash) as Session | undefined;
+    .get(tokenHash)) as Session | undefined;
   if (!session) return undefined;
   if (new Date(session.expires_at).getTime() < Date.now()) {
-    db.prepare("DELETE FROM sessions WHERE id = ?").run(session.id);
+    await db.prepare("DELETE FROM sessions WHERE id = ?").run(session.id);
     return undefined;
   }
   return session;
 }
 
-export function deleteSessionByRawToken(rawToken: string): void {
-  db.prepare("DELETE FROM sessions WHERE token_hash = ?").run(
+export async function deleteSessionByRawToken(rawToken: string): Promise<void> {
+  await db.prepare("DELETE FROM sessions WHERE token_hash = ?").run(
     hashToken(rawToken)
   );
 }
 
-export function deleteExpiredSessions(): void {
-  db.prepare("DELETE FROM sessions WHERE expires_at < ?").run(
+export async function deleteExpiredSessions(): Promise<void> {
+  await db.prepare("DELETE FROM sessions WHERE expires_at < ?").run(
     new Date().toISOString()
   );
 }

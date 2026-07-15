@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminFleetPage() {
   await requireRole(["admin", "manager"]);
-  const fleet = fleetRepo.list();
+  const fleet = await fleetRepo.list();
 
   return (
     <div>

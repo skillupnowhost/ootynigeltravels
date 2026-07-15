@@ -1,33 +1,31 @@
 import { db } from "../client";
 import type { Faq } from "../types";
 
-export function listFaqs(): Faq[] {
-  return db
+export async function listFaqs(): Promise<Faq[]> {
+  return (await db
     .prepare("SELECT * FROM faqs ORDER BY category ASC, sort_order ASC")
-    .all() as Faq[];
+    .all()) as Faq[];
 }
 
-export function createFaq(input: {
+export async function createFaq(input: {
   category: string;
   question: string;
   answer: string;
   sort_order?: number;
-}): Faq {
-  const result = db
+}): Promise<Faq> {
+  return (await db
     .prepare(
-      `INSERT INTO faqs (category, question, answer, sort_order) VALUES (@category, @question, @answer, @sort_order)`
+      `INSERT INTO faqs (category, question, answer, sort_order) VALUES (@category, @question, @answer, @sort_order)
+       RETURNING *`
     )
-    .run({
+    .get({
       category: input.category,
       question: input.question,
       answer: input.answer,
       sort_order: input.sort_order ?? 0,
-    });
-  return db
-    .prepare("SELECT * FROM faqs WHERE id = ?")
-    .get(Number(result.lastInsertRowid)) as Faq;
+    })) as Faq;
 }
 
-export function deleteFaq(id: number): void {
-  db.prepare("DELETE FROM faqs WHERE id = ?").run(id);
+export async function deleteFaq(id: number): Promise<void> {
+  await db.prepare("DELETE FROM faqs WHERE id = ?").run(id);
 }

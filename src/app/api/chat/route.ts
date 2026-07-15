@@ -20,26 +20,30 @@ const bodySchema = z.object({
 
 const FALLBACK_MODEL = "meta-llama/llama-3.1-8b-instruct:free";
 
-function buildSystemPrompt(): string {
-  const packages = packagesRepo
-    .list(true)
+async function buildSystemPrompt(): Promise<string> {
+  const [packagesList, fleetList, destinationsList, faqsList] = await Promise.all([
+    packagesRepo.list(true),
+    fleetRepo.list(true),
+    destinationsRepo.list(true),
+    listFaqs(),
+  ]);
+
+  const packages = packagesList
     .slice(0, 8)
     .map((p) => `- ${p.name} (${p.duration_label ?? "custom duration"}, from ₹${p.price_from}/-): ${p.summary ?? p.tagline ?? ""}`)
     .join("\n");
 
-  const fleet = fleetRepo
-    .list(true)
+  const fleet = fleetList
     .slice(0, 8)
     .map((v) => `- ${v.name} — ${v.category}, ${v.seats} seats, ₹${v.price_per_day}/day`)
     .join("\n");
 
-  const destinations = destinationsRepo
-    .list(true)
+  const destinations = destinationsList
     .slice(0, 10)
     .map((d) => `- ${d.name}${d.distance_from_ooty ? ` (${d.distance_from_ooty} from Ooty)` : ""}`)
     .join("\n");
 
-  const faqs = listFaqs()
+  const faqs = faqsList
     .slice(0, 10)
     .map((f) => `Q: ${f.question}\nA: ${f.answer}`)
     .join("\n\n");
@@ -110,7 +114,7 @@ export async function POST(request: NextRequest) {
       model: process.env.OPENROUTER_MODEL || FALLBACK_MODEL,
       stream: true,
       temperature: 0.6,
-      messages: [{ role: "system", content: buildSystemPrompt() }, ...parsed.data.messages],
+      messages: [{ role: "system", content: await buildSystemPrompt() }, ...parsed.data.messages],
     }),
   });
 

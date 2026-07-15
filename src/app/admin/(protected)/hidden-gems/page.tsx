@@ -13,8 +13,8 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminHiddenGemsPage() {
   await requireRole(["admin", "manager"]);
-  const attractions = attractionsRepo.list();
-  const allImages = listAllAttractionImages();
+  const attractions = await attractionsRepo.list();
+  const allImages = await listAllAttractionImages();
   const imagesByAttraction = new Map<number, typeof allImages>();
   for (const img of allImages) {
     const list = imagesByAttraction.get(img.attraction_id) ?? [];

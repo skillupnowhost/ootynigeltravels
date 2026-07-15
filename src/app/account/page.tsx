@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export default async function AccountPage() {
   const user = await requireUser();
-  const bookings = listBookingsForCustomer(user.id);
+  const bookings = await listBookingsForCustomer(user.id);
 
   return (
     <>

@@ -1,4 +1,4 @@
-import { db } from "../client";
+import { db, withTransaction } from "../client";
 import { parseJsonColumns } from "../helpers";
 import type { Booking, BookingHistoryEntry, BookingStatus, ItineraryDay, PaymentStatus } from "../types";
 
@@ -15,10 +15,10 @@ function mapBooking(row: Record<string, unknown>): Booking {
   return parseJsonColumns<Booking>(row, ["itinerary"]);
 }
 
-function attachHistory(booking: Booking): Booking & { history: BookingHistoryEntry[] } {
-  const history = db
+async function attachHistory(booking: Booking): Promise<Booking & { history: BookingHistoryEntry[] }> {
+  const history = (await db
     .prepare("SELECT * FROM booking_history WHERE booking_id = ? ORDER BY created_at ASC")
-    .all(booking.id) as BookingHistoryEntry[];
+    .all(booking.id)) as BookingHistoryEntry[];
   return { ...booking, history };
 }
 
@@ -40,95 +40,103 @@ export interface CreateBookingInput {
   customer_id?: number | null;
 }
 
-export function createBooking(input: CreateBookingInput): Booking & { history: BookingHistoryEntry[] } {
+export async function createBooking(
+  input: CreateBookingInput
+): Promise<Booking & { history: BookingHistoryEntry[] }> {
   const bookingCode = generateBookingCode();
-  const result = db
-    .prepare(
-      `INSERT INTO bookings (booking_code, customer_id, guest_name, guest_phone, guest_email, package_id, fleet_id,
-        destination, travel_date, end_date, pickup_location, pickup_time, adults, children, estimate_amount, coupon_code)
-       VALUES (@booking_code, @customer_id, @guest_name, @guest_phone, @guest_email, @package_id, @fleet_id,
-        @destination, @travel_date, @end_date, @pickup_location, @pickup_time, @adults, @children, @estimate_amount, @coupon_code)`
-    )
-    .run({
-      booking_code: bookingCode,
-      customer_id: input.customer_id ?? null,
-      guest_name: input.guest_name,
-      guest_phone: input.guest_phone,
-      guest_email: input.guest_email ?? null,
-      package_id: input.package_id ?? null,
-      fleet_id: input.fleet_id ?? null,
-      destination: input.destination,
-      travel_date: input.travel_date,
-      end_date: input.end_date,
-      pickup_location: input.pickup_location,
-      pickup_time: input.pickup_time ?? null,
-      adults: input.adults,
-      children: input.children,
-      estimate_amount: input.estimate_amount,
-      coupon_code: input.coupon_code ?? null,
-    });
+  const booking = await withTransaction(async (tx) => {
+    const row = await tx
+      .prepare(
+        `INSERT INTO bookings (booking_code, customer_id, guest_name, guest_phone, guest_email, package_id, fleet_id,
+          destination, travel_date, end_date, pickup_location, pickup_time, adults, children, estimate_amount, coupon_code)
+         VALUES (@booking_code, @customer_id, @guest_name, @guest_phone, @guest_email, @package_id, @fleet_id,
+          @destination, @travel_date, @end_date, @pickup_location, @pickup_time, @adults, @children, @estimate_amount, @coupon_code)
+         RETURNING *`
+      )
+      .get({
+        booking_code: bookingCode,
+        customer_id: input.customer_id ?? null,
+        guest_name: input.guest_name,
+        guest_phone: input.guest_phone,
+        guest_email: input.guest_email ?? null,
+        package_id: input.package_id ?? null,
+        fleet_id: input.fleet_id ?? null,
+        destination: input.destination,
+        travel_date: input.travel_date,
+        end_date: input.end_date,
+        pickup_location: input.pickup_location,
+        pickup_time: input.pickup_time ?? null,
+        adults: input.adults,
+        children: input.children,
+        estimate_amount: input.estimate_amount,
+        coupon_code: input.coupon_code ?? null,
+      });
 
-  const id = Number(result.lastInsertRowid);
-  db.prepare(
-    `INSERT INTO booking_history (booking_id, status, note) VALUES (?, 'Pending', 'Booking received — our team will confirm shortly.')`
-  ).run(id);
+    await tx
+      .prepare(
+        `INSERT INTO booking_history (booking_id, status, note) VALUES (?, 'Pending', 'Booking received — our team will confirm shortly.')`
+      )
+      .run(row.id);
 
-  return attachHistory(getBookingById(id)!);
+    return mapBooking(row);
+  });
+
+  return attachHistory(booking);
 }
 
-export function setItinerary(id: number, itinerary: ItineraryDay[]): void {
-  db.prepare(
-    "UPDATE bookings SET itinerary = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?"
+export async function setItinerary(id: number, itinerary: ItineraryDay[]): Promise<void> {
+  await db.prepare(
+    "UPDATE bookings SET itinerary = ?, updated_at = now() WHERE id = ?"
   ).run(JSON.stringify(itinerary), id);
 }
 
-export function getBookingHistory(bookingId: number): BookingHistoryEntry[] {
-  return db
+export async function getBookingHistory(bookingId: number): Promise<BookingHistoryEntry[]> {
+  return (await db
     .prepare("SELECT * FROM booking_history WHERE booking_id = ? ORDER BY created_at ASC")
-    .all(bookingId) as BookingHistoryEntry[];
+    .all(bookingId)) as BookingHistoryEntry[];
 }
 
-export function getBookingById(id: number): Booking | undefined {
-  const row = db.prepare("SELECT * FROM bookings WHERE id = ?").get(id) as
+export async function getBookingById(id: number): Promise<Booking | undefined> {
+  const row = (await db.prepare("SELECT * FROM bookings WHERE id = ?").get(id)) as
     | Record<string, unknown>
     | undefined;
   return row ? mapBooking(row) : undefined;
 }
 
-export function getBookingByCode(
+export async function getBookingByCode(
   code: string
-): (Booking & { history: BookingHistoryEntry[] }) | undefined {
-  const row = db
-    .prepare("SELECT * FROM bookings WHERE booking_code = ? COLLATE NOCASE")
-    .get(code) as Record<string, unknown> | undefined;
+): Promise<(Booking & { history: BookingHistoryEntry[] }) | undefined> {
+  const row = (await db
+    .prepare("SELECT * FROM bookings WHERE UPPER(booking_code) = UPPER(?)")
+    .get(code)) as Record<string, unknown> | undefined;
   return row ? attachHistory(mapBooking(row)) : undefined;
 }
 
-export function listBookingsByPhone(
+export async function listBookingsByPhone(
   phone: string
-): (Booking & { history: BookingHistoryEntry[] })[] {
-  const rows = db
+): Promise<(Booking & { history: BookingHistoryEntry[] })[]> {
+  const rows = (await db
     .prepare("SELECT * FROM bookings WHERE guest_phone = ? ORDER BY created_at DESC")
-    .all(phone) as Record<string, unknown>[];
-  return rows.map(mapBooking).map(attachHistory);
+    .all(phone)) as Record<string, unknown>[];
+  return Promise.all(rows.map(mapBooking).map(attachHistory));
 }
 
-export function listBookingsForCustomer(
+export async function listBookingsForCustomer(
   customerId: number
-): (Booking & { history: BookingHistoryEntry[] })[] {
-  const rows = db
+): Promise<(Booking & { history: BookingHistoryEntry[] })[]> {
+  const rows = (await db
     .prepare("SELECT * FROM bookings WHERE customer_id = ? ORDER BY created_at DESC")
-    .all(customerId) as Record<string, unknown>[];
-  return rows.map(mapBooking).map(attachHistory);
+    .all(customerId)) as Record<string, unknown>[];
+  return Promise.all(rows.map(mapBooking).map(attachHistory));
 }
 
-export function linkBookingsToCustomer(phone: string, customerId: number): number {
-  const result = db
+export async function linkBookingsToCustomer(phone: string, customerId: number): Promise<number> {
+  const result = await db
     .prepare(
       "UPDATE bookings SET customer_id = ? WHERE guest_phone = ? AND customer_id IS NULL"
     )
     .run(customerId, phone);
-  return Number(result.changes);
+  return result.rowCount;
 }
 
 export interface BookingListFilters {
@@ -137,7 +145,7 @@ export interface BookingListFilters {
   limit?: number;
 }
 
-export function listAllBookings(filters: BookingListFilters = {}): Booking[] {
+export async function listAllBookings(filters: BookingListFilters = {}): Promise<Booking[]> {
   const clauses: string[] = [];
   const params: Record<string, unknown> = {};
   if (filters.status) {
@@ -146,119 +154,119 @@ export function listAllBookings(filters: BookingListFilters = {}): Booking[] {
   }
   if (filters.search) {
     clauses.push(
-      "(guest_name LIKE @search OR guest_phone LIKE @search OR booking_code LIKE @search)"
+      "(guest_name ILIKE @search OR guest_phone ILIKE @search OR booking_code ILIKE @search)"
     );
     params.search = `%${filters.search}%`;
   }
   const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
   const limit = filters.limit ? `LIMIT ${Number(filters.limit)}` : "";
-  const rows = db
+  const rows = (await db
     .prepare(`SELECT * FROM bookings ${where} ORDER BY created_at DESC ${limit}`)
-    .all(params) as Record<string, unknown>[];
+    .all(params)) as Record<string, unknown>[];
   return rows.map(mapBooking);
 }
 
-export function updateBookingStatus(
+export async function updateBookingStatus(
   id: number,
   status: BookingStatus,
   note?: string
-): void {
-  db.prepare(
-    "UPDATE bookings SET status = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?"
+): Promise<void> {
+  await db.prepare(
+    "UPDATE bookings SET status = ?, updated_at = now() WHERE id = ?"
   ).run(status, id);
-  db.prepare(
+  await db.prepare(
     "INSERT INTO booking_history (booking_id, status, note) VALUES (?, ?, ?)"
   ).run(id, status, note ?? null);
 }
 
-export function assignDriverAndVehicle(
+export async function assignDriverAndVehicle(
   id: number,
   driverId: number | null,
   vehicleNumber: string | null
-): void {
-  db.prepare(
-    `UPDATE bookings SET driver_id = ?, vehicle_number = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?`
+): Promise<void> {
+  await db.prepare(
+    `UPDATE bookings SET driver_id = ?, vehicle_number = ?, updated_at = now() WHERE id = ?`
   ).run(driverId, vehicleNumber, id);
 }
 
-export function setPaymentStatus(id: number, paymentStatus: PaymentStatus): void {
-  db.prepare(
-    `UPDATE bookings SET payment_status = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?`
+export async function setPaymentStatus(id: number, paymentStatus: PaymentStatus): Promise<void> {
+  await db.prepare(
+    `UPDATE bookings SET payment_status = ?, updated_at = now() WHERE id = ?`
   ).run(paymentStatus, id);
 }
 
-export function setRemarks(id: number, remarks: string): void {
-  db.prepare(
-    `UPDATE bookings SET remarks = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?`
+export async function setRemarks(id: number, remarks: string): Promise<void> {
+  await db.prepare(
+    `UPDATE bookings SET remarks = ?, updated_at = now() WHERE id = ?`
   ).run(remarks, id);
 }
 
-export function requestCancellation(id: number): void {
-  db.prepare("UPDATE bookings SET cancel_requested = 1 WHERE id = ?").run(id);
-  db.prepare(
+export async function requestCancellation(id: number): Promise<void> {
+  await db.prepare("UPDATE bookings SET cancel_requested = 1 WHERE id = ?").run(id);
+  await db.prepare(
     "INSERT INTO booking_history (booking_id, status, note) VALUES (?, (SELECT status FROM bookings WHERE id = ?), 'Guest requested cancellation via website.')"
   ).run(id, id);
 }
 
-export function deleteBooking(id: number): void {
-  db.prepare("DELETE FROM bookings WHERE id = ?").run(id);
+export async function deleteBooking(id: number): Promise<void> {
+  await db.prepare("DELETE FROM bookings WHERE id = ?").run(id);
 }
 
-export function popularPackages(limit = 5): { name: string; count: number }[] {
-  return db
+export async function popularPackages(limit = 5): Promise<{ name: string; count: number }[]> {
+  return (await db
     .prepare(
       `SELECT p.name as name, COUNT(*) as count FROM bookings b
        JOIN packages p ON p.id = b.package_id
        GROUP BY p.id ORDER BY count DESC LIMIT ?`
     )
-    .all(limit) as { name: string; count: number }[];
+    .all(limit)) as { name: string; count: number }[];
 }
 
-export function popularFleet(limit = 5): { name: string; count: number }[] {
-  return db
+export async function popularFleet(limit = 5): Promise<{ name: string; count: number }[]> {
+  return (await db
     .prepare(
       `SELECT f.name as name, COUNT(*) as count FROM bookings b
        JOIN fleet f ON f.id = b.fleet_id
        GROUP BY f.id ORDER BY count DESC LIMIT ?`
     )
-    .all(limit) as { name: string; count: number }[];
+    .all(limit)) as { name: string; count: number }[];
 }
 
-export function revenueByMonth(months = 6): { month: string; revenue: number }[] {
-  return db
+export async function revenueByMonth(months = 6): Promise<{ month: string; revenue: number }[]> {
+  return (await db
     .prepare(
-      `SELECT strftime('%Y-%m', travel_date) as month, COALESCE(SUM(estimate_amount),0) as revenue
+      `SELECT to_char(travel_date, 'YYYY-MM') as month, COALESCE(SUM(estimate_amount),0) as revenue
        FROM bookings WHERE payment_status = 'Paid'
        GROUP BY month ORDER BY month DESC LIMIT ?`
     )
-    .all(months) as { month: string; revenue: number }[];
+    .all(months)) as { month: string; revenue: number }[];
 }
 
-export function bookingStats(): {
+export async function bookingStats(): Promise<{
   total: number;
   byStatus: Record<string, number>;
   revenue: number;
   upcoming7d: number;
-} {
-  const total = (db.prepare("SELECT COUNT(*) as c FROM bookings").get() as { c: number }).c;
-  const rows = db
+}> {
+  const total = ((await db.prepare("SELECT COUNT(*) as c FROM bookings").get()) as { c: number }).c;
+  const rows = (await db
     .prepare("SELECT status, COUNT(*) as c FROM bookings GROUP BY status")
-    .all() as { status: string; c: number }[];
+    .all()) as { status: string; c: number }[];
   const byStatus: Record<string, number> = {};
   for (const r of rows) byStatus[r.status] = r.c;
   const revenue = (
-    db
+    (await db
       .prepare(
         "SELECT COALESCE(SUM(estimate_amount),0) as s FROM bookings WHERE payment_status = 'Paid'"
       )
-      .get() as { s: number }
+      .get()) as { s: number }
   ).s;
   const upcoming7d = (
-    db
+    (await db
       .prepare(
-        "SELECT COUNT(*) as c FROM bookings WHERE travel_date BETWEEN date('now') AND date('now','+7 day')"
+        "SELECT COUNT(*) as c FROM bookings WHERE travel_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 day'"
       )
-      .get() as { c: number }
+      .get()) as { c: number }
   ).c;
   return { total, byStatus, revenue, upcoming7d };
 }

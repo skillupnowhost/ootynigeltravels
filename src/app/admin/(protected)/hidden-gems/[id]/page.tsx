@@ -18,9 +18,9 @@ type Params = Promise<{ id: string }>;
 export default async function EditHiddenGemPage({ params }: { params: Params }) {
   await requireRole(["admin", "manager"]);
   const { id } = await params;
-  const attraction = attractionsRepo.getById(Number(id));
+  const attraction = await attractionsRepo.getById(Number(id));
   if (!attraction) notFound();
-  const images = listAttractionImages(attraction.id);
+  const images = await listAttractionImages(attraction.id);
 
   return (
     <div>

@@ -13,11 +13,11 @@ export async function GET(request: NextRequest) {
   const phone = searchParams.get("phone")?.trim();
 
   if (code) {
-    const booking = getBookingByCode(code);
+    const booking = await getBookingByCode(code);
     return NextResponse.json({ bookings: booking ? [booking] : [] });
   }
   if (phone) {
-    const bookings = listBookingsByPhone(phone);
+    const bookings = await listBookingsByPhone(phone);
     return NextResponse.json({ bookings });
   }
   return NextResponse.json({ error: "Provide a booking code or phone number." }, { status: 400 });

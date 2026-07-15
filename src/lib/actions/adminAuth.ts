@@ -29,13 +29,13 @@ export async function adminLoginAction(_prev: AuthFormState, formData: FormData)
   });
   if (!parsed.success) return { ok: false, error: "Enter your phone number and password." };
 
-  const user = getUserByPhone(parsed.data.phone);
+  const user = await getUserByPhone(parsed.data.phone);
   if (!user || !STAFF_ROLES.includes(user.role) || !verifyPassword(parsed.data.password, user.password_hash)) {
     return { ok: false, error: "Invalid credentials." };
   }
 
   await establishSession(user.id);
-  recordAuditLog({
+  await recordAuditLog({
     actor_user_id: user.id,
     actor_name: user.name,
     action: "login",

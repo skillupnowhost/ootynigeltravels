@@ -13,9 +13,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/booking" },
 };
 
-export default function BookingPage() {
-  const packages = packagesRepo.list(true);
-  const destinations = destinationsRepo.list(true);
+export default async function BookingPage() {
+  const [packages, destinations] = await Promise.all([
+    packagesRepo.list(true),
+    destinationsRepo.list(true),
+  ]);
 
   return (
     <>

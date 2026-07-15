@@ -1,22 +1,22 @@
-import { db } from "../client";
+import { db, withTransaction } from "../client";
 import type { AttractionImage } from "../types";
 
-export function listAttractionImages(attractionId: number, activeOnly = false): AttractionImage[] {
+export async function listAttractionImages(attractionId: number, activeOnly = false): Promise<AttractionImage[]> {
   const sql = activeOnly
     ? "SELECT * FROM attraction_images WHERE attraction_id = ? AND active = 1 ORDER BY sort_order ASC, id ASC"
     : "SELECT * FROM attraction_images WHERE attraction_id = ? ORDER BY sort_order ASC, id ASC";
-  return db.prepare(sql).all(attractionId) as AttractionImage[];
+  return (await db.prepare(sql).all(attractionId)) as AttractionImage[];
 }
 
-export function listAllAttractionImages(activeOnly = false): AttractionImage[] {
+export async function listAllAttractionImages(activeOnly = false): Promise<AttractionImage[]> {
   const sql = activeOnly
     ? "SELECT * FROM attraction_images WHERE active = 1 ORDER BY attraction_id ASC, sort_order ASC, id ASC"
     : "SELECT * FROM attraction_images ORDER BY attraction_id ASC, sort_order ASC, id ASC";
-  return db.prepare(sql).all() as AttractionImage[];
+  return (await db.prepare(sql).all()) as AttractionImage[];
 }
 
-export function getAttractionImageById(id: number): AttractionImage | undefined {
-  return db.prepare("SELECT * FROM attraction_images WHERE id = ?").get(id) as AttractionImage | undefined;
+export async function getAttractionImageById(id: number): Promise<AttractionImage | undefined> {
+  return (await db.prepare("SELECT * FROM attraction_images WHERE id = ?").get(id)) as AttractionImage | undefined;
 }
 
 export interface AttractionImageInput {
@@ -27,26 +27,26 @@ export interface AttractionImageInput {
   active?: number;
 }
 
-export function createAttractionImage(input: AttractionImageInput): AttractionImage {
-  const result = db
+export async function createAttractionImage(input: AttractionImageInput): Promise<AttractionImage> {
+  return (await db
     .prepare(
       `INSERT INTO attraction_images (attraction_id, src, alt, sort_order, active)
-       VALUES (@attraction_id, @src, @alt, @sort_order, @active)`
+       VALUES (@attraction_id, @src, @alt, @sort_order, @active)
+       RETURNING *`
     )
-    .run({
+    .get({
       attraction_id: input.attraction_id,
       src: input.src,
       alt: input.alt,
       sort_order: input.sort_order ?? 0,
       active: input.active ?? 1,
-    });
-  return getAttractionImageById(Number(result.lastInsertRowid))!;
+    })) as AttractionImage;
 }
 
-export function updateAttractionImage(id: number, input: Partial<AttractionImageInput>): void {
-  const existing = getAttractionImageById(id);
+export async function updateAttractionImage(id: number, input: Partial<AttractionImageInput>): Promise<void> {
+  const existing = await getAttractionImageById(id);
   if (!existing) return;
-  db.prepare(
+  await db.prepare(
     `UPDATE attraction_images SET src = @src, alt = @alt, sort_order = @sort_order, active = @active WHERE id = @id`
   ).run({
     id,
@@ -57,13 +57,17 @@ export function updateAttractionImage(id: number, input: Partial<AttractionImage
   });
 }
 
-export function removeAttractionImage(id: number): void {
-  db.prepare("DELETE FROM attraction_images WHERE id = ?").run(id);
+export async function removeAttractionImage(id: number): Promise<void> {
+  await db.prepare("DELETE FROM attraction_images WHERE id = ?").run(id);
 }
 
-export function reorderAttractionImages(attractionId: number, orderedIds: number[]): void {
-  const stmt = db.prepare(
-    "UPDATE attraction_images SET sort_order = ? WHERE id = ? AND attraction_id = ?"
-  );
-  orderedIds.forEach((id, index) => stmt.run(index, id, attractionId));
+export async function reorderAttractionImages(attractionId: number, orderedIds: number[]): Promise<void> {
+  await withTransaction(async (tx) => {
+    const stmt = tx.prepare(
+      "UPDATE attraction_images SET sort_order = ? WHERE id = ? AND attraction_id = ?"
+    );
+    for (const [index, id] of orderedIds.entries()) {
+      await stmt.run(index, id, attractionId);
+    }
+  });
 }

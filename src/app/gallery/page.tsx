@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/gallery" },
 };
 
-export default function GalleryPage() {
-  const images = listGalleryImages(true);
+export default async function GalleryPage() {
+  const images = await listGalleryImages(true);
 
   const groups: GalleryGroup[] = GALLERY_CATEGORIES.map((c) => ({
     slug: c.slug,

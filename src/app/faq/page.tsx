@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/faq" },
 };
 
-export default function FAQPage() {
-  const faqs = listFaqs();
+export default async function FAQPage() {
+  const faqs = await listFaqs();
   const categories = Array.from(new Set(faqs.map((f) => f.category)));
 
   const jsonLd = {

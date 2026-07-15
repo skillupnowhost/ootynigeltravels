@@ -12,7 +12,12 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminCustomersPage() {
   await requireRole(["admin", "manager"]);
-  const customers = listCustomers();
+  const customers = await listCustomers();
+  const bookingCounts = new Map<number, number>(
+    await Promise.all(
+      customers.map(async (c) => [c.id, (await listBookingsForCustomer(c.id)).length] as const)
+    )
+  );
 
   return (
     <div>
@@ -35,7 +40,7 @@ export default async function AdminCustomersPage() {
                   {c.phone} {c.email ? `· ${c.email}` : ""}
                 </p>
                 <p className="text-xs text-charcoal-500">
-                  Joined {formatDate(c.created_at)} · {listBookingsForCustomer(c.id).length} bookings
+                  Joined {formatDate(c.created_at)} · {bookingCounts.get(c.id) ?? 0} bookings
                 </p>
               </Link>
               <DeleteButton action={deleteCustomerAction} id={c.id} confirmLabel={`Delete customer ${c.name}? Their past bookings will be kept but unlinked.`} />
@@ -70,7 +75,7 @@ export default async function AdminCustomersPage() {
                   <td className="px-5 py-3">{c.phone}</td>
                   <td className="px-5 py-3">{c.email ?? "—"}</td>
                   <td className="px-5 py-3">{formatDate(c.created_at)}</td>
-                  <td className="px-5 py-3">{listBookingsForCustomer(c.id).length}</td>
+                  <td className="px-5 py-3">{bookingCounts.get(c.id) ?? 0}</td>
                   <td className="px-5 py-3 text-right">
                     <DeleteButton action={deleteCustomerAction} id={c.id} confirmLabel={`Delete customer ${c.name}? Their past bookings will be kept but unlinked.`} />
                   </td>

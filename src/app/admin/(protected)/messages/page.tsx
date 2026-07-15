@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminMessagesPage() {
   await requireRole(["admin", "manager"]);
-  const messages = listContactMessages();
+  const messages = await listContactMessages();
 
   return (
     <div>

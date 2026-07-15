@@ -1,12 +1,13 @@
 # Ooty Nigel Travels — Luxury Travel Platform
 
-A cinematic, animated luxury travel-booking platform built with **Next.js 16 (App Router) + TypeScript + Tailwind CSS 3**, a real **SQLite database**, and a full admin console.
+A cinematic, animated luxury travel-booking platform built with **Next.js 16 (App Router) + TypeScript + Tailwind CSS 3**, a **Postgres database**, and a full admin console.
 
 ## Quick start
 
 ```bash
 npm install
-npm run db:reset     # creates data/ooty.db and seeds sample content + a default admin user
+# set POSTGRES_URL (or DATABASE_URL) in .env.local to a Postgres connection string first
+npm run db:reset     # creates the schema and seeds sample content + a default admin user
 npm run dev           # http://localhost:3000
 ```
 
@@ -22,12 +23,12 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 This project was built and tested on a Windows machine with an **Application Control policy that blocks unsigned native `.node` binaries** system-wide. That constraint shaped a few technical choices worth knowing about if you move to a different host:
 
-- **Database: `node:sqlite` (Node's built-in module), not `better-sqlite3`.** `better-sqlite3` needs a native binary (blocked here, and would otherwise need a C++ toolchain). `node:sqlite` requires **Node.js 22.5+** — nothing else to install. If you'd rather use `better-sqlite3` or Postgres, the entire integration point is `src/lib/db/client.ts` + `src/lib/db/queries/*.ts`.
+- **Database: Postgres via `pg`, async.** Originally built on `node:sqlite`, but that only works against a local file — Vercel's serverless functions have no persistent, writable disk, so bookings/admin data would vanish between invocations. `src/lib/db/client.ts` connects to Postgres (Vercel Postgres / Neon / any Postgres host) via `POSTGRES_URL`/`DATABASE_URL` (see `.env.example`); every query in `src/lib/db/queries/*.ts` is `async`/`await` accordingly.
 - **Bundler: Webpack, not Turbopack.** Turbopack's native bindings hit the same policy block, so `next dev`/`next build` both pass `--webpack` (see `package.json`). If Turbopack works in your environment, dropping `--webpack` should just work.
 - **Tailwind CSS v3, not v4.** Tailwind v4's Rust-based "oxide" engine (even via its WASM fallback) could not scan the source tree for class names in this sandboxed environment — it silently produced zero utility classes. Tailwind v3's pure-JS engine has no such dependency. If v4 works fine in your environment, migrating back is a matter of restoring `@tailwindcss/postcss` + `@theme`/`@source` directives in `globals.css` and removing `tailwind.config.ts`.
 - **3D hero materials/environment:** the Mercedes-Benz GLS model's photographic `Environment` preset (an HDRI-based reflection map) reliably crashed WebGL under headless/software rendering (`SwiftShader`). It's replaced with a synthetic studio rig built from `<Lightformer>` primitives (see `src/components/three/GLSScene.tsx`) — cheaper, no external HDRI fetch, and it looks intentional rather than like a workaround. Real GPUs will render either approach fine; this one is also more self-contained for production (no CDN dependency).
 
-None of this should matter on a normal Linux/macOS CI or hosting box — `npm run dev`/`npm run build` without `--webpack` and with `better-sqlite3` should also work there if you prefer that path.
+None of this should matter on a normal Linux/macOS CI or hosting box — `npm run dev`/`npm run build` without `--webpack` should also work there.
 
 ## What's inside
 
@@ -35,7 +36,7 @@ None of this should matter on a normal Linux/macOS CI or hosting box — `npm ru
 
 **Booking system** — guest-first (no signup required), 3-field-group wizard, coupon codes, instant `ONT-YYMMDD-XXXX` booking ID, printable confirmation with WhatsApp/email links. Creating an account later automatically links prior guest bookings by phone number (no SMS/OTP step — see below).
 
-**Database** — real SQLite schema (`src/lib/db/schema.sql`) covering users/sessions, bookings + status history, fleet, packages, destinations, drivers, coupons, reviews, contact messages, blog posts, FAQs, and an audit log. CLI tools: `npm run db:migrate`, `db:seed`, `db:reset`, `db:backup`, `admin:create`.
+**Database** — real Postgres schema (`src/lib/db/schema.sql`) covering users/sessions, bookings + status history, fleet, packages, destinations, drivers, coupons, reviews, contact messages, blog posts, FAQs, and an audit log. CLI tools: `npm run db:migrate`, `db:seed`, `db:reset`, `db:backup`, `admin:create`.
 
 **Admin console** (`/admin`) — role-gated (admin / manager / staff) dashboard, booking management (status, driver/vehicle assignment, payment status, remarks), fleet/packages/drivers/coupons CRUD, customer list, review moderation, contact inbox, reports (revenue, popularity), a full audit log, and staff user management (admin-only). Every mutation is authorization-checked **and** recorded to the audit log server-side — the admin nav sidebar hiding links for a role is a convenience, not the actual security boundary.
 
@@ -51,4 +52,4 @@ Business contact details in `src/lib/config/site.ts` and all seed content in `sc
 2. Replace/extend seed content in `scripts/seed.mjs`, or manage it entirely through `/admin` after the first deploy.
 3. Set a strong `SESSION_SECRET` and deploy behind HTTPS.
 4. Decide on SMTP/SMS providers if you want live email/OTP (see above) — currently both are stubbed to safe, functional fallbacks.
-5. Back up `data/ooty.db` regularly (`npm run db:backup`) or move to a managed database for multi-instance deployments.
+5. Provision a Postgres database — e.g. Vercel Postgres (Storage tab; auto-injects `POSTGRES_URL`) or Neon directly (set `DATABASE_URL` in your host's environment variables) — required for Vercel or any other host without persistent disk. Run `npm run db:migrate` and `npm run db:seed` once, pointed at those same env vars, to initialize it. Back up via `npm run db:backup` (shells out to `pg_dump`), or use your provider's built-in backups/branching.

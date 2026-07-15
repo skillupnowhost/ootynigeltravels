@@ -1,22 +1,22 @@
-import { db } from "../client";
+import { db, withTransaction } from "../client";
 import type { GalleryImage } from "../types";
 
-export function listGalleryImages(activeOnly = false): GalleryImage[] {
+export async function listGalleryImages(activeOnly = false): Promise<GalleryImage[]> {
   const sql = activeOnly
     ? "SELECT * FROM gallery_images WHERE active = 1 ORDER BY category ASC, sort_order ASC, id ASC"
     : "SELECT * FROM gallery_images ORDER BY category ASC, sort_order ASC, id ASC";
-  return db.prepare(sql).all() as GalleryImage[];
+  return (await db.prepare(sql).all()) as GalleryImage[];
 }
 
-export function listGalleryImagesByCategory(category: string, activeOnly = false): GalleryImage[] {
+export async function listGalleryImagesByCategory(category: string, activeOnly = false): Promise<GalleryImage[]> {
   const sql = activeOnly
     ? "SELECT * FROM gallery_images WHERE category = ? AND active = 1 ORDER BY sort_order ASC, id ASC"
     : "SELECT * FROM gallery_images WHERE category = ? ORDER BY sort_order ASC, id ASC";
-  return db.prepare(sql).all(category) as GalleryImage[];
+  return (await db.prepare(sql).all(category)) as GalleryImage[];
 }
 
-export function getGalleryImageById(id: number): GalleryImage | undefined {
-  return db.prepare("SELECT * FROM gallery_images WHERE id = ?").get(id) as GalleryImage | undefined;
+export async function getGalleryImageById(id: number): Promise<GalleryImage | undefined> {
+  return (await db.prepare("SELECT * FROM gallery_images WHERE id = ?").get(id)) as GalleryImage | undefined;
 }
 
 export interface GalleryImageInput {
@@ -30,13 +30,14 @@ export interface GalleryImageInput {
   active?: number;
 }
 
-export function createGalleryImage(input: GalleryImageInput): GalleryImage {
-  const result = db
+export async function createGalleryImage(input: GalleryImageInput): Promise<GalleryImage> {
+  return (await db
     .prepare(
       `INSERT INTO gallery_images (category, src, alt, caption, credit, featured, sort_order, active)
-       VALUES (@category, @src, @alt, @caption, @credit, @featured, @sort_order, @active)`
+       VALUES (@category, @src, @alt, @caption, @credit, @featured, @sort_order, @active)
+       RETURNING *`
     )
-    .run({
+    .get({
       category: input.category,
       src: input.src,
       alt: input.alt,
@@ -45,12 +46,11 @@ export function createGalleryImage(input: GalleryImageInput): GalleryImage {
       featured: input.featured ?? 0,
       sort_order: input.sort_order ?? 0,
       active: input.active ?? 1,
-    });
-  return getGalleryImageById(Number(result.lastInsertRowid))!;
+    })) as GalleryImage;
 }
 
-export function updateGalleryImage(id: number, input: GalleryImageInput): void {
-  db.prepare(
+export async function updateGalleryImage(id: number, input: GalleryImageInput): Promise<void> {
+  await db.prepare(
     `UPDATE gallery_images
      SET category = @category, src = @src, alt = @alt, caption = @caption, credit = @credit,
          featured = @featured, sort_order = @sort_order, active = @active
@@ -68,11 +68,15 @@ export function updateGalleryImage(id: number, input: GalleryImageInput): void {
   });
 }
 
-export function removeGalleryImage(id: number): void {
-  db.prepare("DELETE FROM gallery_images WHERE id = ?").run(id);
+export async function removeGalleryImage(id: number): Promise<void> {
+  await db.prepare("DELETE FROM gallery_images WHERE id = ?").run(id);
 }
 
-export function reorderGalleryImages(category: string, orderedIds: number[]): void {
-  const stmt = db.prepare("UPDATE gallery_images SET sort_order = ? WHERE id = ? AND category = ?");
-  orderedIds.forEach((id, index) => stmt.run(index, id, category));
+export async function reorderGalleryImages(category: string, orderedIds: number[]): Promise<void> {
+  await withTransaction(async (tx) => {
+    const stmt = tx.prepare("UPDATE gallery_images SET sort_order = ? WHERE id = ? AND category = ?");
+    for (const [index, id] of orderedIds.entries()) {
+      await stmt.run(index, id, category);
+    }
+  });
 }

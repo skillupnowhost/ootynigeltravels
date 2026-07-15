@@ -11,7 +11,7 @@ type Params = Promise<{ id: string }>;
 export default async function EditPackagePage({ params }: { params: Params }) {
   await requireRole(["admin", "manager"]);
   const { id } = await params;
-  const pkg = packagesRepo.getById(Number(id));
+  const pkg = await packagesRepo.getById(Number(id));
   if (!pkg) notFound();
 
   return (

@@ -13,9 +13,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/reviews" },
 };
 
-export default function ReviewsPage() {
-  const reviews = listApprovedReviews();
-  const { average, count } = averageRating();
+export default async function ReviewsPage() {
+  const [reviews, { average, count }] = await Promise.all([listApprovedReviews(), averageRating()]);
 
   return (
     <>

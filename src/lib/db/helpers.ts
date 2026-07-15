@@ -35,25 +35,25 @@ export function createSlugRepo<T extends { id: number; slug: string; active?: nu
   const mapRow = (row: Record<string, unknown>): T => parseJsonColumns<T>(row, jsonKeys);
 
   return {
-    list(activeOnly = false): T[] {
+    async list(activeOnly = false): Promise<T[]> {
       const sql = activeOnly
         ? `SELECT * FROM ${table} WHERE active = 1 ORDER BY ${orderBy}`
         : `SELECT * FROM ${table} ORDER BY ${orderBy}`;
-      return (db.prepare(sql).all() as Record<string, unknown>[]).map(mapRow);
+      return ((await db.prepare(sql).all()) as Record<string, unknown>[]).map(mapRow);
     },
-    getBySlug(slug: string): T | undefined {
-      const row = db.prepare(`SELECT * FROM ${table} WHERE slug = ?`).get(slug) as
+    async getBySlug(slug: string): Promise<T | undefined> {
+      const row = (await db.prepare(`SELECT * FROM ${table} WHERE slug = ?`).get(slug)) as
         | Record<string, unknown>
         | undefined;
       return row ? mapRow(row) : undefined;
     },
-    getById(id: number): T | undefined {
-      const row = db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get(id) as
+    async getById(id: number): Promise<T | undefined> {
+      const row = (await db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get(id)) as
         | Record<string, unknown>
         | undefined;
       return row ? mapRow(row) : undefined;
     },
-    create(fields: Record<string, unknown>): T {
+    async create(fields: Record<string, unknown>): Promise<T> {
       const columns = Object.keys(fields);
       const serialized: Record<string, unknown> = {};
       for (const col of columns) {
@@ -63,12 +63,12 @@ export function createSlugRepo<T extends { id: number; slug: string; active?: nu
           : value;
       }
       const placeholders = columns.map((c) => `@${c}`).join(", ");
-      const result = db
-        .prepare(`INSERT INTO ${table} (${columns.join(", ")}) VALUES (${placeholders})`)
-        .run(serialized);
-      return this.getById(Number(result.lastInsertRowid))!;
+      const row = (await db
+        .prepare(`INSERT INTO ${table} (${columns.join(", ")}) VALUES (${placeholders}) RETURNING *`)
+        .get(serialized)) as Record<string, unknown>;
+      return mapRow(row);
     },
-    update(id: number, fields: Record<string, unknown>): void {
+    async update(id: number, fields: Record<string, unknown>): Promise<void> {
       const columns = Object.keys(fields);
       if (columns.length === 0) return;
       const serialized: Record<string, unknown> = { id };
@@ -79,10 +79,10 @@ export function createSlugRepo<T extends { id: number; slug: string; active?: nu
           : value;
       }
       const setClause = columns.map((c) => `${c} = @${c}`).join(", ");
-      db.prepare(`UPDATE ${table} SET ${setClause} WHERE id = @id`).run(serialized);
+      await db.prepare(`UPDATE ${table} SET ${setClause} WHERE id = @id`).run(serialized);
     },
-    remove(id: number): void {
-      db.prepare(`DELETE FROM ${table} WHERE id = ?`).run(id);
+    async remove(id: number): Promise<void> {
+      await db.prepare(`DELETE FROM ${table} WHERE id = ?`).run(id);
     },
   };
 }

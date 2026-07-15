@@ -6,16 +6,16 @@ function mapRow(row: Record<string, unknown>): TripRequest {
   return parseJsonColumns<TripRequest>(row, ["destinations"]);
 }
 
-export function listTripRequests(): TripRequest[] {
+export async function listTripRequests(): Promise<TripRequest[]> {
   return (
-    db.prepare("SELECT * FROM trip_requests ORDER BY created_at DESC").all() as Record<
+    (await db.prepare("SELECT * FROM trip_requests ORDER BY created_at DESC").all()) as Record<
       string,
       unknown
     >[]
   ).map(mapRow);
 }
 
-export function createTripRequest(input: {
+export async function createTripRequest(input: {
   name: string;
   phone: string;
   email?: string | null;
@@ -30,13 +30,14 @@ export function createTripRequest(input: {
   vehicle_type?: string | null;
   hotel_category?: string | null;
   computed_total?: number | null;
-}): TripRequest {
-  const result = db
+}): Promise<TripRequest> {
+  const row = (await db
     .prepare(
       `INSERT INTO trip_requests (name, phone, email, trip_type, destinations, group_size, duration_label, travel_month, budget_range, notes, package_slug, vehicle_type, hotel_category, computed_total)
-       VALUES (@name, @phone, @email, @trip_type, @destinations, @group_size, @duration_label, @travel_month, @budget_range, @notes, @package_slug, @vehicle_type, @hotel_category, @computed_total)`
+       VALUES (@name, @phone, @email, @trip_type, @destinations, @group_size, @duration_label, @travel_month, @budget_range, @notes, @package_slug, @vehicle_type, @hotel_category, @computed_total)
+       RETURNING *`
     )
-    .run({
+    .get({
       name: input.name,
       phone: input.phone,
       email: input.email ?? null,
@@ -51,17 +52,14 @@ export function createTripRequest(input: {
       vehicle_type: input.vehicle_type ?? null,
       hotel_category: input.hotel_category ?? null,
       computed_total: input.computed_total ?? null,
-    });
-  const row = db
-    .prepare("SELECT * FROM trip_requests WHERE id = ?")
-    .get(Number(result.lastInsertRowid)) as Record<string, unknown>;
+    })) as Record<string, unknown>;
   return mapRow(row);
 }
 
-export function setTripRequestStatus(id: number, status: TripRequestStatus): void {
-  db.prepare("UPDATE trip_requests SET status = ? WHERE id = ?").run(status, id);
+export async function setTripRequestStatus(id: number, status: TripRequestStatus): Promise<void> {
+  await db.prepare("UPDATE trip_requests SET status = ? WHERE id = ?").run(status, id);
 }
 
-export function deleteTripRequest(id: number): void {
-  db.prepare("DELETE FROM trip_requests WHERE id = ?").run(id);
+export async function deleteTripRequest(id: number): Promise<void> {
+  await db.prepare("DELETE FROM trip_requests WHERE id = ?").run(id);
 }

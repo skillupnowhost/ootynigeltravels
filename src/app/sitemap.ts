@@ -25,7 +25,7 @@ const STATIC_ROUTES = [
   "/refund-policy",
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((path) => ({
@@ -35,28 +35,35 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: path === "" ? 1 : 0.7,
   }));
 
-  const fleetEntries: MetadataRoute.Sitemap = fleetRepo.list(true).map((v) => ({
+  const [fleet, packages, destinations, blog] = await Promise.all([
+    fleetRepo.list(true),
+    packagesRepo.list(true),
+    destinationsRepo.list(true),
+    blogRepo.list(),
+  ]);
+
+  const fleetEntries: MetadataRoute.Sitemap = fleet.map((v) => ({
     url: `${site.url}/fleet/${v.slug}`,
     lastModified: now,
     changeFrequency: "monthly",
     priority: 0.6,
   }));
 
-  const packageEntries: MetadataRoute.Sitemap = packagesRepo.list(true).map((p) => ({
+  const packageEntries: MetadataRoute.Sitemap = packages.map((p) => ({
     url: `${site.url}/packages/${p.slug}`,
     lastModified: now,
     changeFrequency: "monthly",
     priority: 0.8,
   }));
 
-  const destinationEntries: MetadataRoute.Sitemap = destinationsRepo.list(true).map((d) => ({
+  const destinationEntries: MetadataRoute.Sitemap = destinations.map((d) => ({
     url: `${site.url}/destinations/${d.slug}`,
     lastModified: now,
     changeFrequency: "monthly",
     priority: 0.6,
   }));
 
-  const blogEntries: MetadataRoute.Sitemap = blogRepo.list().map((b) => ({
+  const blogEntries: MetadataRoute.Sitemap = blog.map((b) => ({
     url: `${site.url}/blog/${b.slug}`,
     lastModified: b.published_at,
     changeFrequency: "yearly",

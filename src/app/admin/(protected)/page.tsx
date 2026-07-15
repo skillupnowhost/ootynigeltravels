@@ -22,10 +22,13 @@ function statusBadgeClass(status: string) {
   return BOOKING_STATUS_STYLES[status] ?? "bg-forest-100 text-forest-800";
 }
 
-export default function AdminDashboardPage() {
-  const stats = bookingStats();
-  const recentBookings = listAllBookings({ limit: 8 });
-  const unhandledMessages = listContactMessages().filter((m) => !m.handled).length;
+export default async function AdminDashboardPage() {
+  const [stats, recentBookings, messages] = await Promise.all([
+    bookingStats(),
+    listAllBookings({ limit: 8 }),
+    listContactMessages(),
+  ]);
+  const unhandledMessages = messages.filter((m) => !m.handled).length;
   const pendingBookings = stats.byStatus["Pending"] ?? 0;
 
   return (

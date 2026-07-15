@@ -10,12 +10,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { openDb, ROOT } from "./lib/db.mjs";
 
-try {
-  process.loadEnvFile(path.join(ROOT, ".env.local"));
-} catch {
-  // .env.local may already be loaded into the environment some other way
-}
-
 const ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 if (!ACCESS_KEY || ACCESS_KEY === "change-me") {
   console.error("UNSPLASH_ACCESS_KEY is not set in .env.local — aborting.");
@@ -59,7 +53,7 @@ async function downloadImage(photo, destPath) {
 
 async function main() {
   await fs.mkdir(OUT_DIR, { recursive: true });
-  const db = openDb();
+  const db = await openDb();
   const update = db.prepare("UPDATE blog_posts SET cover_image = ? WHERE slug = ?");
 
   const credits = ["# Blog cover photography credits\n\nPhotos via the Unsplash API. Do not remove attribution.\n"];
@@ -87,11 +81,11 @@ async function main() {
     } else {
       console.log(`Skipping "${slug}" — already exists`);
     }
-    const result = update.run(publicPath, slug);
-    if (result.changes > 0) console.log(`  set cover_image for ${slug}`);
+    const result = await update.run(publicPath, slug);
+    if (result.rowCount > 0) console.log(`  set cover_image for ${slug}`);
   }
 
-  db.close();
+  await db.close();
 
   const creditsPath = path.join(OUT_DIR, "IMAGE_CREDITS.md");
   const prev = await fs.readFile(creditsPath, "utf8").catch(() => "");
