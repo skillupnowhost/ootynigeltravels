@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/AnimatedIcons";
 import { LinkButton } from "@/components/ui/Button";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/Reveal";
+import { HeroContactIcons } from "@/components/ui/HeroContactIcons";
 import { ForestHero } from "./ForestHero";
 import { HeroWordCycle } from "./HeroWordCycle";
 import { BrandKicker } from "./BrandKicker";
@@ -178,6 +179,8 @@ export function Hero({
               </LinkButton>
             </div>
           </Reveal>
+
+          <HeroContactIcons variant={isNight ? "dark" : "light"} className="mt-8 w-full" />
         </div>
 
         <div className="relative lg:pl-4">
