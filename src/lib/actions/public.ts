@@ -56,6 +56,7 @@ export async function submitContactMessage(
 
 const reviewSchema = z.object({
   customer_name: z.string().trim().min(2).max(120),
+  email: z.string().trim().email().max(200).optional().or(z.literal("")),
   rating: z.coerce.number().int().min(1).max(5),
   comment: z.string().trim().min(10).max(2000),
 });
@@ -73,6 +74,7 @@ export async function submitReview(
 
   const parsed = reviewSchema.safeParse({
     customer_name: formData.get("customer_name"),
+    email: formData.get("email"),
     rating: formData.get("rating"),
     comment: formData.get("comment"),
   });
@@ -82,6 +84,7 @@ export async function submitReview(
 
   await createReview({
     customer_name: parsed.data.customer_name,
+    email: parsed.data.email || null,
     rating: parsed.data.rating,
     comment: parsed.data.comment,
     source: "website",

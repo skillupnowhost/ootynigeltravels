@@ -40,6 +40,18 @@ export function ReviewForm() {
       </div>
 
       <div>
+        <label className="mb-1.5 block text-sm font-medium text-forest-900" htmlFor="email">
+          Email <span className="font-normal text-charcoal-400">(optional)</span>
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          className="w-full rounded-xl border border-forest-200 px-4 py-3 text-sm outline-none focus:border-gold-500"
+        />
+      </div>
+
+      <div>
         <span className="mb-1.5 block text-sm font-medium text-forest-900">Rating</span>
         <input type="hidden" name="rating" value={rating} />
         <div className="flex gap-1" onMouseLeave={() => setHoverRating(0)}>

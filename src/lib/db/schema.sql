@@ -185,6 +185,7 @@ CREATE TABLE IF NOT EXISTS booking_history (
 CREATE TABLE IF NOT EXISTS reviews (
   id            SERIAL PRIMARY KEY,
   customer_name TEXT NOT NULL,
+  email         TEXT,
   rating        INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
   comment       TEXT NOT NULL,
   package_id    INTEGER REFERENCES packages(id) ON DELETE SET NULL,
@@ -192,6 +193,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   approved      INTEGER NOT NULL DEFAULT 1,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS email TEXT;
 
 CREATE TABLE IF NOT EXISTS contact_messages (
   id          SERIAL PRIMARY KEY,

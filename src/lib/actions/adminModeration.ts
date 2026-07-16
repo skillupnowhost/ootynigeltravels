@@ -16,6 +16,7 @@ export async function approveReviewAction(formData: FormData): Promise<void> {
   await setReviewApproved(id, true);
   await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "approve", entity_type: "review", entity_id: id });
   revalidatePath("/admin/reviews");
+  revalidatePath("/reviews");
 }
 
 export async function rejectReviewAction(formData: FormData): Promise<void> {
@@ -24,6 +25,7 @@ export async function rejectReviewAction(formData: FormData): Promise<void> {
   await setReviewApproved(id, false);
   await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "reject", entity_type: "review", entity_id: id });
   revalidatePath("/admin/reviews");
+  revalidatePath("/reviews");
 }
 
 export async function deleteReviewAction(formData: FormData): Promise<void> {
@@ -32,6 +34,7 @@ export async function deleteReviewAction(formData: FormData): Promise<void> {
   await deleteReview(id);
   await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "review", entity_id: id });
   revalidatePath("/admin/reviews");
+  revalidatePath("/reviews");
 }
 
 export async function markMessageHandledAction(formData: FormData): Promise<void> {

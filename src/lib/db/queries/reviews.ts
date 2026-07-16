@@ -25,6 +25,7 @@ export async function listReviewsForPackage(packageId: number, limit?: number): 
 
 export async function createReview(input: {
   customer_name: string;
+  email?: string | null;
   rating: number;
   comment: string;
   package_id?: number | null;
@@ -33,12 +34,13 @@ export async function createReview(input: {
 }): Promise<Review> {
   return (await db
     .prepare(
-      `INSERT INTO reviews (customer_name, rating, comment, package_id, source, approved)
-       VALUES (@customer_name, @rating, @comment, @package_id, @source, @approved)
+      `INSERT INTO reviews (customer_name, email, rating, comment, package_id, source, approved)
+       VALUES (@customer_name, @email, @rating, @comment, @package_id, @source, @approved)
        RETURNING *`
     )
     .get({
       customer_name: input.customer_name,
+      email: input.email ?? null,
       rating: input.rating,
       comment: input.comment,
       package_id: input.package_id ?? null,

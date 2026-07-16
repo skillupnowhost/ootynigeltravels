@@ -23,6 +23,7 @@ export default async function AdminReviewsPage() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="font-medium text-forest-900">{r.customer_name}</p>
+                  {r.email && <p className="text-xs text-charcoal-400">{r.email}</p>}
                   <div className="mt-1 flex gap-0.5">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <GlowStarIcon
