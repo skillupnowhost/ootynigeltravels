@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { BLUR_DATA_URL } from "@/lib/media";
 
 export interface SlideImage {
   src: string;
@@ -93,6 +94,8 @@ export function CardSlideshow({
             fill
             sizes={sizes}
             priority={priority && index === 0}
+            placeholder="blur"
+            blurDataURL={BLUR_DATA_URL}
             className="scale-105 select-none object-cover transition-transform duration-700 group-hover/slideshow:scale-[1.12]"
             draggable={false}
           />

@@ -4,7 +4,7 @@ export const site = {
   name: "Ooty Nigel Travels",
   tagline: "Ooty, Curated in Luxury",
   description:
-    "Signature holiday packages across Ooty, Coonoor and Kotagiri — curated itineraries for families, couples and friends, with private comfort throughout.",
+    "Ooty Nigel Travels is the best-rated travel agency for Ooty, Coimbatore and the surrounding Nilgiris — signature holiday packages, Coimbatore Airport pickups and private chauffeur-driven tours across Ooty, Coonoor, Kotagiri and Mudumalai.",
   phone: "+91 8072 728 891",
   phoneHref: "tel:+918072728891",
   altPhone: "+91 8072 728 891",
@@ -22,8 +22,18 @@ export const site = {
   addressLine2: "Ooty (Udhagamandalam), The Nilgiris, Tamil Nadu 643001",
   geo: { lat: 11.4102, lng: 76.695 },
   hours: "Open 24 × 7 — every day of the year",
+  areaServed: [
+    "Ooty",
+    "Udhagamandalam",
+    "Coimbatore",
+    "Coonoor",
+    "Kotagiri",
+    "Mudumalai",
+    "Gudalur",
+    "The Nilgiris",
+  ],
   social: {
-    instagram: "https://instagram.com/ootynigeltravels",
+    instagram: "https://www.instagram.com/ootynigeltravels43",
     facebook: "https://facebook.com/ootynigeltravels",
     youtube: "https://youtube.com/@ootynigeltravels",
     telegram: "https://t.me/ootynigeltravels",

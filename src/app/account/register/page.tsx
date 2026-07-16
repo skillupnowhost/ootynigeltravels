@@ -1,16 +1,21 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { PageHero } from "@/components/ui/PageHero";
 import { RegisterForm } from "@/components/forms/AuthForms";
 import { ScenicArt } from "@/components/ui/ScenicArt";
 import { Reveal } from "@/components/ui/Reveal";
 import { ShieldBadgeIcon } from "@/components/ui/AnimatedIcons";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
   title: "Create Account",
   alternates: { canonical: "/account/register" },
 };
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  const user = await getCurrentUser();
+  if (user) redirect("/account");
+
   return (
     <>
       <PageHero eyebrow="Account" title="Create your account" seed="register-hero" />

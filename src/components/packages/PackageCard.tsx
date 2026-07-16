@@ -9,6 +9,7 @@ import { WishlistButton } from "@/components/packages/WishlistButton";
 import { ShareButton } from "@/components/packages/ShareButton";
 import { tripCategoryMeta } from "@/lib/config/tripCategories";
 import { formatINR } from "@/lib/format";
+import { BLUR_DATA_URL } from "@/lib/media";
 import type { TourPackage } from "@/lib/db/types";
 
 export function PackageCard({ pkg }: { pkg: TourPackage }) {
@@ -28,6 +29,8 @@ export function PackageCard({ pkg }: { pkg: TourPackage }) {
             alt={pkg.name}
             fill
             sizes="(min-width: 1536px) 25vw, (min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
+            placeholder="blur"
+            blurDataURL={BLUR_DATA_URL}
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
           />
         ) : (

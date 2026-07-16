@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { ScenicArt } from "@/components/ui/ScenicArt";
+import { BLUR_DATA_URL } from "@/lib/media";
 
 type Tile =
   | { type: "photo"; src: string; alt: string; span: string }
@@ -58,6 +59,8 @@ export function GalleryPreview() {
                   fill
                   className="object-cover transition-transform duration-700 hover:scale-110"
                   sizes="(min-width: 640px) 33vw, 50vw"
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
                 />
               ) : (
                 <ScenicArt seed={tile.seed} className="h-full w-full" />

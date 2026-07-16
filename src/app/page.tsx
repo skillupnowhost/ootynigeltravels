@@ -19,7 +19,16 @@ import { site } from "@/lib/config/site";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: `${site.name} | ${site.tagline}`,
+  title: `${site.name} | Best Travel Agency in Ooty & Coimbatore`,
+  description: site.description,
+  keywords: [
+    "best travels in Ooty",
+    "best travel agency in Ooty and Coimbatore",
+    "Ooty Nigel Travels",
+    "Ooty Coimbatore taxi",
+    "Ooty tour packages",
+    "Coimbatore to Ooty cab",
+  ],
   alternates: { canonical: "/" },
 };
 

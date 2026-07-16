@@ -6,6 +6,7 @@ import { Reveal, RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { ScenicArt } from "@/components/ui/ScenicArt";
 import { CompassIcon, MapPinDropIcon } from "@/components/ui/AnimatedIcons";
 import { destinationsRepo } from "@/lib/db/queries/destinations";
+import { BLUR_DATA_URL } from "@/lib/media";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,8 @@ export default async function DestinationsPage() {
                       alt={d.name}
                       fill
                       sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      placeholder="blur"
+                      blurDataURL={BLUR_DATA_URL}
                       className="scale-105 object-cover transition-transform duration-700 group-hover:scale-[1.15]"
                     />
                   ) : (

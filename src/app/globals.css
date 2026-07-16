@@ -113,6 +113,16 @@
 }
 
 @layer components {
+  /* For horizontal snap-scroll carousels — the global custom scrollbar
+     styling above is too heavy for a compact swipeable row. */
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
   .container-luxe {
     width: 100%;
     max-width: 84rem;

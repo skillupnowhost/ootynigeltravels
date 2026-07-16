@@ -1,8 +1,12 @@
+"use client";
+
+import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
-import { RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { MotionIcon } from "@/components/ui/MotionIcon";
+import { BLUR_DATA_URL } from "@/lib/media";
 import {
   FamilyGroupIcon,
   HeartBeatIcon,
@@ -10,6 +14,13 @@ import {
   FriendsGroupIcon,
   SparkleBurstIcon,
 } from "@/components/ui/AnimatedIcons";
+
+const ease = [0.22, 1, 0.36, 1] as const;
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 28 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease } },
+};
 
 const TRIP_STYLES = [
   {
@@ -55,6 +66,26 @@ const TRIP_STYLES = [
 ];
 
 export function TripStylesShowcase() {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [activeDot, setActiveDot] = useState(0);
+
+  function handleScroll() {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll <= 0) return;
+    const step = maxScroll / (TRIP_STYLES.length - 1);
+    setActiveDot(Math.round(el.scrollLeft / step));
+  }
+
+  function scrollToCard(index: number) {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    const step = maxScroll / (TRIP_STYLES.length - 1);
+    el.scrollTo({ left: step * index, behavior: "smooth" });
+  }
+
   return (
     <section className="bg-forest-950 py-24 text-ivory-50">
       <div className="container-luxe">
@@ -74,51 +105,85 @@ export function TripStylesShowcase() {
           </div>
           <Link
             href="/packages"
-            className="mb-1 inline-flex items-center gap-1.5 text-sm font-semibold text-gold-400 hover:text-gold-300"
+            className="group mb-1 inline-flex items-center gap-1.5 text-sm font-semibold text-gold-400 hover:text-gold-300"
           >
             Browse all packages{" "}
-            <MotionIcon preset="bounce">
-              <ArrowRight size={16} />
-            </MotionIcon>
+            <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
         </div>
 
-        <RevealGroup className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-5" stagger={0.1}>
+        <motion.div
+          ref={scrollerRef}
+          onScroll={handleScroll}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
+          className="scrollbar-hide -mx-4 mt-14 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 [mask-image:linear-gradient(to_right,transparent,black_24px,black_calc(100%-24px),transparent)] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 sm:[mask-image:none] md:grid-cols-3 xl:grid-cols-5"
+        >
           {TRIP_STYLES.map((c) => (
-            <RevealItem key={c.key}>
-              <Link
-                href={c.href}
-                className="group flex h-full flex-col overflow-hidden rounded-3xl border border-forest-800 bg-forest-900 transition-all duration-500 hover:-translate-y-1.5 hover:border-gold-500 hover:shadow-[0_28px_60px_-30px_rgba(0,0,0,0.5)]"
-              >
-                <div className="relative h-36 overflow-hidden">
+            <motion.div key={c.key} variants={itemVariants} className="w-[72%] shrink-0 snap-center sm:w-auto sm:shrink">
+              <div className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-forest-800 bg-forest-900 transition-all duration-500 hover:-translate-y-2 hover:border-gold-500 hover:shadow-[0_28px_60px_-30px_rgba(0,0,0,0.5)]">
+                <Link href={c.href} className="relative block h-40 overflow-hidden sm:h-36">
                   <Image
                     src={c.image}
                     alt={c.label}
                     fill
-                    sizes="(min-width: 1024px) 20vw, (min-width: 640px) 50vw, 100vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    sizes="(min-width: 1024px) 20vw, (min-width: 640px) 50vw, 72vw"
+                    placeholder="blur"
+                    blurDataURL={BLUR_DATA_URL}
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-forest-950/85 via-forest-950/25 to-transparent" />
-                  <span className="absolute bottom-3 left-4 flex h-9 w-9 items-center justify-center rounded-xl bg-forest-950/80 text-gold-400 backdrop-blur">
+                  <span className="animate-bob absolute bottom-3 left-4 flex h-9 w-9 items-center justify-center rounded-xl bg-forest-950/80 text-gold-400 backdrop-blur transition-transform duration-500 group-hover:scale-110 group-hover:bg-gold-500 group-hover:text-forest-950">
                     {c.icon(18)}
                   </span>
-                </div>
+                </Link>
                 <div className="flex flex-1 flex-col p-5">
-                  <h3 className="font-display text-lg text-ivory-50">{c.label}</h3>
+                  <Link href={c.href}>
+                    <h3 className="font-display text-lg text-ivory-50 transition-colors group-hover:text-gold-200">
+                      {c.label}
+                    </h3>
+                  </Link>
                   <p className="mt-2 text-xs leading-relaxed text-forest-300">{c.blurb}</p>
-                  <span className="mt-auto inline-flex w-fit items-center gap-1.5 self-center pt-5 text-xs font-semibold text-gold-400 transition-colors group-hover:text-gold-300">
-                    <span className="rounded-full border border-gold-500/40 px-3 py-1.5 transition-all duration-300 group-hover:border-gold-400 group-hover:bg-gold-500/10">
+
+                  <div className="mt-auto grid grid-cols-2 gap-2 pt-6">
+                    <Link
+                      href={c.href}
+                      className="relative inline-flex items-center justify-center gap-1.5 overflow-hidden rounded-full border border-gold-500/50 bg-gold-500/10 px-3 py-2 text-xs font-semibold text-gold-300 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-400 hover:bg-gold-500 hover:text-forest-950 hover:shadow-[0_10px_28px_-8px_rgba(200,161,92,0.6)] active:translate-y-0 active:scale-95"
+                    >
+                      <span className="animate-glow-pulse pointer-events-none absolute inset-0 rounded-full bg-gold-500/20 group-hover:hidden" aria-hidden />
                       Explore
-                    </span>
-                    <MotionIcon preset="bounce">
-                      <ArrowRight size={13} />
-                    </MotionIcon>
-                  </span>
+                      <MotionIcon preset="bounce">
+                        <ArrowRight size={13} />
+                      </MotionIcon>
+                    </Link>
+                    <Link
+                      href="/booking"
+                      className="inline-flex items-center justify-center rounded-full bg-gold-600 px-3 py-2 text-xs font-semibold text-forest-950 transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-500 hover:shadow-[0_10px_28px_-8px_rgba(200,161,92,0.6)] active:translate-y-0 active:scale-95"
+                    >
+                      Book Now
+                    </Link>
+                  </div>
                 </div>
-              </Link>
-            </RevealItem>
+              </div>
+            </motion.div>
           ))}
-        </RevealGroup>
+        </motion.div>
+
+        <div className="mt-5 flex items-center justify-center gap-2 sm:hidden">
+          {TRIP_STYLES.map((c, i) => (
+            <button
+              key={c.key}
+              type="button"
+              onClick={() => scrollToCard(i)}
+              aria-label={`Go to ${c.label}`}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                i === activeDot ? "w-6 bg-gold-400" : "w-1.5 bg-forest-700"
+              }`}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );

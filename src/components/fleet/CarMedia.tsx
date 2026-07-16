@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "motion/react";
+import { BLUR_DATA_URL } from "@/lib/media";
 
 export function CarMedia({
   src,
@@ -35,6 +36,8 @@ export function CarMedia({
           fill
           priority={priority}
           sizes={sizes ?? "(min-width: 768px) 40vw, 90vw"}
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URL}
           className={`object-cover ${imageClassName}`}
         />
       </motion.div>
@@ -65,6 +68,8 @@ export function CarMedia({
           fill
           priority={priority}
           sizes={sizes ?? "(min-width: 768px) 40vw, 90vw"}
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URL}
           className={`object-contain drop-shadow-[0_16px_20px_rgba(7,31,24,0.3)] ${imageClassName}`}
         />
       </motion.div>

@@ -1,12 +1,19 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Phone, Mail, ArrowUpRight } from "lucide-react";
-import { WhatsAppGlyphIcon } from "@/components/ui/BrandIcons";
+import { WhatsAppGlyphIcon, InstagramIcon, FacebookIcon, YoutubeIcon, TelegramIcon } from "@/components/ui/BrandIcons";
 import { MotionIcon } from "@/components/ui/MotionIcon";
 import { MapPinDropIcon } from "@/components/ui/AnimatedIcons";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { LinkButton } from "@/components/ui/Button";
 import { site, waLink } from "@/lib/config/site";
+
+const SOCIAL_LINKS = [
+  { href: site.social.instagram, icon: InstagramIcon, label: "Instagram" },
+  { href: site.social.facebook, icon: FacebookIcon, label: "Facebook" },
+  { href: site.social.youtube, icon: YoutubeIcon, label: "YouTube" },
+  { href: site.social.telegram, icon: TelegramIcon, label: "Telegram" },
+];
 
 const columns = [
   {
@@ -172,12 +179,25 @@ export function Footer() {
       </div>
 
       <div className="relative border-t border-forest-800">
-        <div className="container-luxe flex flex-col items-center justify-between gap-3 py-6 text-center text-xs text-forest-300 sm:flex-row sm:text-left">
+        <div className="container-luxe flex flex-col items-center justify-between gap-4 py-6 text-center text-xs text-forest-300 sm:flex-row sm:text-left">
           <p>
             © {new Date().getFullYear()} {site.name}. All rights reserved. Made with{" "}
             <span className="text-gold-400" aria-label="love">♥</span> for Nilgiri travel lovers.
           </p>
-          <p>Crafted for travellers who notice the details.</p>
+          <div className="flex items-center gap-2.5">
+            {SOCIAL_LINKS.map(({ href, icon: Icon, label }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-forest-700 text-forest-300 transition-colors hover:border-gold-400 hover:text-gold-300"
+              >
+                <Icon size={15} />
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </footer>

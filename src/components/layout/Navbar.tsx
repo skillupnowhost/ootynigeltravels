@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Menu, X, User as UserIcon, ChevronDown, LayoutDashboard, LogOut, MapPinned, ShieldCheck } from "lucide-react";
 import { logoutAction } from "@/lib/actions/account";
+import { BLUR_DATA_URL } from "@/lib/media";
 
 const LINKS = [
   { href: "/", label: "Home" },
@@ -23,8 +24,16 @@ type SessionUser = { name: string; role: string; avatar: string | null } | null;
 function AvatarBadge({ user, size = 32 }: { user: NonNullable<SessionUser>; size?: number }) {
   if (user.avatar) {
     return (
-      <span className="relative inline-block shrink-0 overflow-hidden rounded-full" style={{ width: size, height: size }}>
-        <Image src={user.avatar} alt={user.name} fill sizes={`${size}px`} className="object-cover" />
+      <span className="relative inline-block shrink-0 overflow-hidden rounded-full bg-forest-100" style={{ width: size, height: size }}>
+        <Image
+          src={user.avatar}
+          alt={user.name}
+          fill
+          sizes={`${size}px`}
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URL}
+          className="object-cover"
+        />
       </span>
     );
   }
@@ -85,17 +94,18 @@ export function Navbar() {
           scrolled ? "h-16 lg:h-20" : "h-20 lg:h-24"
         }`}
       >
-        <Link href="/" className="flex items-center pl-1 sm:pl-2">
+        <Link href="/" className="flex min-w-0 items-center gap-2 pl-1 sm:gap-3 sm:pl-2">
           <Image
-            src="/images/brand/logo-full.png"
-            alt="Ooty Nigel Travels — Luxury Journeys, Timeless Memories"
-            width={1024}
-            height={1024}
+            src="/images/brand/logo-mark.png"
+            alt=""
+            width={844}
+            height={414}
             preload
-            className={`w-auto transition-all duration-500 ${
-              scrolled ? "h-14 lg:h-[72px]" : "h-14 sm:h-16 lg:h-20"
+            className={`w-auto shrink-0 transition-all duration-500 ${
+              scrolled ? "h-9 lg:h-11" : "h-10 sm:h-11 lg:h-12"
             }`}
           />
+          
         </Link>
 
         <nav className="hidden lg:flex items-center gap-10" aria-label="Primary">
@@ -129,24 +139,38 @@ export function Navbar() {
           <AuthControl user={user} />
         </div>
 
-        <button
-          className="lg:hidden rounded-full p-2 text-forest-900"
-          onClick={() => setOpen((v) => !v)}
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-        >
-          <AnimatePresence mode="wait" initial={false}>
-            {open ? (
-              <motion.span key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }} className="inline-flex">
-                <X size={26} />
-              </motion.span>
-            ) : (
-              <motion.span key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }} className="inline-flex">
-                <Menu size={26} />
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </button>
+        <div className="flex items-center gap-1 rounded-full border border-forest-200/70 bg-white/50 p-1 lg:hidden">
+          {user && (
+            <>
+              <Link
+                href="/account"
+                aria-label={`${user.name}'s account`}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all hover:ring-2 hover:ring-gold-400"
+              >
+                <AvatarBadge user={user} size={30} />
+              </Link>
+              <span className="h-5 w-px shrink-0 bg-forest-200" aria-hidden />
+            </>
+          )}
+          <button
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-forest-900 transition-colors hover:bg-forest-100"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              {open ? (
+                <motion.span key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }} className="inline-flex">
+                  <X size={22} />
+                </motion.span>
+              ) : (
+                <motion.span key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }} className="inline-flex">
+                  <Menu size={22} />
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>

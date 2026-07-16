@@ -6,6 +6,7 @@ import { RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { CategoryPillNav } from "@/components/ui/CategoryPillNav";
 import { ExploreButton } from "@/components/home/ExploreButton";
 import { GalleryLightbox } from "./GalleryLightbox";
+import { BLUR_DATA_URL } from "@/lib/media";
 import type { GalleryImage } from "@/lib/db/types";
 
 export interface GalleryGroup {
@@ -80,6 +81,8 @@ export function GalleryBrowser({ groups }: { groups: GalleryGroup[] }) {
                       fill
                       className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                       sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                      placeholder="blur"
+                      blurDataURL={BLUR_DATA_URL}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-forest-950/45 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     {img.featured === 1 && (

@@ -124,9 +124,10 @@ export function Hero({
                 isNight ? "text-forest-200" : "text-charcoal-500"
               }`}
             >
-              Signature holiday packages across Ooty, Coonoor and Kotagiri —
-              tea gardens, waterfalls, wildlife and viewpoints, woven into an
-              itinerary built around how you want to travel.
+              The best-rated travel agency across Ooty, Coimbatore, Coonoor and
+              Kotagiri — Coimbatore Airport pickups, tea gardens, waterfalls,
+              wildlife and viewpoints, woven into an itinerary built around
+              how you want to travel.
             </p>
           </Reveal>
 

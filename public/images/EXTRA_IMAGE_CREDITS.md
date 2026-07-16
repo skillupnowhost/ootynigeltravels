@@ -131,3 +131,9 @@ Please do not upload an edited image here without consulting me.  I would like t
 - `images/attractions/sims-park-3.jpg` — Gauri Wur Sem (CC BY-SA 3.0), via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Bunte_Blumen_bei_Sim%27s_Park_(Coonoor).JPG)
 - `images/attractions/sims-park-4.jpg` — Gauri Wur Sem (CC BY-SA 3.0), via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Bunte_Blumen_bei_Sim%27s_Park,_Coonoor-Nahaufnahme.JPG)
 - `images/attractions/sims-park-5.jpg` — PJeganathan (CC BY-SA 4.0), via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Sim%27s_Park,_Coonoor_JEG9187.jpg)
+
+# 404 / maintenance page photography credits
+
+- `images/errors/car-crash-404.jpg` — Photo by [Anthony Maw](https://unsplash.com/@anthonymaw?utm_source=ooty-nigel-travels&utm_medium=referral) on [Unsplash](https://unsplash.com/photos/XcjVef6uvYA?utm_source=ooty-nigel-travels&utm_medium=referral)
+- `images/errors/car-collision-secondary.jpg` — Photo by [Scott Greer](https://unsplash.com/@sgreer?utm_source=ooty-nigel-travels&utm_medium=referral) on [Unsplash](https://unsplash.com/photos/RzVENp1UbRc?utm_source=ooty-nigel-travels&utm_medium=referral)
+- `images/errors/car-workshop-maintenance.jpg` — Photo by [Sten Rademaker](https://unsplash.com/@stenrademaker?utm_source=ooty-nigel-travels&utm_medium=referral) on [Unsplash](https://unsplash.com/photos/UZUzvJEvKnI?utm_source=ooty-nigel-travels&utm_medium=referral)

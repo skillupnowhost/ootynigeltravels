@@ -15,7 +15,7 @@ const highlights = [
 
 export const metadata: Metadata = {
   title: "About Us",
-  description: `The story behind ${site.name} — private, chauffeur-driven travel across the Nilgiris.`,
+  description: `The story behind ${site.name} — the best-rated private, chauffeur-driven travel agency across Ooty, Coimbatore and the Nilgiris.`,
   alternates: { canonical: "/about" },
 };
 

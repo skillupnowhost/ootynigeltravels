@@ -10,6 +10,7 @@ import { ClockHandsIcon, HeadsetPulseIcon } from "@/components/ui/AnimatedIcons"
 import { blogRepo } from "@/lib/db/queries/blog";
 import { formatDate } from "@/lib/format";
 import { BLOG_CATEGORIES } from "@/lib/db/types";
+import { BLUR_DATA_URL } from "@/lib/media";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,8 @@ export default async function BlogPage() {
                           alt={post.title}
                           fill
                           sizes="(min-width: 768px) 33vw, 100vw"
+                          placeholder="blur"
+                          blurDataURL={BLUR_DATA_URL}
                           className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                         />
                       ) : (
