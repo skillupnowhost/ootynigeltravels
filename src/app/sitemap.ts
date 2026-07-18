@@ -36,10 +36,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const [fleet, packages, destinations, blog] = await Promise.all([
-    fleetRepo.list(true),
-    packagesRepo.list(true),
-    destinationsRepo.list(true),
-    blogRepo.list(),
+    fleetRepo.list(true).catch(() => []),
+    packagesRepo.list(true).catch(() => []),
+    destinationsRepo.list(true).catch(() => []),
+    blogRepo.list().catch(() => []),
   ]);
 
   const fleetEntries: MetadataRoute.Sitemap = fleet.map((v) => ({
