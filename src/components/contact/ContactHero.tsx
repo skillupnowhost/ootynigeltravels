@@ -244,6 +244,7 @@ export function ContactHero() {
           <span className="inline-flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-[#25D366]" /> {site.hours}
           </span>
+          <span>{site.phone} · {site.altPhone}</span>
           <span>{site.address}</span>
         </motion.div>
       </div>

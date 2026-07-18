@@ -31,6 +31,7 @@ export function ContactChannels() {
           <ChannelTile
             title="Call Now"
             value={site.phone}
+            altValue={site.altPhone}
             icon={
               <MotionIcon preset="ring" loop>
                 <Phone size={20} />
@@ -140,6 +141,7 @@ function ConciergeFeatureTile() {
 function ChannelTile({
   title,
   value,
+  altValue,
   icon,
   href,
   external,
@@ -148,6 +150,7 @@ function ChannelTile({
 }: {
   title: string;
   value: string;
+  altValue?: string;
   icon: ReactNode;
   href?: string;
   external?: boolean;
@@ -186,6 +189,7 @@ function ChannelTile({
       <div className="min-w-0">
         <p className="font-display text-base text-forest-950">{title}</p>
         <p className="mt-1 truncate text-xs leading-relaxed text-charcoal-500">{value}</p>
+        {altValue && <p className="truncate text-xs leading-relaxed text-charcoal-500">{altValue}</p>}
       </div>
     </motion.div>
   );

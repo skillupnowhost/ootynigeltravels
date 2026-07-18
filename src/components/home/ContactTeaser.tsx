@@ -5,11 +5,18 @@ import { MotionIcon } from "@/components/ui/MotionIcon";
 import { HeadsetPulseIcon, ClockHandsIcon, MapPinDropIcon } from "@/components/ui/AnimatedIcons";
 import { site, waLink } from "@/lib/config/site";
 
-const CONTACT_POINTS = [
+const CONTACT_POINTS: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  altValue?: string;
+  href?: string;
+}[] = [
   {
     icon: <Phone size={18} />,
     label: "Call us",
     value: site.phone,
+    altValue: site.altPhone,
     href: site.phoneHref,
   },
   {
@@ -77,6 +84,9 @@ export function ContactTeaser() {
                   <span className="min-w-0 text-left">
                     <span className="block text-[11px] uppercase tracking-wide text-charcoal-500">{c.label}</span>
                     <span className="block truncate text-sm font-medium text-forest-950">{c.value}</span>
+                    {c.altValue && (
+                      <span className="block truncate text-sm font-medium text-forest-950">{c.altValue}</span>
+                    )}
                   </span>
                 </div>
               );

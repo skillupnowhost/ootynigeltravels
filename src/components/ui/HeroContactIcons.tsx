@@ -75,7 +75,7 @@ function ActionPill({
 }: {
   tone: Tone;
   label: string;
-  value: string;
+  value: string | readonly string[];
   href: string;
   external?: boolean;
   icon: ReactNode;
@@ -86,6 +86,7 @@ function ActionPill({
 }) {
   const controls = useAnimationControls();
   const [pulses, setPulses] = useState<number[]>([]);
+  const values = typeof value === "string" ? [value] : value;
 
   const handleClick = () => {
     controls.start(BURST[tone]);
@@ -100,7 +101,7 @@ function ActionPill({
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
       onClick={handleClick}
-      aria-label={`${label}: ${value}`}
+      aria-label={`${label}: ${values.join(", ")}`}
       className={`group flex items-center gap-3.5 rounded-2xl border px-4 py-3.5 shadow-sm outline-none backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 sm:px-5 sm:py-4 ${bgClass} ${style.border} ${style.hoverShadow}`}
     >
       <span className="relative flex h-10 w-10 shrink-0 items-center justify-center sm:h-11 sm:w-11">
@@ -134,7 +135,9 @@ function ActionPill({
 
       <span className="min-w-0 flex-1">
         <span className={`block text-[10px] font-semibold uppercase tracking-wide sm:text-[11px] ${labelClass}`}>{label}</span>
-        <span className={`block truncate text-sm font-semibold sm:text-[0.95rem] ${valueClass}`}>{value}</span>
+        {values.map((v) => (
+          <span key={v} className={`block truncate text-sm font-semibold sm:text-[0.95rem] ${valueClass}`}>{v}</span>
+        ))}
       </span>
     </a>
   );
@@ -173,7 +176,7 @@ export function HeroContactIcons({
         <ActionPill
           tone="call"
           label="Call Us"
-          value={site.phone}
+          value={[site.phone, site.altPhone]}
           href={site.phoneHref}
           icon={<Phone size={18} />}
           style={tones.call}

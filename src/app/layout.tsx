@@ -40,6 +40,12 @@ export const metadata: Metadata = {
     "Ooty sightseeing package",
     "Nilgiris tour operator",
     "Mudumalai Gudalur taxi",
+    "Ooty best travel",
+    "best travels in Ooty for family trip",
+    "Ooty travel agency near me",
+    "best tour operator in Ooty",
+    "Ooty honeymoon packages",
+    "Ooty local sightseeing taxi",
   ],
   authors: [{ name: site.name }],
   alternates: { canonical: site.url },
@@ -61,11 +67,18 @@ export const metadata: Metadata = {
     siteName: site.name,
     title: `${site.name} | Best Travel Agency in Ooty & Coimbatore`,
     description: site.description,
+    images: [
+      {
+        url: "/images/brand/logo-full.png",
+        alt: `${site.name} — ${site.tagline}`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${site.name} | Best Travel Agency in Ooty & Coimbatore`,
     description: site.description,
+    images: ["/images/brand/logo-full.png"],
   },
 };
 
@@ -81,8 +94,10 @@ async function getOrganizationJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": ["TravelAgency", "LocalBusiness"],
+    "@id": `${site.url}/#business`,
     name: site.name,
     alternateName: "Ooty Coimbatore Travels",
+    slogan: site.tagline,
     description: site.description,
     url: site.url,
     image: `${site.url}/images/brand/logo-full.png`,
@@ -90,6 +105,23 @@ async function getOrganizationJsonLd() {
     telephone: site.phone,
     email: site.email,
     priceRange: "₹₹",
+    hasMap: `https://www.google.com/maps?q=${site.geo.lat},${site.geo.lng}`,
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        telephone: site.phone,
+        contactType: "customer service",
+        areaServed: "IN",
+        availableLanguage: ["English", "Tamil"],
+      },
+      {
+        "@type": "ContactPoint",
+        telephone: site.altPhone,
+        contactType: "reservations",
+        areaServed: "IN",
+        availableLanguage: ["English", "Tamil"],
+      },
+    ],
     address: {
       "@type": "PostalAddress",
       streetAddress: site.addressLine1,
@@ -137,6 +169,16 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const organizationJsonLd = await getOrganizationJsonLd();
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${site.url}/#website`,
+    name: site.name,
+    alternateName: ["Ooty Nigel Travels", "Nigel Travels Ooty"],
+    url: site.url,
+    inLanguage: "en-IN",
+    publisher: { "@id": `${site.url}/#business` },
+  };
 
   return (
     <html lang="en-IN" className={`${fraunces.variable} ${manrope.variable}`} data-scroll-behavior="smooth">
@@ -144,6 +186,10 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
         <a href="#main-content" className="skip-link">
           Skip to content

@@ -93,7 +93,7 @@ export function ContactMap({ nearbyAttractions }: { nearbyAttractions: NearbyAtt
           </div>
           <p className="mt-2 text-sm leading-relaxed text-charcoal-500">
             Complimentary parking is available directly outside our office for guests and
-            arriving vehicles. We&rsquo;re a short, well-lit walk from Charing Cross — step
+            arriving vehicles. You&rsquo;ll find us on Elk Hill Road, near JSS College — step
             inside for tea while we finalise your itinerary.
           </p>
         </motion.div>

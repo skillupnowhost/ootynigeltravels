@@ -8,6 +8,7 @@ import { MotionIcon } from "@/components/ui/MotionIcon";
 import { CalendarCheckIcon, MapPinDropIcon } from "@/components/ui/AnimatedIcons";
 import { destinationsRepo } from "@/lib/db/queries/destinations";
 import { packagesRepo } from "@/lib/db/queries/packages";
+import { site } from "@/lib/config/site";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +19,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const destination = await destinationsRepo.getBySlug(slug);
   if (!destination) return {};
   return {
-    title: destination.name,
+    title: `${destination.name} — Taxi, Tours & Packages`,
     description: destination.description ?? undefined,
     alternates: { canonical: `/destinations/${destination.slug}` },
+    ...(destination.image ? { openGraph: { images: [destination.image] } } : {}),
   };
 }
 
@@ -31,8 +33,36 @@ export default async function DestinationDetailPage({ params }: { params: Params
 
   const relatedPackages = (await packagesRepo.list(true)).slice(0, 3);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TouristAttraction",
+        name: destination.name,
+        description: destination.description ?? undefined,
+        ...(destination.image
+          ? { image: destination.image.startsWith("/") ? `${site.url}${destination.image}` : destination.image }
+          : {}),
+        address: {
+          "@type": "PostalAddress",
+          addressRegion: "Tamil Nadu",
+          addressCountry: "IN",
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: site.url },
+          { "@type": "ListItem", position: 2, name: "Destinations", item: `${site.url}/destinations` },
+          { "@type": "ListItem", position: 3, name: destination.name, item: `${site.url}/destinations/${destination.slug}` },
+        ],
+      },
+    ],
+  };
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <PageHero
         eyebrow={destination.region ?? "Destination"}
         title={destination.name}

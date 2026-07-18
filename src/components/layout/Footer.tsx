@@ -129,6 +129,15 @@ export function Footer() {
             <div className="mt-5 rounded-2xl border border-forest-800 bg-forest-900/40 p-4 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-500/40">
               <ul className="space-y-3 text-sm text-forest-200">
                 <li className="flex items-start gap-2">
+                  <MotionIcon preset="ring" className="mt-0.5 shrink-0 text-gold-400">
+                    <Phone size={16} />
+                  </MotionIcon>
+                  <span className="flex flex-col gap-1">
+                    <a href={site.phoneHref} className="hover:text-ivory-50">{site.phone}</a>
+                    <a href={site.altPhoneHref} className="hover:text-ivory-50">{site.altPhone}</a>
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
                   <MotionIcon preset="wiggle" className="mt-0.5 shrink-0 text-gold-400">
                     <Mail size={16} />
                   </MotionIcon>

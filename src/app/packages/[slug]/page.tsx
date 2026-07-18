@@ -28,10 +28,12 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const { slug } = await params;
   const pkg = await packagesRepo.getBySlug(slug);
   if (!pkg) return {};
+  const ogImage = pkg.gallery[0] ?? pkg.hero_image;
   return {
     title: pkg.name,
     description: pkg.summary ?? pkg.tagline ?? undefined,
     alternates: { canonical: `/packages/${pkg.slug}` },
+    ...(ogImage ? { openGraph: { images: [ogImage] } } : {}),
   };
 }
 
