@@ -31,7 +31,7 @@ export function BlogHighlights({ posts }: { posts: BlogPost[] }) {
           </Link>
         </div>
 
-        <RevealGroup className="mt-14 grid gap-6 md:grid-cols-3" stagger={0.1}>
+        <RevealGroup className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3" stagger={0.1}>
           {posts.slice(0, 3).map((post) => (
             <RevealItem key={post.slug}>
               <Link

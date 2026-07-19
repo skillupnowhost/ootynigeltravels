@@ -184,7 +184,7 @@ export function PackagesBrowser({
               transition={{ duration: 0.3, ease }}
               className="overflow-hidden"
             >
-              <div className="grid gap-4 border-t border-forest-100 p-5 sm:grid-cols-2 lg:grid-cols-5">
+              <div className="grid grid-cols-1 gap-4 border-t border-forest-100 p-5 sm:grid-cols-2 lg:grid-cols-5">
                 <FilterSelect icon={<Wallet size={13} />} label="Budget" value={budget} onChange={setBudget} options={BUDGET_BANDS} />
                 <FilterSelect icon={<Clock3 size={13} />} label="Duration" value={duration} onChange={setDuration} options={DURATION_BUCKETS} />
                 <div>
@@ -259,7 +259,7 @@ export function PackagesBrowser({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.35, ease }}
-          className="mt-4 grid gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+          className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
         >
           {filtered.map((p, i) => (
             <motion.div

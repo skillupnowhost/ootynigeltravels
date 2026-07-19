@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 function GoogleReviewsSkeleton() {
   return (
-    <div className="grid gap-6 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
       {Array.from({ length: 4 }).map((_, i) => (
         <div key={i} className="h-40 animate-pulse rounded-3xl border border-forest-100 bg-forest-50/60" />
       ))}
@@ -71,8 +71,8 @@ export default async function ReviewsPage() {
         <div className="container-luxe">
           <SectionHeading eyebrow="Tell us about your trip" title="Client Feedback" />
 
-          <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_380px]">
-            <RevealGroup className="grid gap-6 sm:grid-cols-2" stagger={0.08}>
+          <div className="mt-8 grid grid-cols-1 gap-12 lg:grid-cols-[1fr_380px]">
+            <RevealGroup className="grid grid-cols-1 gap-6 sm:grid-cols-2" stagger={0.08}>
               {reviews.map((r) => (
                 <RevealItem
                   key={r.id}

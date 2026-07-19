@@ -88,7 +88,7 @@ export function CardImageManager({
         <p className="mt-3 text-sm text-charcoal-500">No photos yet — this card will show a placeholder on the site.</p>
       )}
 
-      <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {images.map((img, index) => (
           <li key={img.id} className="overflow-hidden rounded-xl border border-forest-100">
             <div className="relative h-36 w-full bg-forest-50">

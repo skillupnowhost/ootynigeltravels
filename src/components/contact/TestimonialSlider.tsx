@@ -51,7 +51,7 @@ export function TestimonialSlider({ reviews }: { reviews: Review[] }) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -24 }}
           transition={{ duration: 0.4, ease }}
-          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
         >
           {current.map((r) => (
             <TestimonialCard key={r.id} review={r} />

@@ -23,7 +23,7 @@ function copyToClipboard(value: string, setCopied: (v: boolean) => void) {
 export function ContactChannels() {
   return (
     <div className="space-y-6">
-      <RevealGroup className="grid gap-4 lg:grid-cols-4 lg:grid-rows-2" stagger={0.07}>
+      <RevealGroup className="grid grid-cols-1 gap-4 lg:grid-cols-4 lg:grid-rows-2" stagger={0.07}>
         <RevealItem className="lg:col-span-2 lg:row-span-2">
           <ConciergeFeatureTile />
         </RevealItem>
@@ -241,7 +241,7 @@ const GLANCE_ITEMS = [
 
 function AtAGlanceStrip() {
   return (
-    <div className="grid divide-y divide-forest-100 overflow-hidden rounded-2xl border border-forest-100 bg-white/70 backdrop-blur-md sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+    <div className="grid grid-cols-1 divide-y divide-forest-100 overflow-hidden rounded-2xl border border-forest-100 bg-white/70 backdrop-blur-md sm:grid-cols-3 sm:divide-x sm:divide-y-0">
       {GLANCE_ITEMS.map((item) => (
         <GlanceItem key={item.key} item={item} />
       ))}
@@ -327,7 +327,7 @@ function CallbackBanner() {
                 Thanks — we&rsquo;ll call you back shortly.
               </div>
             ) : (
-              <form action={formAction} className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+              <form action={formAction} className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]">
                 <input type="hidden" name="subject" value="Callback request" />
                 <input type="hidden" name="message" value="Please call me back at the earliest opportunity." />
                 <input

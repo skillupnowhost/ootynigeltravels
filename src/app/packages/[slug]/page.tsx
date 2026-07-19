@@ -124,7 +124,7 @@ export default async function PackageDetailPage({ params }: { params: Params }) 
       )}
 
       <section className="container-luxe py-16">
-        <div className="grid gap-12 lg:grid-cols-[1fr_360px]">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_360px]">
           <div>
             <Reveal>
               <p className="text-lg leading-relaxed text-charcoal-700">{pkg.description}</p>
@@ -143,7 +143,7 @@ export default async function PackageDetailPage({ params }: { params: Params }) 
               </div>
             )}
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
               {pkg.distance_label && (
                 <InfoCard icon={<Route size={18} />} label="Travel Distance" value={pkg.distance_label} />
               )}
@@ -174,7 +174,7 @@ export default async function PackageDetailPage({ params }: { params: Params }) 
             )}
 
             {(pkg.includes.length > 0 || pkg.excludes.length > 0) && (
-              <div className="mt-12 grid gap-8 sm:grid-cols-2">
+              <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2">
                 {pkg.includes.length > 0 && (
                   <div>
                     <h2 className="font-display text-xl text-forest-950">Included</h2>
@@ -214,7 +214,7 @@ export default async function PackageDetailPage({ params }: { params: Params }) 
                 <p className="mt-1 text-sm text-charcoal-500">
                   Exact model may vary by availability — same class of vehicle guaranteed.
                 </p>
-                <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
                   {matchingVehicles.map((v) => (
                     <div key={v.slug} className="flex gap-4 rounded-2xl border border-forest-100 p-4">
                       <div className="h-20 w-28 shrink-0">
@@ -243,7 +243,7 @@ export default async function PackageDetailPage({ params }: { params: Params }) 
                 <h2 className="font-display text-xl text-forest-950">Driver Information</h2>
                 {pkg.driver_info && <p className="mt-2 text-sm leading-relaxed text-charcoal-700">{pkg.driver_info}</p>}
                 {sampleDrivers.length > 0 && (
-                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {sampleDrivers.map((d) => (
                       <div key={d.slug} className="rounded-2xl border border-forest-100 p-4">
                         <h3 className="font-display text-base text-forest-950">{d.name}</h3>
@@ -276,7 +276,7 @@ export default async function PackageDetailPage({ params }: { params: Params }) 
                   <span className="text-sm text-charcoal-500">({pkg.review_count} reviews)</span>
                 </div>
                 {reviews.length > 0 && (
-                  <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                  <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
                     {reviews.map((r) => (
                       <div key={r.id} className="rounded-2xl border border-forest-100 p-5">
                         <div className="flex gap-0.5 text-gold-500">
@@ -355,7 +355,7 @@ export default async function PackageDetailPage({ params }: { params: Params }) 
           <div className="mt-20 border-t border-forest-100 pt-16">
             <h2 className="font-display text-2xl text-forest-950">You may also like</h2>
             <p className="mt-2 text-sm text-charcoal-500">More {categoryMeta?.label.toLowerCase() ?? "trips"} from our collection.</p>
-            <div className="mt-8 grid gap-6 lg:grid-cols-3">
+            <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
               {related.map((r) => (
                 <PackageCard key={r.slug} pkg={r} />
               ))}

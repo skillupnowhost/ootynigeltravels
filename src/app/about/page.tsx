@@ -57,7 +57,7 @@ export default function AboutPage() {
       />
 
       <section className="container-luxe py-20">
-        <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center">
           <Reveal>
             <h2 className="font-display text-3xl text-forest-950">
               We started with one chauffeur and a single sedan.
@@ -93,7 +93,7 @@ export default function AboutPage() {
           </Reveal>
         </div>
 
-        <RevealGroup className="mt-20 grid gap-6 sm:grid-cols-2 lg:grid-cols-4" stagger={0.1}>
+        <RevealGroup className="mt-20 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4" stagger={0.1}>
           {values.map(({ render, title, description }) => (
             <RevealItem
               key={title}

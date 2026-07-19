@@ -130,7 +130,7 @@ export function CustomTripForm({ destinations }: { destinations: Destination[] }
 
       <section>
         <StepLabel n={3} title="Trip details" icon={<CalendarCheckIcon size={20} loop={false} />} />
-        <div className="mt-4 grid gap-5 sm:grid-cols-2">
+        <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
           <FieldWrap label="Duration (e.g. 3 Days / 2 Nights)">
             <input type="text" name="duration_label" placeholder="Let us know, or leave blank" className="input-field" />
           </FieldWrap>
@@ -161,7 +161,7 @@ export function CustomTripForm({ destinations }: { destinations: Destination[] }
 
       <section>
         <StepLabel n={4} title="Your details" />
-        <div className="mt-4 grid gap-5 sm:grid-cols-2">
+        <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
           <FieldWrap label="Full name" icon={<UserIcon size={16} />}>
             <input type="text" name="name" required className="input-field pl-10" />
           </FieldWrap>

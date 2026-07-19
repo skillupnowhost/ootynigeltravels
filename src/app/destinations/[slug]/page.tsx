@@ -72,7 +72,7 @@ export default async function DestinationDetailPage({ params }: { params: Params
       />
 
       <section className="container-luxe py-16">
-        <div className="grid gap-12 lg:grid-cols-[1fr_320px]">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_320px]">
           <Reveal>
             {destination.highlights.length > 0 && (
               <div>

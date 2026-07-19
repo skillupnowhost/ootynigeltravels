@@ -142,7 +142,7 @@ function BookingCard({ booking }: { booking: TrackedBooking }) {
         </div>
       )}
 
-      <div className="mt-6 grid gap-3 text-sm text-charcoal-700 sm:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-3 text-sm text-charcoal-700 sm:grid-cols-2">
         <div className="flex items-center gap-2">
           <CalendarCheckIcon size={16} className="text-gold-700 shrink-0" loop={false} /> {formatDate(booking.travel_date)}
         </div>

@@ -86,7 +86,7 @@ export function Hero({
         }}
       />
 
-      <div className="container-luxe relative z-10 grid gap-12 pt-28 pb-16 lg:grid-cols-2 lg:items-center lg:gap-8 lg:pt-32 lg:pb-20">
+      <div className="container-luxe relative z-10 grid grid-cols-1 gap-12 pt-28 pb-16 lg:grid-cols-2 lg:items-center lg:gap-8 lg:pt-32 lg:pb-20">
         <div className="max-w-xl flex flex-col items-start text-left">
           <Reveal className="self-start">
             <span

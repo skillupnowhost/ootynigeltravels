@@ -27,7 +27,7 @@ export default async function AccountPage() {
       <PageHero eyebrow="My Account" title={`Welcome back, ${user.name.split(" ")[0]}`} seed="account-hero" />
 
       <section className="container-luxe py-16">
-        <div className="grid gap-10 lg:grid-cols-[280px_1fr]">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[280px_1fr]">
           <Reveal>
             <div className="h-fit rounded-3xl border border-forest-100 bg-white p-6">
               <div className="flex items-center gap-3">
@@ -83,7 +83,7 @@ export default async function AccountPage() {
           </div>
         </div>
 
-        <div className="mt-16 grid gap-10 lg:grid-cols-2">
+        <div className="mt-16 grid grid-cols-1 gap-10 lg:grid-cols-2">
           <Reveal>
             <div className="rounded-3xl border border-forest-100 bg-white p-6 sm:p-8">
               <h2 className="font-display text-xl text-forest-950">Account details</h2>

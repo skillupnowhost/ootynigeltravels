@@ -19,7 +19,7 @@ export function DriverForm({ driver }: { driver?: Driver }) {
   return (
     <form action={formAction} className="max-w-2xl space-y-6 rounded-2xl border border-forest-100 bg-white p-4 sm:p-7">
       {driver && <input type="hidden" name="id" value={driver.id} />}
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Slug" name="slug" defaultValue={driver?.slug} />
         <Field label="Name" name="name" defaultValue={driver?.name} />
         <Field label="Phone" name="phone" defaultValue={driver?.phone} />

@@ -21,7 +21,7 @@ export function GalleryImageForm({ image }: { image?: GalleryImage }) {
   return (
     <form action={formAction} className="max-w-2xl space-y-6 rounded-2xl border border-forest-100 bg-white p-4 sm:p-7">
       {image && <input type="hidden" name="id" value={image.id} />}
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-forest-900">Category</label>
           <GlassSelect

@@ -29,7 +29,7 @@ export default async function EditDestinationPage({ params }: { params: Params }
           <MapPinned size={24} className="text-gold-700" />
           <h1 className="font-display text-xl text-forest-950 sm:text-2xl">{destination.name}</h1>
         </div>
-        <div className="mt-4 grid gap-6 sm:mt-6 xl:grid-cols-2 xl:items-start">
+        <div className="mt-4 grid grid-cols-1 gap-6 sm:mt-6 xl:grid-cols-2 xl:items-start">
           <DestinationForm destination={destination} />
           <CardImageManager
             parentId={destination.id}

@@ -247,12 +247,12 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="grid gap-10 lg:grid-cols-[1fr_320px]"
+      className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_320px]"
     >
       <div className="space-y-10">
         <section>
           <StepLabel n={1} title="Where would you like to go?" icon={<CompassIcon size={20} loop={false} />} />
-          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <FieldWrap label="Destination">
               <GlassSelect
                 name="destination"
@@ -274,7 +274,7 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
 
         <section>
           <StepLabel n={2} title="Trip dates & pickup" icon={<CalendarCheckIcon size={20} loop={false} />} />
-          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <FieldWrap label="Trip dates" className="sm:col-span-2">
               <GlassDateRangePicker
                 startName="startDate"
@@ -328,7 +328,7 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
 
         <section>
           <StepLabel n={3} title="Your details" />
-          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <FieldWrap label="Full name" icon={<UserIcon size={16} />}>
               <input type="text" name="name" required className="input-field pl-10" />
             </FieldWrap>

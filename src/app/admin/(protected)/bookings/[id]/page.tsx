@@ -53,7 +53,7 @@ export default async function AdminBookingDetailPage({ params }: { params: Param
           )}
         </div>
 
-        <div className="mt-4 grid gap-6 sm:mt-6 sm:gap-8 lg:grid-cols-[1fr_380px]">
+        <div className="mt-4 grid grid-cols-1 gap-6 sm:mt-6 sm:gap-8 lg:grid-cols-[1fr_380px]">
           <div className="space-y-6">
             <BookingActions booking={booking} drivers={drivers} />
             <ItineraryEditor booking={booking} />

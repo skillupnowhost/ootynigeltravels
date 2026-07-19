@@ -212,7 +212,7 @@ export function ContactEnquiryForm({
               transition={{ duration: 0.35, ease }}
               className="space-y-6"
             >
-              <div className="grid gap-5 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <FieldLabel label="Destination" icon={<MapPinDropIcon size={15} loop={false} />}>
                   <GlassSelect
                     value={form.destination}
@@ -231,7 +231,7 @@ export function ContactEnquiryForm({
                 </FieldLabel>
               </div>
 
-              <div className="grid gap-5 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <FieldLabel label="Travel date" error={touched.startDate ? errors.startDate : undefined}>
                   <GlassDatePicker
                     value={form.startDate}
@@ -271,7 +271,7 @@ export function ContactEnquiryForm({
               transition={{ duration: 0.35, ease }}
               className="space-y-6"
             >
-              <div className="grid gap-5 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <FieldLabel label="Vehicle type">
                   <GlassSelect
                     value={form.vehicleType}
@@ -288,7 +288,7 @@ export function ContactEnquiryForm({
                   />
                 </FieldLabel>
               </div>
-              <div className="grid gap-5 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <FieldLabel label="Budget range">
                   <GlassSelect
                     value={form.budgetRange}
@@ -322,7 +322,7 @@ export function ContactEnquiryForm({
               transition={{ duration: 0.35, ease }}
               className="space-y-6"
             >
-              <div className="grid gap-5 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <FloatingInput
                   label="Full name"
                   icon={<User size={15} />}
@@ -383,7 +383,7 @@ export function ContactEnquiryForm({
                 valid={touched.email && !!form.email && !errors.email}
               />
 
-              <div className="grid gap-5 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
                 <FieldLabel label="Country">
                   <GlassSelect
                     value={form.country}

@@ -39,11 +39,11 @@ export function ContactForm() {
 
   return (
     <form action={formAction} className="space-y-5">
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Full name" name="name" required />
         <Field label="Phone" name="phone" type="tel" />
       </div>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Email" name="email" type="email" />
         <Field label="Subject" name="subject" />
       </div>

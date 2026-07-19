@@ -48,7 +48,7 @@ export default async function BlogPage() {
         <section id={`cat-${g.slug}`} key={g.slug} className="scroll-mt-40 py-14 sm:py-16">
           <div className="container-luxe">
             <h2 className="mb-6 font-display text-2xl text-forest-950 sm:text-3xl">{g.label}</h2>
-            <RevealGroup className="grid gap-6 md:grid-cols-3" stagger={0.1}>
+            <RevealGroup className="grid grid-cols-1 gap-6 md:grid-cols-3" stagger={0.1}>
               {g.posts.map((post) => (
                 <RevealItem key={post.slug}>
                   <Link

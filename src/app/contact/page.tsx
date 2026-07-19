@@ -81,7 +81,7 @@ export default async function ContactPage() {
             title="Tell Us About Your Trip"
             description="Three short steps — destination and dates, your preferences, and how to reach you. We'll take it from there."
           />
-          <div className="mt-12 grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+          <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
             <div className="lg:sticky lg:top-32">
               <EnquirySidebar />
             </div>
@@ -120,7 +120,7 @@ export default async function ContactPage() {
 
       {faqs.length > 0 && (
         <section className="container-luxe py-20">
-          <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
             <div className="lg:sticky lg:top-32">
               <SectionHeading
                 eyebrow="Good to know"

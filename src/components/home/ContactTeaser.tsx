@@ -74,7 +74,7 @@ export function ContactTeaser() {
           </div>
 
           <RevealGroup
-            className="relative mt-12 grid gap-3 border-t border-forest-100 pt-10 sm:grid-cols-2 lg:grid-cols-4"
+            className="relative mt-12 grid grid-cols-1 gap-3 border-t border-forest-100 pt-10 sm:grid-cols-2 lg:grid-cols-4"
             stagger={0.08}
           >
             {CONTACT_POINTS.map((c) => {

@@ -93,7 +93,7 @@ export function PolicyPage({
         </div>
 
         {highlights && highlights.length > 0 && (
-          <RevealGroup className="mt-8 grid gap-3 sm:grid-cols-3" stagger={0.08}>
+          <RevealGroup className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3" stagger={0.08}>
             {highlights.map((h) => (
               <RevealItem key={h.label}>
                 <div className="flex h-full items-center gap-3 rounded-2xl border border-forest-700/50 bg-forest-900/30 px-4 py-3.5 text-sm text-forest-100 backdrop-blur-sm transition-colors hover:border-gold-500/40">
@@ -107,7 +107,7 @@ export function PolicyPage({
       </PageHero>
 
       <article ref={articleRef} className="container-luxe py-16 sm:py-20">
-        <div className="grid gap-10 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-12">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-12">
           {sections.length > 1 && (
             <nav aria-label="Sections on this page" className="lg:sticky lg:top-28 lg:self-start">
               <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-charcoal-500">On this page</p>

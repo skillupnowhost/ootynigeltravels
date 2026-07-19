@@ -32,7 +32,7 @@ export function DestinationsShowcase({ destinations }: { destinations: Destinati
           </Link>
         </div>
 
-        <RevealGroup className="mt-14 grid gap-7 sm:grid-cols-2 lg:grid-cols-3" stagger={0.1}>
+        <RevealGroup className="mt-14 grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3" stagger={0.1}>
           {destinations.slice(0, 9).map((d, i) => (
             <RevealItem key={d.slug}>
               <DestinationCard

@@ -16,7 +16,7 @@ export interface NearbyAttraction {
 
 export function ContactMap({ nearbyAttractions }: { nearbyAttractions: NearbyAttraction[] }) {
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         whileInView={{ opacity: 1, scale: 1 }}

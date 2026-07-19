@@ -21,7 +21,7 @@ export function AttractionForm({ attraction, redirectOnSave = true }: { attracti
   return (
     <form action={formAction} className="max-w-2xl space-y-6 rounded-2xl border border-forest-100 bg-white p-4 sm:p-7">
       {attraction && <input type="hidden" name="id" value={attraction.id} />}
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field
           label="Slug"
           name="slug"

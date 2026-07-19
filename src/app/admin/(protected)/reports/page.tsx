@@ -23,7 +23,7 @@ export default async function AdminReportsPage() {
         <h1 className="font-display text-xl text-forest-950 sm:text-2xl">Reports</h1>
       </Reveal>
 
-      <RevealGroup className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-2">
+      <RevealGroup className="mt-4 grid grid-cols-1 gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-2">
         <RevealItem>
           <Panel title="Bookings by status">
             <ul className="space-y-2">

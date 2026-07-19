@@ -28,7 +28,7 @@ export default async function DriversPage() {
       />
 
       <section className="container-luxe py-20">
-        <RevealGroup className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" stagger={0.1}>
+        <RevealGroup className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" stagger={0.1}>
           {drivers.map((d) => (
             <RevealItem
               key={d.slug}

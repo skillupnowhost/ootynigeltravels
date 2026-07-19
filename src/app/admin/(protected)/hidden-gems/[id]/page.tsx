@@ -29,7 +29,7 @@ export default async function EditHiddenGemPage({ params }: { params: Params }) 
           <Sparkles size={24} className="text-gold-700" />
           <h1 className="font-display text-xl text-forest-950 sm:text-2xl">{attraction.name}</h1>
         </div>
-        <div className="mt-4 grid gap-6 sm:mt-6 xl:grid-cols-2 xl:items-start">
+        <div className="mt-4 grid grid-cols-1 gap-6 sm:mt-6 xl:grid-cols-2 xl:items-start">
           <AttractionForm attraction={attraction} />
           <CardImageManager
             parentId={attraction.id}

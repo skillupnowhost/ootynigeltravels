@@ -59,7 +59,7 @@ export default async function TripDocumentPage({ params }: { params: Params }) {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-6 sm:grid-cols-2">
+        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <h2 className="text-xs font-semibold uppercase tracking-wide text-charcoal-500">Guest Details</h2>
             <div className="mt-2 space-y-1 text-sm text-charcoal-700">

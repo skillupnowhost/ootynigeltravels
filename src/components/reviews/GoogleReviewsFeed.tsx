@@ -64,7 +64,7 @@ export async function GoogleReviewsFeed() {
       </div>
 
       {data.reviews.length > 0 ? (
-        <RevealGroup className="mt-6 grid gap-6 sm:grid-cols-2" stagger={0.08}>
+        <RevealGroup className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2" stagger={0.08}>
           {data.reviews.map((r) => (
             <RevealItem
               key={r.id}

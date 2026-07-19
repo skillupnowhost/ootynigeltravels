@@ -34,7 +34,7 @@ export function SignaturePackages({ packages }: { packages: TourPackage[] }) {
           </Link>
         </div>
 
-        <RevealGroup className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" stagger={0.12}>
+        <RevealGroup className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" stagger={0.12}>
           {packages.slice(0, 6).map((p) => {
             const hero = p.gallery[0] ?? p.hero_image;
             return (

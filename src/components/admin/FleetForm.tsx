@@ -21,7 +21,7 @@ export function FleetForm({ vehicle }: { vehicle?: FleetVehicle }) {
   return (
     <form action={formAction} className="max-w-2xl space-y-6 rounded-2xl border border-forest-100 bg-white p-4 sm:p-7">
       {vehicle && <input type="hidden" name="id" value={vehicle.id} />}
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Slug" name="slug" defaultValue={vehicle?.slug} placeholder="mercedes-gls-580" />
         <Field label="Name" name="name" defaultValue={vehicle?.name} />
         <Field label="Category" name="category" defaultValue={vehicle?.category} />

@@ -116,7 +116,7 @@ export function PackageCustomizeForm({ pkg, fleet }: { pkg: TourPackage; fleet: 
     .join("\n");
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_320px]">
       <motion.form
         action={formAction}
         initial={{ opacity: 0, y: 12 }}
@@ -140,7 +140,7 @@ export function PackageCustomizeForm({ pkg, fleet }: { pkg: TourPackage; fleet: 
 
         <section>
           <StepLabel n={1} title="Travel dates & pickup" icon={<CalendarCheckIcon size={20} loop={false} />} />
-          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <FieldWrap label="Start date">
               <GlassDatePicker value={startDate} onChange={setStartDate} min={new Date().toISOString().slice(0, 10)} />
             </FieldWrap>
@@ -161,7 +161,7 @@ export function PackageCustomizeForm({ pkg, fleet }: { pkg: TourPackage; fleet: 
 
         <section>
           <StepLabel n={2} title="Travellers" />
-          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <FieldWrap label="Adults">
               <input
                 type="number"
@@ -187,7 +187,7 @@ export function PackageCustomizeForm({ pkg, fleet }: { pkg: TourPackage; fleet: 
 
         <section>
           <StepLabel n={3} title="Hotel category & vehicle" />
-          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <FieldWrap label="Hotel category">
               <GlassSelect
                 value={hotelCategory}
@@ -244,7 +244,7 @@ export function PackageCustomizeForm({ pkg, fleet }: { pkg: TourPackage; fleet: 
 
         <section>
           <StepLabel n={5} title="Your details" />
-          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <FieldWrap label="Full name" icon={<UserIcon size={16} />}>
               <input type="text" name="name" required className="input-field pl-10" />
             </FieldWrap>

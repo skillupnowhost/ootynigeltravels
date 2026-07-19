@@ -50,7 +50,7 @@ export default async function FleetDetailPage({ params }: { params: Params }) {
       <PageHero eyebrow={vehicle.category} title={vehicle.name} seed={vehicle.slug} variant="mountains" />
 
       <section className="container-luxe py-16">
-        <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-start">
           <Reveal>
             {vehicle.model_kind === "photo" && vehicle.gallery.length > 0 ? (
               <PhotoGallery images={vehicle.gallery} alt={vehicle.name} />

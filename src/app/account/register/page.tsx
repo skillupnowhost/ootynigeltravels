@@ -21,7 +21,7 @@ export default async function RegisterPage() {
       <PageHero eyebrow="Account" title="Create your account" seed="register-hero" />
       <section className="container-luxe max-w-4xl py-16">
         <Reveal>
-          <div className="grid overflow-hidden rounded-3xl border border-forest-100 bg-white shadow-[0_20px_60px_-30px_rgba(11,59,46,0.35)] md:grid-cols-2">
+          <div className="grid grid-cols-1 overflow-hidden rounded-3xl border border-forest-100 bg-white shadow-[0_20px_60px_-30px_rgba(11,59,46,0.35)] md:grid-cols-2">
             <div className="relative hidden flex-col justify-between overflow-hidden bg-forest-950 p-8 text-ivory-50 md:flex">
               <ScenicArt seed="register-panel" variant="mountains" className="absolute inset-0 h-full w-full opacity-30" />
               <div className="absolute inset-0 bg-gradient-to-t from-forest-950 via-forest-950/80 to-forest-950/40" />

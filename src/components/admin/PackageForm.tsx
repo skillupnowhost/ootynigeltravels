@@ -37,7 +37,7 @@ export function PackageForm({ pkg }: { pkg?: TourPackage }) {
   return (
     <form action={formAction} className="max-w-3xl space-y-6 rounded-2xl border border-forest-100 bg-white p-4 sm:p-7">
       {pkg && <input type="hidden" name="id" value={pkg.id} />}
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Slug" name="slug" defaultValue={pkg?.slug} />
         <Field label="Name" name="name" defaultValue={pkg?.name} />
         <Field label="Tagline" name="tagline" defaultValue={pkg?.tagline ?? ""} required={false} />

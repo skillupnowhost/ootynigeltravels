@@ -31,7 +31,7 @@ export default async function FleetPage() {
       />
 
       <section className="container-luxe py-20">
-        <RevealGroup className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" stagger={0.1}>
+        <RevealGroup className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" stagger={0.1}>
           {fleet.map((v) => (
             <RevealItem key={v.slug}>
               <Link
