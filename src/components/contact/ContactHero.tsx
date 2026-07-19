@@ -244,7 +244,11 @@ export function ContactHero() {
           <span className="inline-flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-[#25D366]" /> {site.hours}
           </span>
-          <span>{site.phone} · {site.altPhone}</span>
+          <span className="flex flex-wrap items-center gap-x-1.5">
+            <a href={site.phoneHref} className="hover:text-gold-300 hover:underline">{site.phone}</a>
+            <span aria-hidden>·</span>
+            <a href={site.altPhoneHref} className="hover:text-gold-300 hover:underline">{site.altPhone}</a>
+          </span>
           <span>{site.address}</span>
         </motion.div>
       </div>

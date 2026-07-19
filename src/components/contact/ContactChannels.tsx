@@ -38,6 +38,7 @@ export function ContactChannels() {
               </MotionIcon>
             }
             href={site.phoneHref}
+            altHref={site.altPhoneHref}
             copyValue={site.phone}
           />
         </RevealItem>
@@ -144,6 +145,7 @@ function ChannelTile({
   altValue,
   icon,
   href,
+  altHref,
   external,
   copyValue,
   tone = "forest",
@@ -153,6 +155,7 @@ function ChannelTile({
   altValue?: string;
   icon: ReactNode;
   href?: string;
+  altHref?: string;
   external?: boolean;
   copyValue?: string;
   tone?: "forest" | "whatsapp";
@@ -161,35 +164,63 @@ function ChannelTile({
   const badgeClass = tone === "whatsapp" ? "bg-[#25D366] text-white" : "bg-forest-900 text-gold-400 group-hover:bg-forest-800";
   const borderClass = tone === "whatsapp" ? "hover:border-[#25D366]/60" : "hover:border-gold-300";
 
+  const body = (
+    <div className="flex items-start justify-between gap-2">
+      <span className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-300 ${badgeClass}`}>
+        {icon}
+      </span>
+      {copyValue && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            copyToClipboard(copyValue, setCopied);
+          }}
+          aria-label={`Copy ${title}`}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-charcoal-500 opacity-0 transition-all duration-200 hover:bg-forest-50 hover:text-forest-900 group-hover:opacity-100"
+        >
+          {copied ? <Check size={14} className="text-forest-600" /> : <Copy size={14} />}
+        </button>
+      )}
+    </div>
+  );
+
+  // Two independent numbers (e.g. the Call Now tile) each need their own tel: link,
+  // so the whole card can't be one big <a> — render two inline links instead.
+  if (altValue && altHref) {
+    return (
+      <motion.div
+        whileHover={{ y: -5 }}
+        transition={{ duration: 0.3, ease }}
+        className={`group relative flex h-full flex-col justify-between gap-4 rounded-2xl border border-forest-100 bg-white/85 p-5 backdrop-blur-md transition-colors duration-300 ${borderClass} hover:shadow-[0_20px_44px_-24px_rgba(11,59,46,0.35)]`}
+      >
+        {body}
+        <div className="min-w-0">
+          <p className="font-display text-base text-forest-950">{title}</p>
+          {href && (
+            <a href={href} className="block truncate text-xs leading-relaxed text-charcoal-500 hover:text-gold-700 hover:underline">
+              {value}
+            </a>
+          )}
+          <a href={altHref} className="block truncate text-xs leading-relaxed text-charcoal-500 hover:text-gold-700 hover:underline">
+            {altValue}
+          </a>
+        </div>
+      </motion.div>
+    );
+  }
+
   const card = (
     <motion.div
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3, ease }}
       className={`group relative flex h-full flex-col justify-between gap-4 rounded-2xl border border-forest-100 bg-white/85 p-5 backdrop-blur-md transition-colors duration-300 ${borderClass} hover:shadow-[0_20px_44px_-24px_rgba(11,59,46,0.35)]`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <span className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-300 ${badgeClass}`}>
-          {icon}
-        </span>
-        {copyValue && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              copyToClipboard(copyValue, setCopied);
-            }}
-            aria-label={`Copy ${title}`}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-charcoal-500 opacity-0 transition-all duration-200 hover:bg-forest-50 hover:text-forest-900 group-hover:opacity-100"
-          >
-            {copied ? <Check size={14} className="text-forest-600" /> : <Copy size={14} />}
-          </button>
-        )}
-      </div>
+      {body}
       <div className="min-w-0">
         <p className="font-display text-base text-forest-950">{title}</p>
         <p className="mt-1 truncate text-xs leading-relaxed text-charcoal-500">{value}</p>
-        {altValue && <p className="truncate text-xs leading-relaxed text-charcoal-500">{altValue}</p>}
       </div>
     </motion.div>
   );

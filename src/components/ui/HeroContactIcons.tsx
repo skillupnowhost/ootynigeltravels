@@ -75,7 +75,7 @@ function ActionPill({
 }: {
   tone: Tone;
   label: string;
-  value: string | readonly string[];
+  value: string | readonly { text: string; href: string }[];
   href: string;
   external?: boolean;
   icon: ReactNode;
@@ -86,7 +86,7 @@ function ActionPill({
 }) {
   const controls = useAnimationControls();
   const [pulses, setPulses] = useState<number[]>([]);
-  const values = typeof value === "string" ? [value] : value;
+  const entries = typeof value === "string" ? [{ text: value, href }] : value;
 
   const handleClick = () => {
     controls.start(BURST[tone]);
@@ -95,49 +95,78 @@ function ActionPill({
     window.setTimeout(() => setPulses((p) => p.filter((x) => x !== id)), 700);
   };
 
+  const chip = (
+    <span className="relative flex h-10 w-10 shrink-0 items-center justify-center sm:h-11 sm:w-11">
+      <AnimatePresence>
+        {pulses.map((id) => (
+          <motion.span
+            key={id}
+            className={`pointer-events-none absolute inset-0 rounded-full border ${style.ring}`}
+            initial={{ scale: 0.9, opacity: 0.6 }}
+            animate={{ scale: 1.7, opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.65, ease: "easeOut" }}
+          />
+        ))}
+      </AnimatePresence>
+
+      <motion.span
+        animate={controls}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.92 }}
+        transition={{ type: "spring", stiffness: 340, damping: 18 }}
+        className={`flex h-full w-full items-center justify-center rounded-full ${style.chip}`}
+      >
+        {icon}
+      </motion.span>
+
+      {tone === "whatsapp" && (
+        <span aria-hidden className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#25D366]" />
+      )}
+    </span>
+  );
+
+  // A single number (WhatsApp / Email) stays one big tappable pill. Two numbers (Call
+  // Us) need independent tel: links, so only the icon+label wraps in <a> and each
+  // number gets its own link underneath.
+  if (entries.length > 1) {
+    return (
+      <div
+        className={`group flex items-center gap-3.5 rounded-2xl border px-4 py-3.5 shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 sm:px-5 sm:py-4 ${bgClass} ${style.border} ${style.hoverShadow}`}
+      >
+        <a href={entries[0].href} onClick={handleClick} aria-label={label} className="outline-none">
+          {chip}
+        </a>
+        <span className="min-w-0 flex-1">
+          <span className={`block text-[10px] font-semibold uppercase tracking-wide sm:text-[11px] ${labelClass}`}>{label}</span>
+          {entries.map((entry) => (
+            <a
+              key={entry.text}
+              href={entry.href}
+              onClick={handleClick}
+              className={`block truncate text-sm font-semibold outline-none hover:underline sm:text-[0.95rem] ${valueClass}`}
+            >
+              {entry.text}
+            </a>
+          ))}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <a
-      href={href}
+      href={entries[0].href}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
       onClick={handleClick}
-      aria-label={`${label}: ${values.join(", ")}`}
+      aria-label={`${label}: ${entries[0].text}`}
       className={`group flex items-center gap-3.5 rounded-2xl border px-4 py-3.5 shadow-sm outline-none backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 sm:px-5 sm:py-4 ${bgClass} ${style.border} ${style.hoverShadow}`}
     >
-      <span className="relative flex h-10 w-10 shrink-0 items-center justify-center sm:h-11 sm:w-11">
-        <AnimatePresence>
-          {pulses.map((id) => (
-            <motion.span
-              key={id}
-              className={`pointer-events-none absolute inset-0 rounded-full border ${style.ring}`}
-              initial={{ scale: 0.9, opacity: 0.6 }}
-              animate={{ scale: 1.7, opacity: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.65, ease: "easeOut" }}
-            />
-          ))}
-        </AnimatePresence>
-
-        <motion.span
-          animate={controls}
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.92 }}
-          transition={{ type: "spring", stiffness: 340, damping: 18 }}
-          className={`flex h-full w-full items-center justify-center rounded-full ${style.chip}`}
-        >
-          {icon}
-        </motion.span>
-
-        {tone === "whatsapp" && (
-          <span aria-hidden className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#25D366]" />
-        )}
-      </span>
-
+      {chip}
       <span className="min-w-0 flex-1">
         <span className={`block text-[10px] font-semibold uppercase tracking-wide sm:text-[11px] ${labelClass}`}>{label}</span>
-        {values.map((v) => (
-          <span key={v} className={`block truncate text-sm font-semibold sm:text-[0.95rem] ${valueClass}`}>{v}</span>
-        ))}
+        <span className={`block truncate text-sm font-semibold sm:text-[0.95rem] ${valueClass}`}>{entries[0].text}</span>
       </span>
     </a>
   );
@@ -176,7 +205,10 @@ export function HeroContactIcons({
         <ActionPill
           tone="call"
           label="Call Us"
-          value={[site.phone, site.altPhone]}
+          value={[
+            { text: site.phone, href: site.phoneHref },
+            { text: site.altPhone, href: site.altPhoneHref },
+          ]}
           href={site.phoneHref}
           icon={<Phone size={18} />}
           style={tones.call}

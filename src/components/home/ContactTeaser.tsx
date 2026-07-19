@@ -11,6 +11,7 @@ const CONTACT_POINTS: {
   value: string;
   altValue?: string;
   href?: string;
+  altHref?: string;
 }[] = [
   {
     icon: <Phone size={18} />,
@@ -18,6 +19,7 @@ const CONTACT_POINTS: {
     value: site.phone,
     altValue: site.altPhone,
     href: site.phoneHref,
+    altHref: site.altPhoneHref,
   },
   {
     icon: <MessageCircle size={18} />,
@@ -76,17 +78,40 @@ export function ContactTeaser() {
             stagger={0.08}
           >
             {CONTACT_POINTS.map((c) => {
+              const shell = "group/item flex items-center gap-3 rounded-2xl border border-forest-100 bg-white/70 px-4 py-3.5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-400/60 hover:bg-white";
+              const icon = (
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-forest-50 text-forest-700">
+                  <MotionIcon preset="ring">{c.icon}</MotionIcon>
+                </span>
+              );
+
+              // "Call us" carries two independent numbers, so each needs its own tel:
+              // link instead of one link wrapping the whole tile.
+              if (c.altValue && c.altHref) {
+                return (
+                  <RevealItem key={c.label}>
+                    <div className={shell}>
+                      {icon}
+                      <span className="min-w-0 text-left">
+                        <span className="block text-[11px] uppercase tracking-wide text-charcoal-500">{c.label}</span>
+                        <a href={c.href} className="block truncate text-sm font-medium text-forest-950 hover:text-gold-700 hover:underline">
+                          {c.value}
+                        </a>
+                        <a href={c.altHref} className="block truncate text-sm font-medium text-forest-950 hover:text-gold-700 hover:underline">
+                          {c.altValue}
+                        </a>
+                      </span>
+                    </div>
+                  </RevealItem>
+                );
+              }
+
               const content = (
-                <div className="group/item flex items-center gap-3 rounded-2xl border border-forest-100 bg-white/70 px-4 py-3.5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gold-400/60 hover:bg-white">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-forest-50 text-forest-700">
-                    <MotionIcon preset="ring">{c.icon}</MotionIcon>
-                  </span>
+                <div className={shell}>
+                  {icon}
                   <span className="min-w-0 text-left">
                     <span className="block text-[11px] uppercase tracking-wide text-charcoal-500">{c.label}</span>
                     <span className="block truncate text-sm font-medium text-forest-950">{c.value}</span>
-                    {c.altValue && (
-                      <span className="block truncate text-sm font-medium text-forest-950">{c.altValue}</span>
-                    )}
                   </span>
                 </div>
               );
