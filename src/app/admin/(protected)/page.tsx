@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { IndianRupee, MessageSquare } from "lucide-react";
+import { IndianRupee, MessageSquare, TriangleAlert } from "lucide-react";
 import { bookingStats, listAllBookings } from "@/lib/db/queries/bookings";
 import { listContactMessages } from "@/lib/db/queries/contactMessages";
 import { formatDate, formatINR } from "@/lib/format";
+import { isBookingOverdue } from "@/lib/bookingSla";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { MotionIcon } from "@/components/ui/MotionIcon";
 import { CalendarCheckIcon, ClockHandsIcon } from "@/components/ui/AnimatedIcons";
@@ -23,13 +24,15 @@ function statusBadgeClass(status: string) {
 }
 
 export default async function AdminDashboardPage() {
-  const [stats, recentBookings, messages] = await Promise.all([
+  const [stats, recentBookings, messages, pendingList] = await Promise.all([
     bookingStats(),
     listAllBookings({ limit: 8 }),
     listContactMessages(),
+    listAllBookings({ status: "Pending" }),
   ]);
   const unhandledMessages = messages.filter((m) => !m.handled).length;
   const pendingBookings = stats.byStatus["Pending"] ?? 0;
+  const overdueCount = pendingList.filter((b) => isBookingOverdue(b.status, b.created_at)).length;
 
   return (
     <div>
@@ -81,6 +84,26 @@ export default async function AdminDashboardPage() {
             </p>
             <p className="text-[11px] uppercase tracking-wide text-charcoal-500 sm:text-xs">Unhandled messages</p>
           </div>
+        </RevealItem>
+        <RevealItem>
+          <Link
+            href="/admin/bookings?status=Pending"
+            className={`block rounded-2xl border p-4 transition-shadow duration-200 hover:shadow-md sm:p-6 ${
+              overdueCount > 0 ? "border-red-200 bg-red-50" : "border-forest-100 bg-white"
+            }`}
+          >
+            <TriangleAlert size={20} className={overdueCount > 0 ? "text-red-600 sm:hidden" : "text-gold-700 sm:hidden"} />
+            <TriangleAlert
+              size={24}
+              className={`hidden sm:block ${overdueCount > 0 ? "text-red-600" : "text-gold-700"}`}
+            />
+            <p className={`mt-2 font-display text-lg sm:mt-3 sm:text-2xl ${overdueCount > 0 ? "text-red-700" : "text-forest-950"}`}>
+              {overdueCount.toLocaleString("en-IN")}
+            </p>
+            <p className="text-[11px] uppercase tracking-wide text-charcoal-500 sm:text-xs">
+              Overdue confirmations (12h+)
+            </p>
+          </Link>
         </RevealItem>
       </RevealGroup>
 

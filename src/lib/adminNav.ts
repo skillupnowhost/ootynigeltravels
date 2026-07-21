@@ -15,6 +15,7 @@ import {
   Compass,
   Sparkles,
   Image as ImageIcon,
+  MapPin,
   type LucideIcon,
 } from "lucide-react";
 
@@ -45,6 +46,7 @@ export const ADMIN_NAV_SECTIONS: readonly AdminNavSection[] = [
       { href: "/admin/customers", label: "Customers", icon: Users, roles: ["admin", "manager"] },
       { href: "/admin/fleet", label: "Fleet", icon: Car, roles: ["admin", "manager"] },
       { href: "/admin/drivers", label: "Drivers", icon: UserCog, roles: ["admin", "manager"] },
+      { href: "/admin/pickup-locations", label: "Pickup Locations", icon: MapPin, roles: ["admin", "manager"] },
     ],
   },
   {

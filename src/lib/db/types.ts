@@ -151,6 +151,39 @@ export interface Coupon {
   created_at: string;
 }
 
+export interface PickupLocation {
+  id: number;
+  city: string;
+  label: string;
+  active: number;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface PackagePricingTier {
+  id: number;
+  package_id: number;
+  nights: number;
+  days: number;
+  price: number;
+  active: number;
+  sort_order: number;
+  created_at: string;
+}
+
+export const CAR_TYPES = [
+  "Hatchback",
+  "Sedan",
+  "SUV",
+  "Premium SUV",
+  "Tempo Traveller",
+  "Luxury Vehicle",
+] as const;
+export type CarType = (typeof CAR_TYPES)[number];
+
+export const TRIP_TYPES = ["package", "custom"] as const;
+export type TripType = (typeof TRIP_TYPES)[number];
+
 export const BOOKING_STATUSES = [
   "Pending",
   "Confirmed",
@@ -189,6 +222,15 @@ export interface Booking {
   remarks: string | null;
   itinerary: ItineraryDay[];
   cancel_requested: number;
+  trip_type: TripType;
+  pricing_tier_id: number | null;
+  car_type: string | null;
+  car_days: number[];
+  car_notes: string | null;
+  extra_charges: number;
+  extra_charges_note: string | null;
+  discount_amount: number;
+  final_amount: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -262,7 +304,14 @@ export interface Faq {
   sort_order: number;
 }
 
-export const TRIP_REQUEST_STATUSES = ["New", "Contacted", "Converted", "Closed"] as const;
+export const TRIP_REQUEST_STATUSES = [
+  "New",
+  "Contacted",
+  "Quotation Sent",
+  "Accepted",
+  "Converted",
+  "Closed",
+] as const;
 export type TripRequestStatus = (typeof TRIP_REQUEST_STATUSES)[number];
 
 export interface TripRequest {
@@ -282,6 +331,11 @@ export interface TripRequest {
   hotel_category: string | null;
   computed_total: number | null;
   status: TripRequestStatus;
+  quotation_amount: number | null;
+  quotation_note: string | null;
+  quotation_sent_at: string | null;
+  start_date: string | null;
+  end_date: string | null;
   created_at: string;
 }
 

@@ -7,11 +7,31 @@ import { createTripRequest } from "@/lib/db/queries/tripRequests";
 import { rateLimit } from "@/lib/auth/rateLimit";
 import { headers } from "next/headers";
 import type { TripRequest } from "@/lib/db/types";
+import { isValidE164 } from "@/lib/validation/phone";
+import { isValidEmail } from "@/lib/validation/email";
+
+const optionalEmail = () =>
+  z
+    .string()
+    .trim()
+    .max(200)
+    .refine((v) => v === "" || isValidEmail(v), { message: "Please enter a valid email address" })
+    .optional()
+    .or(z.literal(""));
+
+const optionalPhone = () =>
+  z
+    .string()
+    .trim()
+    .max(30)
+    .refine((v) => v === "" || isValidE164(v), { message: "Please enter a valid phone number" })
+    .optional()
+    .or(z.literal(""));
 
 const contactSchema = z.object({
   name: z.string().trim().min(2).max(120),
-  email: z.string().trim().email().max(200).optional().or(z.literal("")),
-  phone: z.string().trim().max(30).optional().or(z.literal("")),
+  email: optionalEmail(),
+  phone: optionalPhone(),
   subject: z.string().trim().max(200).optional().or(z.literal("")),
   message: z.string().trim().min(10).max(4000),
 });
@@ -56,7 +76,7 @@ export async function submitContactMessage(
 
 const reviewSchema = z.object({
   customer_name: z.string().trim().min(2).max(120),
-  email: z.string().trim().email().max(200).optional().or(z.literal("")),
+  email: optionalEmail(),
   rating: z.coerce.number().int().min(1).max(5),
   comment: z.string().trim().min(10).max(2000),
 });
@@ -94,22 +114,33 @@ export async function submitReview(
   return { ok: true };
 }
 
-const tripRequestSchema = z.object({
-  name: z.string().trim().min(2).max(120),
-  phone: z.string().trim().min(6).max(20),
-  email: z.string().trim().email().max(200).optional().or(z.literal("")),
-  trip_type: z.string().trim().min(1).max(40),
-  destinations: z.array(z.string().trim().min(1)).max(30),
-  group_size: z.coerce.number().int().min(1).max(60),
-  duration_label: z.string().trim().max(60).optional().or(z.literal("")),
-  travel_month: z.string().trim().max(40).optional().or(z.literal("")),
-  budget_range: z.string().trim().max(60).optional().or(z.literal("")),
-  notes: z.string().trim().max(2000).optional().or(z.literal("")),
-  package_slug: z.string().trim().max(120).optional().or(z.literal("")),
-  vehicle_type: z.string().trim().max(80).optional().or(z.literal("")),
-  hotel_category: z.string().trim().max(40).optional().or(z.literal("")),
-  computed_total: z.coerce.number().int().min(0).optional(),
-});
+const tripRequestSchema = z
+  .object({
+    name: z.string().trim().min(2).max(120),
+    phone: z
+      .string()
+      .trim()
+      .max(20)
+      .refine((v) => isValidE164(v), { message: "Please enter a valid phone number" }),
+    email: optionalEmail(),
+    trip_type: z.string().trim().min(1).max(40),
+    destinations: z.array(z.string().trim().min(1)).max(30),
+    group_size: z.coerce.number().int().min(1).max(60),
+    duration_label: z.string().trim().max(60).optional().or(z.literal("")),
+    travel_month: z.string().trim().max(40).optional().or(z.literal("")),
+    budget_range: z.string().trim().max(60).optional().or(z.literal("")),
+    notes: z.string().trim().max(2000).optional().or(z.literal("")),
+    package_slug: z.string().trim().max(120).optional().or(z.literal("")),
+    vehicle_type: z.string().trim().max(80).optional().or(z.literal("")),
+    hotel_category: z.string().trim().max(40).optional().or(z.literal("")),
+    computed_total: z.coerce.number().int().min(0).optional(),
+    start_date: z.string().trim().max(10).optional().or(z.literal("")),
+    end_date: z.string().trim().max(10).optional().or(z.literal("")),
+  })
+  .refine((data) => !data.start_date || !data.end_date || data.end_date >= data.start_date, {
+    message: "End date must be on or after the start date",
+    path: ["end_date"],
+  });
 
 export type TripRequestFormState = { ok: boolean; error?: string; request?: TripRequest };
 
@@ -137,9 +168,12 @@ export async function submitTripRequest(
     vehicle_type: formData.get("vehicle_type"),
     hotel_category: formData.get("hotel_category"),
     computed_total: formData.get("computed_total") || undefined,
+    start_date: formData.get("start_date"),
+    end_date: formData.get("end_date"),
   });
   if (!parsed.success) {
-    return { ok: false, error: "Please check the form — some fields look invalid." };
+    const firstIssue = parsed.error.issues[0]?.message;
+    return { ok: false, error: firstIssue || "Please check the form — some fields look invalid." };
   }
 
   const request = await createTripRequest({
@@ -157,6 +191,8 @@ export async function submitTripRequest(
     vehicle_type: parsed.data.vehicle_type || null,
     hotel_category: parsed.data.hotel_category || null,
     computed_total: parsed.data.computed_total ?? null,
+    start_date: parsed.data.start_date || null,
+    end_date: parsed.data.end_date || null,
   });
 
   return { ok: true, request };

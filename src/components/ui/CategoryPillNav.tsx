@@ -32,8 +32,22 @@ export function CategoryPillNav({ categories, layoutId = "pill-active" }: { cate
   }, []);
 
   useEffect(() => {
-    const btn = navRef.current?.querySelector<HTMLButtonElement>(`[data-slug="${active}"]`);
-    btn?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    // Only ever scrolls the horizontal pill strip itself (via scrollLeft) —
+    // never scrollIntoView, which can mis-detect the nearest scroll container
+    // through a `sticky` ancestor and yank the whole page's vertical scroll
+    // back to top as the IntersectionObserver below fires on every scroll tick.
+    const container = navRef.current;
+    const btn = container?.querySelector<HTMLButtonElement>(`[data-slug="${active}"]`);
+    if (!container || !btn) return;
+    const btnLeft = btn.offsetLeft;
+    const btnRight = btnLeft + btn.offsetWidth;
+    const viewLeft = container.scrollLeft;
+    const viewRight = viewLeft + container.clientWidth;
+    if (btnLeft < viewLeft) {
+      container.scrollTo({ left: Math.max(0, btnLeft - 16), behavior: "smooth" });
+    } else if (btnRight > viewRight) {
+      container.scrollTo({ left: btnRight - container.clientWidth + 16, behavior: "smooth" });
+    }
   }, [active]);
 
   function scrollToCategory(slug: string) {

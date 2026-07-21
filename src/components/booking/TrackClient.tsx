@@ -11,7 +11,7 @@ import { MotionIcon } from "@/components/ui/MotionIcon";
 import { CarDriveIcon, MapPinDropIcon, ClockHandsIcon, CalendarCheckIcon } from "@/components/ui/AnimatedIcons";
 import { formatDate, formatDateTime, formatINR } from "@/lib/format";
 import { BOOKING_STATUSES } from "@/lib/db/types";
-import type { Booking, BookingHistoryEntry } from "@/lib/db/types";
+import type { Booking, BookingHistoryEntry, TripRequest } from "@/lib/db/types";
 
 type TrackedBooking = Booking & { history: BookingHistoryEntry[] };
 
@@ -21,6 +21,7 @@ export function TrackClient() {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(searchParams.get("code") ?? "");
   const [bookings, setBookings] = useState<TrackedBooking[] | null>(null);
+  const [tripRequests, setTripRequests] = useState<TripRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +37,10 @@ export function TrackClient() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Something went wrong");
       setBookings(data.bookings);
-      if (data.bookings.length === 0) setError("No booking found — check the ID or phone number.");
+      setTripRequests(data.tripRequests ?? []);
+      if (data.bookings.length === 0 && (data.tripRequests ?? []).length === 0) {
+        setError("No booking or trip request found — check the ID or phone number.");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -94,8 +98,52 @@ export function TrackClient() {
               <BookingCard booking={b} />
             </motion.div>
           ))}
+          {tripRequests.map((r) => (
+            <motion.div
+              key={`trip-request-${r.id}`}
+              layout
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <TripRequestCard request={r} />
+            </motion.div>
+          ))}
         </AnimatePresence>
       </div>
+    </div>
+  );
+}
+
+function TripRequestCard({ request }: { request: TripRequest }) {
+  return (
+    <div className="rounded-3xl border border-forest-100 bg-white p-7">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="font-display text-xl text-forest-950">Custom trip request — {request.trip_type}</p>
+          <p className="text-sm text-charcoal-500">Submitted {formatDate(request.created_at)}</p>
+        </div>
+        <span className="rounded-full bg-forest-900 px-4 py-1.5 text-xs font-semibold text-ivory-50">
+          {request.status}
+        </span>
+      </div>
+
+      {request.destinations.length > 0 && (
+        <p className="mt-4 text-sm text-charcoal-700">Places: {request.destinations.join(", ")}</p>
+      )}
+
+      {request.quotation_amount != null ? (
+        <div className="mt-4 rounded-2xl bg-gold-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gold-800">Quotation from our team</p>
+          <p className="mt-1 font-display text-2xl text-forest-950">{formatINR(request.quotation_amount)}</p>
+          {request.quotation_note && <p className="mt-1 text-sm text-charcoal-700">{request.quotation_note}</p>}
+        </div>
+      ) : (
+        <p className="mt-4 text-sm text-charcoal-500">
+          Quotation required — our team is reviewing your itinerary and will share pricing shortly.
+        </p>
+      )}
     </div>
   );
 }

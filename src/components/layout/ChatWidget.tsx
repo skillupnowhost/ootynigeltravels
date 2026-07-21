@@ -126,6 +126,7 @@ export function ChatWidget() {
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>(STARTER_SUGGESTIONS);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -136,6 +137,18 @@ export function ChatWidget() {
     window.addEventListener("open-chat-widget", onOpenRequest);
     return () => window.removeEventListener("open-chat-widget", onOpenRequest);
   }, []);
+
+  // Closing on an outside click leaves `messages`/`suggestions` state untouched,
+  // so reopening (toggle button or the "open-chat-widget" event) resumes the
+  // same conversation right where it left off.
+  useEffect(() => {
+    if (!open) return;
+    function onDocClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open]);
 
   async function requestReply(history: ChatMessage[]) {
     setError(null);
@@ -216,7 +229,7 @@ export function ChatWidget() {
   }
 
   return (
-    <>
+    <div ref={containerRef} className="contents">
       <motion.button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -392,6 +405,6 @@ export function ChatWidget() {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }

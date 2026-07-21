@@ -5,6 +5,7 @@ import { CheckCircle2 } from "lucide-react";
 import { submitReview, type ReviewFormState } from "@/lib/actions/public";
 import { Button } from "@/components/ui/Button";
 import { GlowStarIcon } from "@/components/ui/AnimatedIcons";
+import { EmailField } from "@/components/ui/EmailField";
 
 const initialState: ReviewFormState = { ok: false };
 
@@ -12,6 +13,7 @@ export function ReviewForm() {
   const [state, formAction, pending] = useActionState(submitReview, initialState);
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
+  const [emailOk, setEmailOk] = useState(true);
 
   if (state.ok) {
     return (
@@ -43,12 +45,7 @@ export function ReviewForm() {
         <label className="mb-1.5 block text-sm font-medium text-forest-900" htmlFor="email">
           Email <span className="font-normal text-charcoal-400">(optional)</span>
         </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          className="w-full rounded-xl border border-forest-200 px-4 py-3 text-sm outline-none focus:border-gold-500"
-        />
+        <EmailField name="email" onValueChange={(info) => setEmailOk(info.valid || info.value === "")} />
       </div>
 
       <div>
@@ -85,7 +82,7 @@ export function ReviewForm() {
       </div>
 
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
-      <Button type="submit" variant="gold" disabled={pending}>
+      <Button type="submit" variant="gold" disabled={pending || !emailOk}>
         {pending ? "Submitting..." : "Submit Review"}
       </Button>
     </form>

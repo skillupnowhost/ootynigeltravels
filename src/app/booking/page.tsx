@@ -4,6 +4,8 @@ import { PlanJourneyForm } from "@/components/booking/PlanJourneyForm";
 import { ShieldBadgeIcon } from "@/components/ui/AnimatedIcons";
 import { packagesRepo } from "@/lib/db/queries/packages";
 import { destinationsRepo } from "@/lib/db/queries/destinations";
+import { listPickupLocations } from "@/lib/db/queries/pickupLocations";
+import { attachPricingTiers } from "@/lib/pricing/service";
 
 export const dynamic = "force-dynamic";
 
@@ -14,10 +16,12 @@ export const metadata: Metadata = {
 };
 
 export default async function BookingPage() {
-  const [packages, destinations] = await Promise.all([
+  const [rawPackages, destinations, pickupLocations] = await Promise.all([
     packagesRepo.list(true),
     destinationsRepo.list(true),
+    listPickupLocations(true),
   ]);
+  const packages = await attachPricingTiers(rawPackages);
 
   return (
     <>
@@ -33,7 +37,7 @@ export default async function BookingPage() {
         </div>
       </PageHero>
       <section className="container-luxe py-16">
-        <PlanJourneyForm packages={packages} destinations={destinations} />
+        <PlanJourneyForm packages={packages} destinations={destinations} pickupLocations={pickupLocations} />
       </section>
     </>
   );

@@ -15,6 +15,13 @@ import {
   reorderGalleryImages,
 } from "@/lib/db/queries/galleryImages";
 import { GALLERY_CATEGORIES } from "@/lib/data/galleryCategories";
+import { createPricingTier, deletePricingTier, updatePricingTier } from "@/lib/db/queries/pricingTiers";
+import {
+  createPickupLocation,
+  deletePickupLocation,
+  setPickupLocationActive,
+  updatePickupLocation,
+} from "@/lib/db/queries/pickupLocations";
 
 export type AdminActionState = { ok: boolean; error?: string };
 
@@ -392,4 +399,104 @@ export async function reorderGalleryImagesAction(formData: FormData): Promise<vo
   await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "reorder", entity_type: "gallery_image", entity_id: category });
   revalidatePath("/admin/gallery");
   revalidatePath("/gallery");
+}
+
+// ---------- Package pricing tiers ----------
+const pricingTierSchema = z.object({
+  package_id: z.coerce.number().int().min(1),
+  nights: z.coerce.number().int().min(0).max(60),
+  days: z.coerce.number().int().min(1).max(60),
+  price: z.coerce.number().int().min(0),
+});
+
+export async function createPricingTierAction(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  const user = await requireRole([...MANAGE_ROLES]);
+  const parsed = pricingTierSchema.safeParse({
+    package_id: formData.get("package_id"),
+    nights: formData.get("nights"),
+    days: formData.get("days"),
+    price: formData.get("price"),
+  });
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
+
+  const tier = await createPricingTier(parsed.data);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "create", entity_type: "pricing_tier", entity_id: tier.id });
+  revalidatePath(`/admin/packages/${parsed.data.package_id}`);
+  return { ok: true };
+}
+
+export async function deletePricingTierAction(formData: FormData): Promise<void> {
+  const user = await requireRole([...MANAGE_ROLES]);
+  const id = Number(formData.get("id"));
+  const packageId = Number(formData.get("package_id"));
+  await deletePricingTier(id);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "pricing_tier", entity_id: id });
+  revalidatePath(`/admin/packages/${packageId}`);
+}
+
+export async function updatePricingTierAction(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  const user = await requireRole([...MANAGE_ROLES]);
+  const id = Number(formData.get("id"));
+  const packageId = Number(formData.get("package_id"));
+  const parsed = z
+    .object({ nights: z.coerce.number().int().min(0).max(60), days: z.coerce.number().int().min(1).max(60), price: z.coerce.number().int().min(0) })
+    .safeParse({ nights: formData.get("nights"), days: formData.get("days"), price: formData.get("price") });
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
+
+  await updatePricingTier(id, parsed.data);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "update", entity_type: "pricing_tier", entity_id: id });
+  revalidatePath(`/admin/packages/${packageId}`);
+  return { ok: true };
+}
+
+// ---------- Pickup locations ----------
+const pickupLocationSchema = z.object({
+  city: z.string().trim().min(2).max(60),
+  label: z.string().trim().min(2).max(120),
+});
+
+export async function createPickupLocationAction(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  const user = await requireRole([...MANAGE_ROLES]);
+  const parsed = pickupLocationSchema.safeParse({ city: formData.get("city"), label: formData.get("label") });
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
+
+  const location = await createPickupLocation(parsed.data);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "create", entity_type: "pickup_location", entity_id: location.id });
+  revalidatePath("/admin/pickup-locations");
+  return { ok: true };
+}
+
+export async function updatePickupLocationAction(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  const user = await requireRole([...MANAGE_ROLES]);
+  const parsed = pickupLocationSchema.safeParse({ city: formData.get("city"), label: formData.get("label") });
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
+
+  const id = Number(formData.get("id"));
+  await updatePickupLocation(id, parsed.data);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "update", entity_type: "pickup_location", entity_id: id });
+  revalidatePath("/admin/pickup-locations");
+  return { ok: true };
+}
+
+export async function togglePickupLocationAction(formData: FormData): Promise<void> {
+  const user = await requireRole([...MANAGE_ROLES]);
+  const id = Number(formData.get("id"));
+  const active = formData.get("active") === "1";
+  await setPickupLocationActive(id, !active);
+  await recordAuditLog({
+    actor_user_id: user.id,
+    actor_name: user.name,
+    action: active ? "deactivate" : "activate",
+    entity_type: "pickup_location",
+    entity_id: id,
+  });
+  revalidatePath("/admin/pickup-locations");
+}
+
+export async function deletePickupLocationAction(formData: FormData): Promise<void> {
+  const user = await requireRole([...MANAGE_ROLES]);
+  const id = Number(formData.get("id"));
+  await deletePickupLocation(id);
+  await recordAuditLog({ actor_user_id: user.id, actor_name: user.name, action: "delete", entity_type: "pickup_location", entity_id: id });
+  revalidatePath("/admin/pickup-locations");
 }

@@ -4,12 +4,16 @@ import { Suspense, useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronRight, Copy, Mail, Minus, Plus, User as UserIcon, Phone, Search } from "lucide-react";
-import { createBookingAction, type BookingFormState } from "@/lib/actions/booking";
+import { ChevronRight, Copy, Mail, Minus, Plus, User as UserIcon, Search, Car } from "lucide-react";
+import { checkPhoneBookingsAction, createBookingAction, type BookingFormState } from "@/lib/actions/booking";
 import { Button } from "@/components/ui/Button";
 import { MotionIcon } from "@/components/ui/MotionIcon";
 import { GlassSelect } from "@/components/ui/GlassSelect";
+import { GlassCombobox } from "@/components/ui/GlassCombobox";
 import { GlassDateRangePicker } from "@/components/ui/GlassDatePicker";
+import { PhoneInput, type PhoneValueInfo } from "@/components/ui/PhoneInput";
+import { EmailField } from "@/components/ui/EmailField";
+import { CustomTripForm } from "@/components/forms/CustomTripForm";
 import {
   CompassIcon,
   SparkleBurstIcon,
@@ -19,9 +23,13 @@ import {
 } from "@/components/ui/AnimatedIcons";
 import { formatINR } from "@/lib/format";
 import { site, waLink, mailtoLink } from "@/lib/config/site";
-import type { Destination, TourPackage } from "@/lib/db/types";
+import { calculateBookingAmount, findMatchingTier } from "@/lib/pricing/calc";
+import { CAR_TYPES } from "@/lib/db/types";
+import type { Destination, PickupLocation } from "@/lib/db/types";
+import type { PackageWithTiers } from "@/lib/pricing/service";
 
 const initialState: BookingFormState = { ok: false };
+const OTHER_CAR_TYPE = "Others";
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -38,8 +46,9 @@ function tripLength(startDate: string, endDate: string): { days: number; nights:
 }
 
 interface PlanJourneyFormProps {
-  packages: TourPackage[];
+  packages: PackageWithTiers[];
   destinations: Destination[];
+  pickupLocations: PickupLocation[];
   compact?: boolean;
 }
 
@@ -51,9 +60,10 @@ export function PlanJourneyForm(props: PlanJourneyFormProps) {
   );
 }
 
-function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJourneyFormProps) {
+function PlanJourneyFormInner({ packages, destinations, pickupLocations, compact = false }: PlanJourneyFormProps) {
   const searchParams = useSearchParams();
   const [state, formAction, pending] = useActionState(createBookingAction, initialState);
+  const [tripType, setTripType] = useState<"package" | "custom">("package");
 
   const defaultDestination = destinations[0]?.name ?? "Ooty / Nilgiris";
   const [destination, setDestination] = useState(searchParams.get("destination") ?? defaultDestination);
@@ -62,21 +72,79 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
   const [endDate, setEndDate] = useState(searchParams.get("endDate") ?? "");
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [carType, setCarType] = useState("");
+  const [carTypeOther, setCarTypeOther] = useState("");
+  const [carDays, setCarDays] = useState<number[]>([]);
+  const [carNotes, setCarNotes] = useState("");
+  const [phoneInfo, setPhoneInfo] = useState<PhoneValueInfo | null>(null);
+  const [phoneBookingCount, setPhoneBookingCount] = useState<number | null>(null);
+  const [confirmDuplicate, setConfirmDuplicate] = useState(false);
+  const [emailOk, setEmailOk] = useState(true);
+
+  const effectiveCarType = carType === OTHER_CAR_TYPE ? carTypeOther.trim() || OTHER_CAR_TYPE : carType;
+
+  function handlePhoneChange(info: PhoneValueInfo) {
+    setPhoneInfo(info);
+    setPhoneBookingCount(null);
+    setConfirmDuplicate(false);
+  }
+
+  async function handlePhoneBlur(info: PhoneValueInfo) {
+    if (!info.valid) return;
+    const { count } = await checkPhoneBookingsAction(info.e164);
+    setPhoneBookingCount(count);
+  }
+
+  const pickupOptions = useMemo(
+    () => pickupLocations.map((l) => ({ value: l.label, label: l.label, group: l.city })),
+    [pickupLocations]
+  );
 
   const length = useMemo(() => tripLength(startDate, endDate), [startDate, endDate]);
   const selectedPackage = packages.find((p) => p.slug === packageSlug);
+  const tier = useMemo(
+    () => (length ? findMatchingTier(selectedPackage?.pricing_tiers, length.nights, length.days) : null),
+    [selectedPackage, length]
+  );
 
-  const estimate = useMemo(() => {
-    if (!selectedPackage) return 0;
-    const extraAdults = Math.max(0, adults - 2);
-    const amount =
-      selectedPackage.price_from + extraAdults * selectedPackage.price_from * 0.15 + children * selectedPackage.price_from * 0.08;
-    return Math.round(amount / 10) * 10;
-  }, [selectedPackage, adults, children]);
+  const dayNumbers = useMemo(
+    () => (length ? Array.from({ length: length.days }, (_, i) => i + 1) : []),
+    [length]
+  );
+
+  function toggleCarDay(day: number) {
+    setCarDays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort((a, b) => a - b)));
+  }
+
+  const estimateBreakdown = useMemo(() => {
+    if (!selectedPackage) return null;
+    return calculateBookingAmount({
+      basePrice: selectedPackage.price_from,
+      tier,
+      adults,
+      children,
+      carType: effectiveCarType || null,
+      carDays,
+    });
+  }, [selectedPackage, tier, adults, children, effectiveCarType, carDays]);
+
+  const estimate = estimateBreakdown?.total ?? 0;
 
   function handleStartDateChange(value: string) {
     setStartDate(value);
     if (endDate && endDate < value) setEndDate(value);
+  }
+
+  if (tripType === "custom") {
+    return (
+      <div className={compact ? "glass-card w-full max-w-md overflow-visible rounded-[2rem] p-6 shadow-[0_32px_70px_-28px_rgba(11,59,46,0.4)] ring-1 ring-gold-200/50 sm:p-7 lg:ml-auto" : ""}>
+        <TripTypeToggle tripType={tripType} onChange={setTripType} compact={compact} />
+        <div className="mt-5">
+          <CustomTripForm destinations={destinations} />
+        </div>
+      </div>
+    );
   }
 
   if (state.ok && state.bookingCode) {
@@ -114,9 +182,16 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
             <ShieldBadgeIcon size={13} loop={false} /> Pay later
           </span>
         </div>
-        <p className="mb-5 text-sm text-charcoal-500">Two minutes to plan — no account needed.</p>
+
+        <TripTypeToggle tripType={tripType} onChange={setTripType} compact />
+
+        <p className="mb-5 mt-3 text-sm text-charcoal-500">Two minutes to plan — no account needed.</p>
 
         <input type="hidden" name="destination" value={selectedPackage?.name ?? destination} />
+        <input type="hidden" name="pickupLocation" value={pickupLocation} />
+        <input type="hidden" name="carType" value={effectiveCarType} />
+        <input type="hidden" name="carDays" value={JSON.stringify(carDays)} />
+        <input type="hidden" name="confirmDuplicate" value={confirmDuplicate ? "true" : "false"} />
 
         <div className="space-y-3">
           <CompactField label="Customize Package">
@@ -128,12 +203,6 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
               onChange={setPackageSlug}
               options={packages.map((p) => ({ value: p.slug, label: p.name }))}
             />
-            <Link
-              href="/packages/customize"
-              className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-gold-700 hover:text-gold-800 hover:underline"
-            >
-              Want something unique? Build your own trip →
-            </Link>
           </CompactField>
 
           <CompactField label="Trip dates">
@@ -157,24 +226,36 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
           )}
 
           <CompactField label="Pickup location">
-            <div className="relative">
-              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-forest-500">
-                <MapPinDropIcon size={16} loop={false} />
-              </span>
-              <input
-                type="text"
-                name="pickupLocation"
-                required
-                placeholder="Coimbatore Airport, hotel..."
-                className="input-field pl-10 text-sm"
-              />
-            </div>
+            <GlassCombobox
+              size="sm"
+              variant="subtle"
+              placeholder="Search Coimbatore, Ooty, Mysore..."
+              value={pickupLocation}
+              onChange={setPickupLocation}
+              options={pickupOptions}
+            />
           </CompactField>
 
           <div className="grid grid-cols-2 gap-3">
             <StepperField label="Adults" value={adults} onChange={setAdults} min={1} max={30} name="adults" />
             <StepperField label="Children" value={children} onChange={setChildren} min={0} max={20} name="children" />
           </div>
+
+          {dayNumbers.length > 0 && (
+            <CarRequirementFields
+              dayNumbers={dayNumbers}
+              carType={carType}
+              onCarTypeChange={setCarType}
+              carTypeOther={carTypeOther}
+              onCarTypeOtherChange={setCarTypeOther}
+              carDays={carDays}
+              onToggleDay={toggleCarDay}
+              carNotes={carNotes}
+              onCarNotesChange={setCarNotes}
+              compact
+            />
+          )}
+          <input type="hidden" name="carNotes" value={carNotes} />
 
           <CompactField label="Full name">
             <div className="relative">
@@ -186,30 +267,31 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
           </CompactField>
 
           <CompactField label="Mobile number">
-            <div className="relative">
-              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-forest-500">
-                <MotionIcon preset="ring">
-                  <Phone size={16} />
-                </MotionIcon>
-              </span>
-              <input
-                type="tel"
-                inputMode="tel"
-                name="phone"
-                required
-                placeholder="10-digit mobile number"
-                className="input-field pl-10 text-sm"
-              />
-            </div>
+            <PhoneInput
+              name="phone"
+              required
+              size="sm"
+              variant="subtle"
+              onValueChange={handlePhoneChange}
+              onBlur={handlePhoneBlur}
+            />
           </CompactField>
 
+          {phoneBookingCount != null && phoneBookingCount > 0 && (
+            <DuplicatePhoneConfirm
+              count={phoneBookingCount}
+              confirmed={confirmDuplicate}
+              onChange={setConfirmDuplicate}
+            />
+          )}
+
           <CompactField label="Email (optional)">
-            <div className="relative">
-              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-forest-500">
-                <Mail size={16} />
-              </span>
-              <input type="email" name="email" placeholder="you@example.com" className="input-field pl-10 text-sm" />
-            </div>
+            <EmailField
+              name="email"
+              size="sm"
+              icon={<Mail size={16} />}
+              onValueChange={(info) => setEmailOk(info.valid || info.value === "")}
+            />
           </CompactField>
         </div>
 
@@ -219,7 +301,7 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
 
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || (!!phoneBookingCount && !confirmDuplicate) || !phoneInfo?.valid || !emailOk}
           className="group mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gold-600 px-6 py-3.5 text-sm font-semibold text-forest-950 transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold-700 hover:shadow-[0_12px_30px_-8px_rgba(200,161,92,0.6)] active:translate-y-0 disabled:pointer-events-none disabled:opacity-60"
         >
           {pending ? "Planning..." : "Plan My Journey"}
@@ -249,7 +331,15 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_320px]"
     >
+      <input type="hidden" name="pickupLocation" value={pickupLocation} />
+      <input type="hidden" name="carType" value={effectiveCarType} />
+      <input type="hidden" name="carDays" value={JSON.stringify(carDays)} />
+      <input type="hidden" name="carNotes" value={carNotes} />
+      <input type="hidden" name="confirmDuplicate" value={confirmDuplicate ? "true" : "false"} />
+
       <div className="space-y-10">
+        <TripTypeToggle tripType={tripType} onChange={setTripType} />
+
         <section>
           <StepLabel n={1} title="Where would you like to go?" icon={<CompassIcon size={20} loop={false} />} />
           <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -290,15 +380,16 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
             {length && (
               <p className="sm:col-span-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-gold-50 px-3 py-1.5 text-xs font-semibold text-gold-800">
                 <CalendarCheckIcon size={14} loop={false} /> {length.days} Days / {length.nights} Nights — auto-calculated
+                {tier && <span className="text-forest-700"> · package rate applied</span>}
               </p>
             )}
             <FieldWrap label="Pickup location" className="sm:col-span-2" icon={<MapPinDropIcon size={16} loop={false} />}>
-              <input
-                type="text"
-                name="pickupLocation"
-                required
-                placeholder="e.g. Coimbatore Airport, or your hotel in Ooty"
-                className="input-field pl-10"
+              <GlassCombobox
+                placeholder="Search Coimbatore, Ooty, Mysore pickup points..."
+                value={pickupLocation}
+                onChange={setPickupLocation}
+                options={pickupOptions}
+                className="pl-0"
               />
             </FieldWrap>
             <FieldWrap label="Adults">
@@ -326,32 +417,62 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
           </div>
         </section>
 
+        {dayNumbers.length > 0 && (
+          <section>
+            <StepLabel n={3} title="Car requirements" icon={<Car size={20} />} />
+            <CarRequirementFields
+              dayNumbers={dayNumbers}
+              carType={carType}
+              onCarTypeChange={setCarType}
+              carTypeOther={carTypeOther}
+              onCarTypeOtherChange={setCarTypeOther}
+              carDays={carDays}
+              onToggleDay={toggleCarDay}
+              carNotes={carNotes}
+              onCarNotesChange={setCarNotes}
+            />
+          </section>
+        )}
+
         <section>
-          <StepLabel n={3} title="Your details" />
+          <StepLabel n={dayNumbers.length > 0 ? 4 : 3} title="Your details" />
           <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <FieldWrap label="Full name" icon={<UserIcon size={16} />}>
               <input type="text" name="name" required className="input-field pl-10" />
             </FieldWrap>
-            <FieldWrap label="Mobile number" icon={<Phone size={16} />}>
-              <input
-                type="tel"
-                name="phone"
-                required
-                placeholder="10-digit mobile number"
-                className="input-field pl-10"
+            <FieldWrap label="Mobile number">
+              <PhoneInput name="phone" required onValueChange={handlePhoneChange} onBlur={handlePhoneBlur} />
+            </FieldWrap>
+            <FieldWrap label="Email (optional)">
+              <EmailField
+                name="email"
+                icon={<Mail size={16} />}
+                onValueChange={(info) => setEmailOk(info.valid || info.value === "")}
               />
             </FieldWrap>
-            <FieldWrap label="Email (optional)" icon={<Mail size={16} />}>
-              <input type="email" name="email" className="input-field pl-10" />
-            </FieldWrap>
           </div>
+
+          {phoneBookingCount != null && phoneBookingCount > 0 && (
+            <div className="mt-4">
+              <DuplicatePhoneConfirm
+                count={phoneBookingCount}
+                confirmed={confirmDuplicate}
+                onChange={setConfirmDuplicate}
+              />
+            </div>
+          )}
         </section>
 
         {state.error && (
           <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{state.error}</p>
         )}
 
-        <Button type="submit" variant="gold" disabled={pending} className="w-full justify-center sm:w-auto">
+        <Button
+          type="submit"
+          variant="gold"
+          disabled={pending || (!!phoneBookingCount && !confirmDuplicate) || !phoneInfo?.valid || !emailOk}
+          className="w-full justify-center sm:w-auto"
+        >
           {pending ? "Planning..." : "Plan My Journey"}
         </Button>
       </div>
@@ -376,6 +497,12 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
               </span>
             </div>
           )}
+          {pickupLocation && (
+            <div className="flex justify-between">
+              <span>Pickup</span>
+              <span className="text-right">{pickupLocation}</span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span>Adults</span>
             <span>{adults}</span>
@@ -384,6 +511,18 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
             <span>Children</span>
             <span>{children}</span>
           </div>
+          {effectiveCarType && (
+            <div className="flex justify-between">
+              <span>Car type</span>
+              <span>{effectiveCarType}</span>
+            </div>
+          )}
+          {carDays.length > 0 && (
+            <div className="flex justify-between">
+              <span>Car days</span>
+              <span>{carDays.map((d) => `Day ${d}`).join(", ")}</span>
+            </div>
+          )}
         </div>
         <p className="mt-6 flex items-center gap-2 border-t border-forest-100 pt-4 text-xs text-charcoal-500">
           <ShieldBadgeIcon size={16} className="text-forest-600" />
@@ -391,6 +530,158 @@ function PlanJourneyFormInner({ packages, destinations, compact = false }: PlanJ
         </p>
       </aside>
     </motion.form>
+  );
+}
+
+function TripTypeToggle({
+  tripType,
+  onChange,
+  compact = false,
+}: {
+  tripType: "package" | "custom";
+  onChange: (t: "package" | "custom") => void;
+  compact?: boolean;
+}) {
+  return (
+    <div className={`inline-flex rounded-full border border-forest-200 bg-white p-1 ${compact ? "w-full" : ""}`}>
+      {(
+        [
+          { key: "package", label: "Ready-made package" },
+          { key: "custom", label: "Custom / build my own trip" },
+        ] as const
+      ).map((opt) => (
+        <button
+          key={opt.key}
+          type="button"
+          onClick={() => onChange(opt.key)}
+          className={`rounded-full px-4 py-2 text-xs font-semibold transition-all duration-200 ${
+            compact ? "flex-1" : ""
+          } ${
+            tripType === opt.key
+              ? "bg-forest-900 text-ivory-50"
+              : "text-forest-700 hover:bg-forest-50"
+          }`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function DuplicatePhoneConfirm({
+  count,
+  confirmed,
+  onChange,
+}: {
+  count: number;
+  confirmed: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label className="flex items-start gap-2.5 rounded-xl border border-gold-200 bg-gold-50 p-3 text-xs text-gold-900">
+      <input
+        type="checkbox"
+        checked={confirmed}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 h-4 w-4 shrink-0 accent-gold-600"
+      />
+      <span>
+        This mobile number already has {count} booking{count === 1 ? "" : "s"} with us. Check this box to confirm
+        you&rsquo;d like to create another one.
+      </span>
+    </label>
+  );
+}
+
+function CarRequirementFields({
+  dayNumbers,
+  carType,
+  onCarTypeChange,
+  carTypeOther,
+  onCarTypeOtherChange,
+  carDays,
+  onToggleDay,
+  carNotes,
+  onCarNotesChange,
+  compact = false,
+}: {
+  dayNumbers: number[];
+  carType: string;
+  onCarTypeChange: (v: string) => void;
+  carTypeOther: string;
+  onCarTypeOtherChange: (v: string) => void;
+  carDays: number[];
+  onToggleDay: (day: number) => void;
+  carNotes: string;
+  onCarNotesChange: (v: string) => void;
+  compact?: boolean;
+}) {
+  return (
+    <div className={compact ? "" : "mt-4 space-y-4"}>
+      {compact && (
+        <p className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-forest-500">
+          Car requirements (optional)
+        </p>
+      )}
+      <div className={compact ? "" : "grid grid-cols-1 gap-5 sm:grid-cols-2"}>
+        <div>
+          {!compact && <label className="mb-1.5 block text-sm font-medium text-forest-900">Car type</label>}
+          <GlassSelect
+            size={compact ? "sm" : "md"}
+            variant={compact ? "subtle" : "default"}
+            placeholder="No car needed"
+            value={carType}
+            onChange={onCarTypeChange}
+            options={[
+              { value: "", label: "No car needed" },
+              ...CAR_TYPES.map((c) => ({ value: c, label: c })),
+              { value: OTHER_CAR_TYPE, label: "Others (specify)" },
+            ]}
+          />
+          {carType === OTHER_CAR_TYPE && (
+            <input
+              type="text"
+              value={carTypeOther}
+              onChange={(e) => onCarTypeOtherChange(e.target.value)}
+              placeholder="Tell us what vehicle you need (optional)"
+              className={`input-field mt-2 ${compact ? "text-sm" : ""}`}
+            />
+          )}
+        </div>
+      </div>
+
+      {carType && (
+        <div className="mt-3">
+          {!compact && <label className="mb-1.5 block text-sm font-medium text-forest-900">Which days do you need the car?</label>}
+          <div className="flex flex-wrap gap-2">
+            {dayNumbers.map((day) => {
+              const active = carDays.includes(day);
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => onToggleDay(day)}
+                  aria-pressed={active}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
+                    active ? "border-gold-600 bg-gold-50 text-gold-800" : "border-forest-200 bg-white text-charcoal-700 hover:border-forest-400"
+                  }`}
+                >
+                  Day {day} {active ? "✓" : ""}
+                </button>
+              );
+            })}
+          </div>
+          <input
+            type="text"
+            value={carNotes}
+            onChange={(e) => onCarNotesChange(e.target.value)}
+            placeholder="Notes for the driver (optional)"
+            className="input-field mt-3 text-sm"
+          />
+        </div>
+      )}
+    </div>
   );
 }
 

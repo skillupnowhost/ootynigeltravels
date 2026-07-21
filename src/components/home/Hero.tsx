@@ -12,7 +12,8 @@ import { ForestHero } from "./ForestHero";
 import { HeroWordCycle } from "./HeroWordCycle";
 import { BrandKicker } from "./BrandKicker";
 import { PlanJourneyForm } from "@/components/booking/PlanJourneyForm";
-import type { Destination, TourPackage } from "@/lib/db/types";
+import type { Destination, PickupLocation } from "@/lib/db/types";
+import type { PackageWithTiers } from "@/lib/pricing/service";
 import type { HeroTheme, SkyCondition } from "@/lib/weather";
 
 const SKY_LABEL: Record<SkyCondition, string> = {
@@ -52,16 +53,19 @@ const HIGHLIGHTS = [
 export function Hero({
   destinations,
   packages,
+  pickupLocations,
   theme,
 }: {
   destinations: Destination[];
-  packages: TourPackage[];
+  packages: PackageWithTiers[];
+  pickupLocations: PickupLocation[];
   theme: HeroTheme;
 }) {
   const isNight = theme.timeOfDay === "night";
   const WeatherGlyph = isNight && theme.sky === "clear" ? Moon : SKY_ICON[theme.sky];
-  const weatherLine =
-    theme.temperatureC != null
+  const weatherLine = theme.unavailable
+    ? "Weather data temporarily unavailable."
+    : theme.temperatureC != null
       ? `${Math.round(theme.temperatureC)}°C in Ooty right now — ${SKY_LABEL[theme.sky]}`
       : `Live in Ooty — ${SKY_LABEL[theme.sky]}`;
 
@@ -192,7 +196,7 @@ export function Hero({
             }}
             aria-hidden
           />
-          <PlanJourneyForm compact destinations={destinations} packages={packages} />
+          <PlanJourneyForm compact destinations={destinations} packages={packages} pickupLocations={pickupLocations} />
         </div>
       </div>
 

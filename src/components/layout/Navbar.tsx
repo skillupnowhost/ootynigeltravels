@@ -62,6 +62,15 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
+
+  useEffect(() => {
     let cancelled = false;
     fetch("/api/session")
       .then((res) => (res.ok ? res.json() : { user: null }))

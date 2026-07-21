@@ -3,10 +3,12 @@
 import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import { Mail, User as UserIcon, Phone, ChevronRight, Copy } from "lucide-react";
+import { Mail, User as UserIcon, ChevronRight, Copy } from "lucide-react";
 import { submitTripRequest, type TripRequestFormState } from "@/lib/actions/public";
 import { Button } from "@/components/ui/Button";
 import { MotionIcon } from "@/components/ui/MotionIcon";
+import { PhoneInput } from "@/components/ui/PhoneInput";
+import { EmailField } from "@/components/ui/EmailField";
 import { CalendarCheckIcon, MapPinDropIcon } from "@/components/ui/AnimatedIcons";
 import { GlassSelect } from "@/components/ui/GlassSelect";
 import { GlassDatePicker } from "@/components/ui/GlassDatePicker";
@@ -72,6 +74,8 @@ export function PackageCustomizeForm({ pkg, fleet }: { pkg: TourPackage; fleet: 
   const [mealPlan, setMealPlan] = useState("Breakfast");
   const [addons, setAddons] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
+  const [phoneValid, setPhoneValid] = useState(false);
+  const [emailOk, setEmailOk] = useState(true);
 
   const days = pkg.duration_days ?? 1;
   const defaultVehicle = fleet.find((v) => v.category === pkg.vehicle_options[0]);
@@ -248,11 +252,11 @@ export function PackageCustomizeForm({ pkg, fleet }: { pkg: TourPackage; fleet: 
             <FieldWrap label="Full name" icon={<UserIcon size={16} />}>
               <input type="text" name="name" required className="input-field pl-10" />
             </FieldWrap>
-            <FieldWrap label="Phone number" icon={<Phone size={16} />}>
-              <input type="tel" name="phone" required placeholder="10-digit mobile number" className="input-field pl-10" />
+            <FieldWrap label="Phone number">
+              <PhoneInput name="phone" required onValueChange={(info) => setPhoneValid(info.valid)} />
             </FieldWrap>
             <FieldWrap label="Email (optional)" icon={<Mail size={16} />} className="sm:col-span-2">
-              <input type="email" name="email" className="input-field pl-10" />
+              <EmailField name="email" onValueChange={(info) => setEmailOk(info.valid || info.value === "")} />
             </FieldWrap>
           </div>
           <div className="mt-5">
@@ -269,7 +273,12 @@ export function PackageCustomizeForm({ pkg, fleet }: { pkg: TourPackage; fleet: 
 
         {state.error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{state.error}</p>}
 
-        <Button type="submit" variant="gold" disabled={pending} className="w-full justify-center sm:w-auto">
+        <Button
+          type="submit"
+          variant="gold"
+          disabled={pending || !phoneValid || !emailOk}
+          className="w-full justify-center sm:w-auto"
+        >
           {pending ? "Sending..." : "Send Customized Request"}
         </Button>
       </motion.form>

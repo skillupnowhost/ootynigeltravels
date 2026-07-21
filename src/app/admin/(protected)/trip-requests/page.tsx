@@ -1,6 +1,7 @@
 import { listTripRequests } from "@/lib/db/queries/tripRequests";
 import { cycleTripRequestStatusAction, deleteTripRequestAction } from "@/lib/actions/adminModeration";
-import { formatDateTime, formatINR } from "@/lib/format";
+import { QuotationForm } from "@/components/admin/QuotationForm";
+import { formatDate, formatDateTime, formatINR } from "@/lib/format";
 import { requireRole } from "@/lib/auth/rbac";
 import { Reveal } from "@/components/ui/Reveal";
 import { TRIP_REQUEST_STATUSES } from "@/lib/db/types";
@@ -11,6 +12,8 @@ export const dynamic = "force-dynamic";
 const STATUS_STYLES: Record<string, string> = {
   New: "bg-gold-50 text-gold-800",
   Contacted: "bg-forest-100 text-forest-800",
+  "Quotation Sent": "bg-gold-100 text-gold-900",
+  Accepted: "bg-forest-200 text-forest-900",
   Converted: "bg-forest-900 text-ivory-50",
   Closed: "bg-charcoal-900/10 text-charcoal-700",
 };
@@ -58,6 +61,11 @@ export default async function AdminTripRequestsPage() {
                 )}
                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-charcoal-500">
                   <span>Group size: {r.group_size}</span>
+                  {r.start_date && (
+                    <span>
+                      Dates: {formatDate(r.start_date)} → {r.end_date ? formatDate(r.end_date) : ""}
+                    </span>
+                  )}
                   {r.duration_label && <span>Duration: {r.duration_label}</span>}
                   {r.travel_month && <span>Travel month: {r.travel_month}</span>}
                   {r.budget_range && <span>Budget: {r.budget_range}</span>}
@@ -70,6 +78,17 @@ export default async function AdminTripRequestsPage() {
                 </div>
                 {r.notes && <p className="mt-2 text-sm text-charcoal-700">{r.notes}</p>}
                 <p className="mt-2 text-xs text-charcoal-400">{formatDateTime(r.created_at)}</p>
+
+                {r.quotation_amount != null && (
+                  <p className="mt-2 rounded-lg bg-gold-50 px-3 py-2 text-sm text-gold-900">
+                    Quotation sent: <strong>{formatINR(r.quotation_amount)}</strong>
+                    {r.quotation_note && ` — ${r.quotation_note}`}
+                  </p>
+                )}
+
+                <div className="mt-3">
+                  <QuotationForm id={r.id} defaultAmount={r.quotation_amount} defaultNote={r.quotation_note} />
+                </div>
 
                 <form action={cycleTripRequestStatusAction} className="mt-4">
                   <input type="hidden" name="id" value={r.id} />

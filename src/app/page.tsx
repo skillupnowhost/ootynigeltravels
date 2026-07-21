@@ -13,6 +13,8 @@ import { attractionsRepo } from "@/lib/db/queries/attractions";
 import { listAttractionImages } from "@/lib/db/queries/attractionImages";
 import { packagesRepo } from "@/lib/db/queries/packages";
 import { blogRepo } from "@/lib/db/queries/blog";
+import { listPickupLocations } from "@/lib/db/queries/pickupLocations";
+import { attachPricingTiers } from "@/lib/pricing/service";
 import { getOotyWeather } from "@/lib/weather";
 import { site } from "@/lib/config/site";
 
@@ -47,7 +49,9 @@ export default async function HomePage() {
       images: (await listAttractionImages(a.id, true)).map((img) => ({ src: img.src, alt: img.alt })),
     }))
   );
-  const packages = await packagesRepo.list(true);
+  const rawPackages = await packagesRepo.list(true);
+  const packages = await attachPricingTiers(rawPackages);
+  const pickupLocations = await listPickupLocations(true);
   const posts = await blogRepo.list();
   const weather = await getOotyWeather();
 
@@ -70,7 +74,7 @@ export default async function HomePage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(destinationsJsonLd) }} />
-      <Hero destinations={destinations} packages={packages} theme={weather} />
+      <Hero destinations={destinations} packages={packages} pickupLocations={pickupLocations} theme={weather} />
       <TripStylesShowcase />
       <DestinationsShowcase destinations={destinationsWithImages} />
       <AttractionsCarousel attractions={attractionsWithImages} />

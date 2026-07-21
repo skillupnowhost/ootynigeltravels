@@ -1,10 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { motion } from "motion/react";
 import { submitContactMessage, type ContactFormState } from "@/lib/actions/public";
 import { Button } from "@/components/ui/Button";
 import { CalendarCheckIcon } from "@/components/ui/AnimatedIcons";
+import { PhoneInput } from "@/components/ui/PhoneInput";
+import { EmailField } from "@/components/ui/EmailField";
 
 const initialState: ContactFormState = { ok: false };
 
@@ -12,6 +14,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
 
 export function ContactForm() {
   const [state, formAction, pending] = useActionState(submitContactMessage, initialState);
+  const [emailOk, setEmailOk] = useState(true);
 
   if (state.ok) {
     return (
@@ -41,10 +44,16 @@ export function ContactForm() {
     <form action={formAction} className="space-y-5">
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field label="Full name" name="name" required />
-        <Field label="Phone" name="phone" type="tel" />
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-forest-900">Phone (optional)</label>
+          <PhoneInput name="phone" />
+        </div>
       </div>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <Field label="Email" name="email" type="email" />
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-forest-900">Email (optional)</label>
+          <EmailField name="email" onValueChange={(info) => setEmailOk(info.valid || info.value === "")} />
+        </div>
         <Field label="Subject" name="subject" />
       </div>
       <div>
@@ -61,7 +70,7 @@ export function ContactForm() {
         />
       </div>
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
-      <Button type="submit" variant="gold" disabled={pending}>
+      <Button type="submit" variant="gold" disabled={pending || !emailOk}>
         {pending ? "Sending..." : "Send Message"}
       </Button>
     </form>

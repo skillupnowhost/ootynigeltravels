@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listAllBookings } from "@/lib/db/queries/bookings";
 import { formatDate, formatINR } from "@/lib/format";
+import { isBookingOverdue, hoursSinceCreated } from "@/lib/bookingSla";
 import { BOOKING_STATUSES, type BookingStatus } from "@/lib/db/types";
 import { Reveal } from "@/components/ui/Reveal";
 import { GlassSelect } from "@/components/ui/GlassSelect";
@@ -85,6 +86,11 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
                   Cancel requested
                 </span>
               )}
+              {isBookingOverdue(b.status, b.created_at) && (
+                <span className="w-fit rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+                  Overdue — {Math.floor(hoursSinceCreated(b.created_at))}h since booking
+                </span>
+              )}
               <div className="flex items-center justify-between gap-2 text-sm text-charcoal-500">
                 <span className="truncate">{b.guest_name}</span>
                 <span className="shrink-0">{b.guest_phone}</span>
@@ -148,6 +154,11 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
                     <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusBadgeClass(b.status)}`}>
                       {b.status}
                     </span>
+                    {isBookingOverdue(b.status, b.created_at) && (
+                      <span className="ml-2 whitespace-nowrap rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+                        Overdue — {Math.floor(hoursSinceCreated(b.created_at))}h
+                      </span>
+                    )}
                   </td>
                   <td className="px-5 py-3">
                     <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${paymentBadgeClass(b.payment_status)}`}>

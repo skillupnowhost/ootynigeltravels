@@ -9,6 +9,8 @@ export interface HeroTheme {
   /** 0 = new moon, 1 = full moon. Only meaningful at night. */
   moonIllumination: number;
   temperatureC: number | null;
+  /** True only when the forecast API itself failed/was unreachable — not just when the reading is a normal clear day. */
+  unavailable: boolean;
 }
 
 const FALLBACK_THEME: HeroTheme = {
@@ -16,6 +18,7 @@ const FALLBACK_THEME: HeroTheme = {
   sky: "clear",
   moonIllumination: 0.4,
   temperatureC: null,
+  unavailable: true,
 };
 
 function codeToSky(code: number): SkyCondition {
@@ -53,6 +56,7 @@ export async function getOotyWeather(): Promise<HeroTheme> {
       sky: Number.isFinite(code) ? codeToSky(code) : "clear",
       moonIllumination: getMoonIllumination(new Date()),
       temperatureC,
+      unavailable: false,
     };
   } catch {
     return FALLBACK_THEME;

@@ -2,10 +2,28 @@
 
 import { z } from "zod";
 import { headers } from "next/headers";
-import { createBooking, getBookingByCode, requestCancellation } from "@/lib/db/queries/bookings";
-import { packagesRepo } from "@/lib/db/queries/packages";
+import { countBookingsByPhone, createBooking, getBookingByCode, requestCancellation } from "@/lib/db/queries/bookings";
+import { isValidPickupLocation } from "@/lib/db/queries/pickupLocations";
 import { getCurrentUser } from "@/lib/auth/session";
 import { rateLimit } from "@/lib/auth/rateLimit";
+import { quoteBooking } from "@/lib/pricing/service";
+import { isValidE164 } from "@/lib/validation/phone";
+import { isValidEmail } from "@/lib/validation/email";
+import { strictPhone } from "@/lib/validation/zod";
+
+function tripLength(startDate: string, endDate: string): { days: number; nights: number } {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const diff = Math.max(0, Math.round((end.getTime() - start.getTime()) / 86_400_000));
+  const days = diff + 1;
+  return { days, nights: Math.max(0, days - 1) };
+}
+
+/** Called as the phone field loses focus — lets the form show a "this number already has bookings" confirm checkbox before submit. */
+export async function checkPhoneBookingsAction(phone: string): Promise<{ count: number }> {
+  if (!isValidE164(phone)) return { count: 0 };
+  return { count: await countBookingsByPhone(phone) };
+}
 
 const bookingSchema = z
   .object({
@@ -17,11 +35,19 @@ const bookingSchema = z
     adults: z.coerce.number().int().min(1).max(30),
     children: z.coerce.number().int().min(0).max(20),
     name: z.string().trim().min(2).max(120),
-    phone: z
+    phone: strictPhone(),
+    email: z
       .string()
       .trim()
-      .regex(/^[0-9+()\-\s]{7,20}$/, "Enter a valid mobile number"),
-    email: z.string().trim().email().max(200).optional().or(z.literal("")),
+      .max(200)
+      .refine((v) => v === "" || isValidEmail(v), { message: "Please enter a valid email address" })
+      .optional()
+      .or(z.literal("")),
+    carType: z.string().trim().max(60).optional().or(z.literal("")),
+    carDays: z.string().trim().optional().default("[]"),
+    carNotes: z.string().trim().max(500).optional().or(z.literal("")),
+    couponCode: z.string().trim().max(40).optional().or(z.literal("")),
+    confirmDuplicate: z.enum(["true", "false"]).optional().default("false"),
   })
   .refine((data) => data.endDate >= data.startDate, {
     message: "End date must be on or after the start date",
@@ -34,12 +60,6 @@ export type BookingFormState = {
   bookingCode?: string;
   estimate?: number;
 };
-
-function computeEstimate(basePrice: number, adults: number, children: number): number {
-  const extraAdults = Math.max(0, adults - 2);
-  const amount = basePrice + extraAdults * basePrice * 0.15 + children * basePrice * 0.08;
-  return Math.round(amount / 10) * 10;
-}
 
 export async function createBookingAction(
   _prev: BookingFormState,
@@ -62,6 +82,11 @@ export async function createBookingAction(
     name: formData.get("name"),
     phone: formData.get("phone"),
     email: formData.get("email"),
+    carType: formData.get("carType") ?? "",
+    carDays: formData.get("carDays") ?? "[]",
+    carNotes: formData.get("carNotes") ?? "",
+    couponCode: formData.get("couponCode") ?? "",
+    confirmDuplicate: formData.get("confirmDuplicate") ?? "false",
   });
 
   if (!parsed.success) {
@@ -70,27 +95,61 @@ export async function createBookingAction(
   }
   const data = parsed.data;
 
-  const pkg = await packagesRepo.getBySlug(data.packageSlug);
-  if (!pkg) {
+  if (!(await isValidPickupLocation(data.pickupLocation))) {
+    return { ok: false, error: "Please choose a pickup location from the list." };
+  }
+
+  if (data.confirmDuplicate !== "true" && (await countBookingsByPhone(data.phone)) > 0) {
+    return {
+      ok: false,
+      error: "This mobile number already has bookings with us — please check the confirmation box to continue.",
+    };
+  }
+
+  let carDays: number[] = [];
+  try {
+    const raw = JSON.parse(data.carDays);
+    if (Array.isArray(raw)) carDays = raw.filter((n) => Number.isInteger(n) && n > 0);
+  } catch {
+    carDays = [];
+  }
+
+  const { nights, days } = tripLength(data.startDate, data.endDate);
+  const quote = await quoteBooking({
+    packageSlug: data.packageSlug,
+    nights,
+    days,
+    adults: data.adults,
+    children: data.children,
+    carType: data.carType || null,
+    carDays,
+    couponCode: data.couponCode || null,
+  });
+  if (!quote) {
     return { ok: false, error: "Please choose a valid travel package." };
   }
 
-  const estimate = computeEstimate(pkg.price_from, data.adults, data.children);
   const user = await getCurrentUser();
 
   const booking = await createBooking({
     guest_name: data.name,
     guest_phone: data.phone,
     guest_email: data.email || null,
-    package_id: pkg.id,
+    package_id: quote.packageId,
     destination: data.destination,
     travel_date: data.startDate,
     end_date: data.endDate,
     pickup_location: data.pickupLocation,
     adults: data.adults,
     children: data.children,
-    estimate_amount: estimate,
+    estimate_amount: quote.total,
+    coupon_code: quote.couponValid ? data.couponCode : null,
     customer_id: user && user.role === "customer" ? user.id : null,
+    trip_type: "package",
+    pricing_tier_id: quote.pricingTierId,
+    car_type: data.carType || null,
+    car_days: carDays,
+    car_notes: data.carNotes || null,
   });
 
   return { ok: true, bookingCode: booking.booking_code, estimate: booking.estimate_amount };

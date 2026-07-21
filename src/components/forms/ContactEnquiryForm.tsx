@@ -2,12 +2,14 @@
 
 import { useActionState, useMemo, useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Check, ChevronLeft, ChevronRight, AlertCircle, User, Phone, Mail, Copy } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, AlertCircle, User, Mail, Copy } from "lucide-react";
 import { submitContactMessage, type ContactFormState } from "@/lib/actions/public";
 import { MotionIcon } from "@/components/ui/MotionIcon";
 import { GlassSelect } from "@/components/ui/GlassSelect";
 import { GlassDatePicker } from "@/components/ui/GlassDatePicker";
 import { WhatsAppGlyphIcon } from "@/components/ui/BrandIcons";
+import { PhoneInput, type PhoneValueInfo } from "@/components/ui/PhoneInput";
+import { EmailField } from "@/components/ui/EmailField";
 import { CalendarCheckIcon, CompassIcon, MapPinDropIcon, ShieldBadgeIcon, SparkleBurstIcon } from "@/components/ui/AnimatedIcons";
 import { TRIP_CATEGORIES } from "@/lib/config/tripCategories";
 import { site, waLink, mailtoLink } from "@/lib/config/site";
@@ -33,10 +35,6 @@ const COUNTRIES = [
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
-}
-
-function digitsOnly(v: string) {
-  return v.replace(/\D/g, "");
 }
 
 interface StepState {
@@ -73,6 +71,9 @@ export function ContactEnquiryForm({
   const [state, formAction, pending] = useActionState(submitContactMessage, initialState);
   const [step, setStep] = useState(0);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [mobileValid, setMobileValid] = useState(false);
+  const [whatsappValid, setWhatsappValid] = useState(true);
+  const [emailValid, setEmailValid] = useState(true);
 
   const vehicleTypes = useMemo(
     () => Array.from(new Set(fleet.map((f) => f.category))).filter(Boolean),
@@ -116,17 +117,13 @@ export function ContactEnquiryForm({
     if (!form.endDate) e.endDate = "Pick a return date";
     if (form.startDate && form.endDate && form.endDate < form.startDate) e.endDate = "Return date must be after travel date";
     if (!form.fullName || form.fullName.trim().length < 2) e.fullName = "Enter your full name";
-    const mobileDigits = digitsOnly(form.mobile);
-    if (mobileDigits.length < 10) e.mobile = "Enter a valid 10-digit mobile number";
-    if (!form.whatsappSame) {
-      const waDigits = digitsOnly(form.whatsapp);
-      if (waDigits.length < 10) e.whatsapp = "Enter a valid WhatsApp number";
-    }
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Enter a valid email address";
+    if (!mobileValid) e.mobile = "Enter a valid mobile number";
+    if (!form.whatsappSame && !whatsappValid) e.whatsapp = "Enter a valid WhatsApp number";
+    if (!emailValid) e.email = "Enter a valid email address";
     if (!form.state.trim()) e.state = "Enter your state";
     if (!form.city.trim()) e.city = "Enter your city";
     return e;
-  }, [form]);
+  }, [form, mobileValid, whatsappValid, emailValid]);
 
   const stepFields: Record<number, string[]> = {
     0: ["destination", "startDate", "endDate"],
@@ -184,8 +181,6 @@ export function ContactEnquiryForm({
       className="glass-card relative overflow-hidden rounded-[2rem] p-6 shadow-[0_32px_80px_-32px_rgba(11,59,46,0.35)] sm:p-10"
     >
       <input type="hidden" name="name" value={form.fullName} />
-      <input type="hidden" name="phone" value={form.mobile} />
-      <input type="hidden" name="email" value={form.email} />
       <input type="hidden" name="subject" value={subject} />
       <input type="hidden" name="message" value={summary} />
 
@@ -333,17 +328,17 @@ export function ContactEnquiryForm({
                   valid={touched.fullName && !errors.fullName}
                   required
                 />
-                <FloatingInput
-                  label="Mobile number"
-                  type="tel"
-                  icon={<Phone size={15} />}
-                  value={form.mobile}
-                  onChange={(v) => set("mobile", v)}
-                  onBlur={() => markTouched("mobile")}
-                  error={touched.mobile ? errors.mobile : undefined}
-                  valid={touched.mobile && !errors.mobile}
-                  required
-                />
+                <FieldLabel label="Mobile number">
+                  <PhoneInput
+                    name="phone"
+                    required
+                    onValueChange={(info: PhoneValueInfo) => {
+                      set("mobile", info.e164);
+                      setMobileValid(info.valid);
+                    }}
+                    onBlur={() => markTouched("mobile")}
+                  />
+                </FieldLabel>
               </div>
 
               <div>
@@ -351,37 +346,40 @@ export function ContactEnquiryForm({
                   <input
                     type="checkbox"
                     checked={form.whatsappSame}
-                    onChange={(e) => set("whatsappSame", e.target.checked)}
+                    onChange={(e) => {
+                      set("whatsappSame", e.target.checked);
+                      if (e.target.checked) setWhatsappValid(true);
+                    }}
                     className="h-4 w-4 rounded border-forest-300 text-gold-600 focus:ring-gold-400"
                   />
                   WhatsApp number is the same as my mobile number
                 </label>
                 {!form.whatsappSame && (
                   <div className="mt-3">
-                    <FloatingInput
-                      label="WhatsApp number"
-                      type="tel"
-                      icon={<WhatsAppGlyphIcon size={14} />}
-                      value={form.whatsapp}
-                      onChange={(v) => set("whatsapp", v)}
-                      onBlur={() => markTouched("whatsapp")}
-                      error={touched.whatsapp ? errors.whatsapp : undefined}
-                      valid={touched.whatsapp && !errors.whatsapp}
-                    />
+                    <FieldLabel label="WhatsApp number" icon={<WhatsAppGlyphIcon size={14} />}>
+                      <PhoneInput
+                        name="whatsapp_display"
+                        required
+                        onValueChange={(info: PhoneValueInfo) => {
+                          set("whatsapp", info.e164);
+                          setWhatsappValid(info.valid);
+                        }}
+                        onBlur={() => markTouched("whatsapp")}
+                      />
+                    </FieldLabel>
                   </div>
                 )}
               </div>
 
-              <FloatingInput
-                label="Email (optional)"
-                type="email"
-                icon={<Mail size={15} />}
-                value={form.email}
-                onChange={(v) => set("email", v)}
-                onBlur={() => markTouched("email")}
-                error={touched.email ? errors.email : undefined}
-                valid={touched.email && !!form.email && !errors.email}
-              />
+              <FieldLabel label="Email (optional)" icon={<Mail size={15} />}>
+                <EmailField
+                  name="email"
+                  onValueChange={(info) => {
+                    set("email", info.value);
+                    setEmailValid(info.valid || info.value === "");
+                  }}
+                />
+              </FieldLabel>
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
                 <FieldLabel label="Country">

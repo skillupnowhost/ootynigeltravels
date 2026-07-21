@@ -1166,6 +1166,26 @@ for (const p of packages) {
 }
 console.log(`seeded/updated packages: ${packages.length} rows`);
 
+// ---------- Package pricing tiers ----------
+// Sample nights/days admin pricing for a few flagship packages — everything
+// else falls back to the base price_from formula until an admin adds tiers.
+await insertIfEmpty(
+  "package_pricing_tiers",
+  [
+    { package_slug: "ooty-honeymoon-escape", nights: 2, days: 3, price: 21000 },
+    { package_slug: "ooty-honeymoon-escape", nights: 3, days: 4, price: 27000 },
+    { package_slug: "nilgiri-grand-circuit", nights: 4, days: 5, price: 42000 },
+    { package_slug: "tea-trail-weekend", nights: 1, days: 2, price: 12500 },
+  ],
+  async (t) => {
+    const pkg = await db.prepare("SELECT id FROM packages WHERE slug = ?").get(t.package_slug);
+    if (!pkg) return;
+    await db
+      .prepare(`INSERT INTO package_pricing_tiers (package_id, nights, days, price) VALUES (@package_id, @nights, @days, @price)`)
+      .run({ package_id: pkg.id, nights: t.nights, days: t.days, price: t.price });
+  }
+);
+
 // These 3 packages (added by an earlier, standalone scripts/expand-homepage-content.mjs run)
 // are near-duplicates of packages already covered above with full premium data — deactivate
 // rather than delete, so nothing is lost and an admin can reinstate them from /admin/packages.
@@ -1175,6 +1195,28 @@ for (const slug of legacyDuplicateSlugs) {
   const result = await deactivate.run(slug);
   if (result.rowCount > 0) console.log(`deactivated legacy duplicate package: ${slug}`);
 }
+
+// ---------- Pickup locations ----------
+await insertIfEmpty(
+  "pickup_locations",
+  [
+    { city: "Coimbatore", label: "Coimbatore" },
+    { city: "Coimbatore", label: "Coimbatore Airport" },
+    { city: "Coimbatore", label: "Coimbatore Railway Station" },
+    { city: "Coimbatore", label: "Ukkadam Bus Stand" },
+    { city: "Coimbatore", label: "Gandhipuram Bus Stand" },
+    { city: "Ooty", label: "Ooty" },
+    { city: "Ooty", label: "Ooty Bus Stand" },
+    { city: "Ooty", label: "Ooty Railway Station" },
+    { city: "Mysore", label: "Mysore" },
+    { city: "Mysore", label: "Mysore Bus Stand" },
+    { city: "Mysore", label: "Mysore Railway Station" },
+  ].map((l, i) => ({ ...l, sort_order: i })),
+  (l) =>
+    db
+      .prepare("INSERT INTO pickup_locations (city, label, sort_order) VALUES (@city, @label, @sort_order)")
+      .run(l)
+);
 
 // ---------- Coupons ----------
 await insertIfEmpty(

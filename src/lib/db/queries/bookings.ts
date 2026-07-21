@@ -1,6 +1,6 @@
 import { db, withTransaction } from "../client";
 import { parseJsonColumns } from "../helpers";
-import type { Booking, BookingHistoryEntry, BookingStatus, ItineraryDay, PaymentStatus } from "../types";
+import type { Booking, BookingHistoryEntry, BookingStatus, ItineraryDay, PaymentStatus, TripType } from "../types";
 
 export function generateBookingCode(): string {
   const now = new Date();
@@ -12,7 +12,7 @@ export function generateBookingCode(): string {
 }
 
 function mapBooking(row: Record<string, unknown>): Booking {
-  return parseJsonColumns<Booking>(row, ["itinerary"]);
+  return parseJsonColumns<Booking>(row, ["itinerary", "car_days"]);
 }
 
 async function attachHistory(booking: Booking): Promise<Booking & { history: BookingHistoryEntry[] }> {
@@ -38,6 +38,11 @@ export interface CreateBookingInput {
   estimate_amount: number;
   coupon_code?: string | null;
   customer_id?: number | null;
+  trip_type?: TripType;
+  pricing_tier_id?: number | null;
+  car_type?: string | null;
+  car_days?: number[];
+  car_notes?: string | null;
 }
 
 export async function createBooking(
@@ -48,9 +53,11 @@ export async function createBooking(
     const row = await tx
       .prepare(
         `INSERT INTO bookings (booking_code, customer_id, guest_name, guest_phone, guest_email, package_id, fleet_id,
-          destination, travel_date, end_date, pickup_location, pickup_time, adults, children, estimate_amount, coupon_code)
+          destination, travel_date, end_date, pickup_location, pickup_time, adults, children, estimate_amount, coupon_code,
+          trip_type, pricing_tier_id, car_type, car_days, car_notes)
          VALUES (@booking_code, @customer_id, @guest_name, @guest_phone, @guest_email, @package_id, @fleet_id,
-          @destination, @travel_date, @end_date, @pickup_location, @pickup_time, @adults, @children, @estimate_amount, @coupon_code)
+          @destination, @travel_date, @end_date, @pickup_location, @pickup_time, @adults, @children, @estimate_amount, @coupon_code,
+          @trip_type, @pricing_tier_id, @car_type, @car_days, @car_notes)
          RETURNING *`
       )
       .get({
@@ -70,6 +77,11 @@ export async function createBooking(
         children: input.children,
         estimate_amount: input.estimate_amount,
         coupon_code: input.coupon_code ?? null,
+        trip_type: input.trip_type ?? "package",
+        pricing_tier_id: input.pricing_tier_id ?? null,
+        car_type: input.car_type ?? null,
+        car_days: JSON.stringify(input.car_days ?? []),
+        car_notes: input.car_notes ?? null,
       });
 
     await tx
@@ -121,6 +133,13 @@ export async function listBookingsByPhone(
   return Promise.all(rows.map(mapBooking).map(attachHistory));
 }
 
+export async function countBookingsByPhone(phone: string): Promise<number> {
+  const row = (await db.prepare("SELECT COUNT(*) as c FROM bookings WHERE guest_phone = ?").get(phone)) as {
+    c: number;
+  };
+  return row.c;
+}
+
 export async function listBookingsForCustomer(
   customerId: number
 ): Promise<(Booking & { history: BookingHistoryEntry[] })[]> {
@@ -130,10 +149,18 @@ export async function listBookingsForCustomer(
   return Promise.all(rows.map(mapBooking).map(attachHistory));
 }
 
+/**
+ * Guest bookings are stored with a full E.164 phone (any country), but account
+ * registration only collects a bare national number (no country picker there).
+ * Matching on the last 10 digits keeps the "my past guest bookings appear in my
+ * account" feature working across that format difference for Indian numbers.
+ */
 export async function linkBookingsToCustomer(phone: string, customerId: number): Promise<number> {
   const result = await db
     .prepare(
-      "UPDATE bookings SET customer_id = ? WHERE guest_phone = ? AND customer_id IS NULL"
+      `UPDATE bookings SET customer_id = ?
+       WHERE customer_id IS NULL
+       AND RIGHT(regexp_replace(guest_phone, '\\D', '', 'g'), 10) = RIGHT(regexp_replace(?, '\\D', '', 'g'), 10)`
     )
     .run(customerId, phone);
   return result.rowCount;
@@ -182,11 +209,40 @@ export async function updateBookingStatus(
 export async function assignDriverAndVehicle(
   id: number,
   driverId: number | null,
-  vehicleNumber: string | null
+  vehicleNumber: string | null,
+  fleetId?: number | null
+): Promise<void> {
+  if (fleetId === undefined) {
+    await db.prepare(
+      `UPDATE bookings SET driver_id = ?, vehicle_number = ?, updated_at = now() WHERE id = ?`
+    ).run(driverId, vehicleNumber, id);
+    return;
+  }
+  await db.prepare(
+    `UPDATE bookings SET driver_id = ?, vehicle_number = ?, fleet_id = ?, updated_at = now() WHERE id = ?`
+  ).run(driverId, vehicleNumber, fleetId, id);
+}
+
+export async function setFinalAmount(id: number, finalAmount: number | null): Promise<void> {
+  await db.prepare(
+    "UPDATE bookings SET final_amount = ?, updated_at = now() WHERE id = ?"
+  ).run(finalAmount, id);
+}
+
+export async function setExtraCharge(id: number, amount: number, note: string | null): Promise<void> {
+  await db.prepare(
+    "UPDATE bookings SET extra_charges = ?, extra_charges_note = ?, updated_at = now() WHERE id = ?"
+  ).run(amount, note, id);
+}
+
+export async function setBookingCoupon(
+  id: number,
+  couponCode: string | null,
+  discountAmount: number
 ): Promise<void> {
   await db.prepare(
-    `UPDATE bookings SET driver_id = ?, vehicle_number = ?, updated_at = now() WHERE id = ?`
-  ).run(driverId, vehicleNumber, id);
+    "UPDATE bookings SET coupon_code = ?, discount_amount = ?, updated_at = now() WHERE id = ?"
+  ).run(couponCode, discountAmount, id);
 }
 
 export async function setPaymentStatus(id: number, paymentStatus: PaymentStatus): Promise<void> {

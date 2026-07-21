@@ -275,3 +275,58 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 );
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT;
+
+CREATE TABLE IF NOT EXISTS pickup_locations (
+  id          SERIAL PRIMARY KEY,
+  city        TEXT NOT NULL,
+  label       TEXT NOT NULL,
+  active      INTEGER NOT NULL DEFAULT 1,
+  sort_order  INTEGER NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_pickup_locations_city ON pickup_locations(city);
+
+CREATE TABLE IF NOT EXISTS package_pricing_tiers (
+  id          SERIAL PRIMARY KEY,
+  package_id  INTEGER NOT NULL REFERENCES packages(id) ON DELETE CASCADE,
+  nights      INTEGER NOT NULL,
+  days        INTEGER NOT NULL,
+  price       INTEGER NOT NULL,
+  active      INTEGER NOT NULL DEFAULT 1,
+  sort_order  INTEGER NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_pricing_tiers_package ON package_pricing_tiers(package_id);
+
+-- OTP/phone-verification was tried and removed; this drops the table it used
+-- so re-running this script against the DB it was briefly live on cleans it up.
+DROP TABLE IF EXISTS phone_verifications;
+
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS trip_type TEXT NOT NULL DEFAULT 'package';
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS pricing_tier_id INTEGER REFERENCES package_pricing_tiers(id) ON DELETE SET NULL;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS car_type TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS car_days TEXT NOT NULL DEFAULT '[]';
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS car_notes TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS extra_charges INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS extra_charges_note TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS discount_amount INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS final_amount INTEGER;
+ALTER TABLE bookings DROP COLUMN IF EXISTS phone_verified;
+
+ALTER TABLE trip_requests ADD COLUMN IF NOT EXISTS quotation_amount INTEGER;
+ALTER TABLE trip_requests ADD COLUMN IF NOT EXISTS quotation_note TEXT;
+ALTER TABLE trip_requests ADD COLUMN IF NOT EXISTS quotation_sent_at TIMESTAMPTZ;
+ALTER TABLE trip_requests ADD COLUMN IF NOT EXISTS start_date DATE;
+ALTER TABLE trip_requests ADD COLUMN IF NOT EXISTS end_date DATE;
+
+-- The site now collects phone numbers internationally (E.164, e.g. +919876543210)
+-- instead of bare 10-digit Indian numbers. Normalize any pre-existing guest/trip-request/
+-- contact-message numbers left over from the old India-only format so every phone
+-- column is consistently E.164. Idempotent: only touches values that are still exactly
+-- 10 bare digits, so re-running this script is always a no-op after the first pass.
+-- users.phone (staff/customer login) is deliberately left untouched — login stays India-only.
+UPDATE bookings SET guest_phone = '+91' || guest_phone WHERE guest_phone ~ '^[0-9]{10}$';
+UPDATE trip_requests SET phone = '+91' || phone WHERE phone ~ '^[0-9]{10}$';
+UPDATE contact_messages SET phone = '+91' || phone WHERE phone ~ '^[0-9]{10}$';

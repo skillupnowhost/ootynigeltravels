@@ -1,7 +1,9 @@
 import { Package } from "lucide-react";
 import { notFound } from "next/navigation";
 import { packagesRepo } from "@/lib/db/queries/packages";
+import { listPricingTiers } from "@/lib/db/queries/pricingTiers";
 import { PackageForm } from "@/components/admin/PackageForm";
+import { PricingTierEditor } from "@/components/admin/PricingTierEditor";
 import { requireRole } from "@/lib/auth/rbac";
 import { Reveal } from "@/components/ui/Reveal";
 import { MotionIcon } from "@/components/ui/MotionIcon";
@@ -13,6 +15,7 @@ export default async function EditPackagePage({ params }: { params: Params }) {
   const { id } = await params;
   const pkg = await packagesRepo.getById(Number(id));
   if (!pkg) notFound();
+  const tiers = await listPricingTiers(pkg.id);
 
   return (
     <div>
@@ -25,6 +28,9 @@ export default async function EditPackagePage({ params }: { params: Params }) {
         </div>
         <div className="mt-4 sm:mt-6">
           <PackageForm pkg={pkg} />
+        </div>
+        <div className="mt-6">
+          <PricingTierEditor packageId={pkg.id} tiers={tiers} />
         </div>
       </Reveal>
     </div>

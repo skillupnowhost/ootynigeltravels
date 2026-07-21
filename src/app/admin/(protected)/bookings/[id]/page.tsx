@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
 import { getBookingById, getBookingHistory } from "@/lib/db/queries/bookings";
 import { listDrivers } from "@/lib/db/queries/drivers";
+import { fleetRepo } from "@/lib/db/queries/fleet";
 import { BookingActions } from "@/components/admin/BookingActions";
 import { ItineraryEditor } from "@/components/admin/ItineraryEditor";
 import { deleteBookingAction } from "@/lib/actions/adminBookings";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { getCurrentUser } from "@/lib/auth/session";
 import { formatDateTime, formatINR } from "@/lib/format";
+import { isBookingOverdue, hoursSinceCreated } from "@/lib/bookingSla";
 import { Reveal } from "@/components/ui/Reveal";
 import { CalendarCheckIcon, MapPinDropIcon } from "@/components/ui/AnimatedIcons";
 
@@ -32,6 +34,7 @@ export default async function AdminBookingDetailPage({ params }: { params: Param
 
   const history = await getBookingHistory(booking.id);
   const drivers = await listDrivers({ activeOnly: true });
+  const fleet = await fleetRepo.list(true);
   const actor = await getCurrentUser();
 
   return (
@@ -43,6 +46,20 @@ export default async function AdminBookingDetailPage({ params }: { params: Param
             <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusBadgeClass(booking.status)}`}>
               {booking.status}
             </span>
+            <span className="rounded-full bg-forest-50 px-3 py-1 text-xs font-medium text-forest-800">
+              {booking.trip_type === "custom" ? "Custom trip" : "Package"}
+            </span>
+            {booking.car_type && (
+              <span className="rounded-full bg-gold-50 px-3 py-1 text-xs font-medium text-gold-800">
+                {booking.car_type}
+                {booking.car_days.length > 0 && ` · Day ${booking.car_days.join(", ")}`}
+              </span>
+            )}
+            {isBookingOverdue(booking.status, booking.created_at) && (
+              <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                Overdue — {Math.floor(hoursSinceCreated(booking.created_at))}h since booking, still Pending
+              </span>
+            )}
           </div>
           {actor?.role === "admin" && (
             <DeleteButton
@@ -55,7 +72,7 @@ export default async function AdminBookingDetailPage({ params }: { params: Param
 
         <div className="mt-4 grid grid-cols-1 gap-6 sm:mt-6 sm:gap-8 lg:grid-cols-[1fr_380px]">
           <div className="space-y-6">
-            <BookingActions booking={booking} drivers={drivers} />
+            <BookingActions booking={booking} drivers={drivers} fleet={fleet} />
             <ItineraryEditor booking={booking} />
           </div>
 
@@ -80,7 +97,20 @@ export default async function AdminBookingDetailPage({ params }: { params: Param
                 {booking.pickup_time && <p>Time: {booking.pickup_time}</p>}
                 <p>Adults: {booking.adults} · Children: {booking.children}</p>
                 <p>Estimate: {formatINR(booking.estimate_amount)}</p>
-                {booking.coupon_code && <p>Coupon: {booking.coupon_code}</p>}
+                {booking.final_amount != null && (
+                  <p className="font-semibold text-forest-950">Final amount: {formatINR(booking.final_amount)}</p>
+                )}
+                {booking.extra_charges > 0 && (
+                  <p>
+                    Extra charges: {formatINR(booking.extra_charges)}
+                    {booking.extra_charges_note && ` — ${booking.extra_charges_note}`}
+                  </p>
+                )}
+                {booking.coupon_code && (
+                  <p>
+                    Coupon: {booking.coupon_code} (-{formatINR(booking.discount_amount)})
+                  </p>
+                )}
               </div>
             </div>
 
