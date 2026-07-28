@@ -8,8 +8,10 @@ import { GALLERY_CATEGORIES } from "@/lib/data/galleryCategories";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Gallery",
-  description: "Real photography from across the Nilgiris — destinations, wildlife, our fleet and guest memories.",
+  title: "Ooty Trip Photos — Travel Gallery",
+  description:
+    "Real photography from Ooty tour packages and taxi trips across the Nilgiris — destinations, wildlife, our fleet and guest memories.",
+  keywords: ["Ooty trip photos", "Ooty travel gallery", "Ooty tour photos", "Nilgiris photo gallery"],
   alternates: { canonical: "/gallery" },
 };
 

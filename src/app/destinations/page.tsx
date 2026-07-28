@@ -11,8 +11,17 @@ import { BLUR_DATA_URL } from "@/lib/media";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Destinations",
-  description: "Six essential Nilgiri destinations — Ooty, Coonoor, Kotagiri, Mudumalai, Avalanche and Coimbatore.",
+  title: "Ooty & Nilgiris Destinations — Coonoor, Kotagiri, Mudumalai",
+  description:
+    "Ooty tourist places and Nilgiris destinations to visit — six essential stops across Ooty, Coonoor, Kotagiri, Mudumalai, Avalanche and Coimbatore.",
+  keywords: [
+    "Ooty tourist places",
+    "Nilgiris destinations",
+    "places to visit in Ooty",
+    "Coonoor tourist places",
+    "Kotagiri tourist places",
+    "Mudumalai tourist places",
+  ],
   alternates: { canonical: "/destinations" },
 };
 

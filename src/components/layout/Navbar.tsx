@@ -11,6 +11,7 @@ import { BLUR_DATA_URL } from "@/lib/media";
 
 const LINKS = [
   { href: "/", label: "Home" },
+  { href: "/services", label: "Services" },
   { href: "/packages", label: "Packages" },
   { href: "/destinations", label: "Destinations" },
   { href: "/gallery", label: "Gallery" },

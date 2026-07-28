@@ -8,9 +8,17 @@ import { fleetRepo } from "@/lib/db/queries/fleet";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Trip Packages & Plans",
+  title: "Ooty Tour Packages & Trip Packages — Family, Honeymoon, Adventure",
   description:
-    "Family, honeymoon, adventure and friends trip plans across the Nilgiris — or build your own custom itinerary. Every package includes a private chauffeur.",
+    "Ooty tour packages and trip plans for family, honeymoon, adventure and friends' getaways across the Nilgiris — or build your own custom itinerary. Every package includes a private chauffeur.",
+  keywords: [
+    "Ooty tour packages",
+    "Ooty trip packages",
+    "Nilgiris tour packages",
+    "Ooty honeymoon package",
+    "Ooty family package",
+    "Ooty group tour package",
+  ],
   alternates: { canonical: "/packages" },
 };
 

@@ -14,8 +14,14 @@ const highlights = [
 ];
 
 export const metadata: Metadata = {
-  title: "About Us",
+  title: "About Us — Best Travel Agency in Ooty",
   description: `The story behind ${site.name} — the best-rated private, chauffeur-driven travel agency across Ooty, Coimbatore and the Nilgiris.`,
+  keywords: [
+    "best travel agency in Ooty",
+    "best travels in Ooty",
+    "Ooty travel agency near me",
+    "about Ooty Nigel Travels",
+  ],
   alternates: { canonical: "/about" },
 };
 

@@ -4,12 +4,14 @@ import { fleetRepo } from "@/lib/db/queries/fleet";
 import { packagesRepo } from "@/lib/db/queries/packages";
 import { destinationsRepo } from "@/lib/db/queries/destinations";
 import { blogRepo } from "@/lib/db/queries/blog";
+import { SERVICES } from "@/lib/data/services";
 
 const STATIC_ROUTES = [
   "",
   "/about",
   "/fleet",
   "/packages",
+  "/services",
   "/destinations",
   "/drivers",
   "/gallery",
@@ -70,5 +72,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.4,
   }));
 
-  return [...staticEntries, ...fleetEntries, ...packageEntries, ...destinationEntries, ...blogEntries];
+  const serviceEntries: MetadataRoute.Sitemap = SERVICES.map((s) => ({
+    url: `${site.url}/services/${s.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.85,
+  }));
+
+  return [
+    ...staticEntries,
+    ...fleetEntries,
+    ...packageEntries,
+    ...destinationEntries,
+    ...blogEntries,
+    ...serviceEntries,
+  ];
 }

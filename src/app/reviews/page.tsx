@@ -12,8 +12,15 @@ import { averageRating, listApprovedReviews } from "@/lib/db/queries/reviews";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Reviews",
-  description: "What travellers say after touring the Nilgiris with us.",
+  title: "Customer Reviews — Ratings & Testimonials",
+  description:
+    "Real reviews and ratings from travellers who booked Ooty taxi, cab and tour packages with Ooty Nigel Travels.",
+  keywords: [
+    "Ooty Nigel Travels reviews",
+    "Ooty travels reviews",
+    "best travels in Ooty reviews",
+    "Ooty taxi reviews",
+  ],
   alternates: { canonical: "/reviews" },
 };
 

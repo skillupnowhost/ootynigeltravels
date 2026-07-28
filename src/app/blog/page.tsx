@@ -15,8 +15,9 @@ import { BLUR_DATA_URL } from "@/lib/media";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Travel Guide",
+  title: "Ooty Travel Guide & Blog — Tips, Itineraries & Local Insights",
   description: "Guides, tips, seasonal advice, photo spots and local favourites for planning your Nilgiris trip.",
+  keywords: ["Ooty travel guide", "Ooty trip blog", "Nilgiris travel tips", "Ooty itinerary guide"],
   alternates: { canonical: "/blog" },
 };
 

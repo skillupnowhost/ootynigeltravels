@@ -21,9 +21,10 @@ import { site, waLink } from "@/lib/config/site";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Contact",
+  title: "Contact Us — Book Ooty Taxi & Tour Packages",
   description:
     "Get in touch with Ooty Nigel Travels — call, WhatsApp, email or send a detailed trip enquiry. Our Nilgiris travel experts reply within hours.",
+  keywords: ["contact Ooty Nigel Travels", "Ooty taxi booking contact", "Ooty travel agency phone number"],
   alternates: { canonical: "/contact" },
 };
 

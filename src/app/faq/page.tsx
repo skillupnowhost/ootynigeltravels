@@ -8,8 +8,15 @@ import { listFaqs } from "@/lib/db/queries/faqs";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "FAQs",
-  description: "Answers to common questions about booking, payments and travelling with us.",
+  title: "Ooty Taxi & Tour Package FAQs",
+  description:
+    "Answers about Ooty taxi booking, cab fares, tour packages and trip planning with Ooty Nigel Travels.",
+  keywords: [
+    "Ooty taxi FAQ",
+    "Ooty tour package questions",
+    "Ooty cab booking help",
+    "Ooty trip planning FAQ",
+  ],
   alternates: { canonical: "/faq" },
 };
 

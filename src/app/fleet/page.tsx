@@ -12,8 +12,17 @@ import { formatINR } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Our Fleet",
-  description: "A hand-picked fleet of chauffeur-driven vehicles for the Nilgiris — from a luxury SUV to an economy sedan.",
+  title: "Ooty Car Travels & Taxi Fleet — Sedans, SUVs, Tempo Travellers",
+  description:
+    "Our chauffeur-driven car fleet for Ooty taxi, cab and outstation car travel — sedans, SUVs and Tempo Travellers, from a luxury ride to an economy sedan.",
+  keywords: [
+    "Ooty car travels",
+    "Ooty car rental",
+    "Ooty taxi fleet",
+    "Ooty SUV rental",
+    "Ooty Tempo Traveller booking",
+    "car travels in Ooty",
+  ],
   alternates: { canonical: "/fleet" },
 };
 

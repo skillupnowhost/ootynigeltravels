@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Check } from "lucide-react";
 import { PageHero } from "@/components/ui/PageHero";
@@ -139,6 +140,30 @@ export default async function DestinationDetailPage({ params }: { params: Params
                   </ul>
                 </div>
               )}
+
+              <div className="border-t border-forest-100 pt-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-charcoal-500">
+                  Just need a transfer?
+                </h3>
+                <ul className="mt-3 space-y-2">
+                  <li>
+                    <Link
+                      href="/services/local-sightseeing-taxi"
+                      className="group inline-flex items-center gap-1 text-sm font-medium text-forest-900 transition-colors hover:text-gold-700"
+                    >
+                      <span className="transition-transform duration-200 group-hover:translate-x-0.5">Local Sightseeing Taxi</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/services/airport-transfer"
+                      className="group inline-flex items-center gap-1 text-sm font-medium text-forest-900 transition-colors hover:text-gold-700"
+                    >
+                      <span className="transition-transform duration-200 group-hover:translate-x-0.5">Airport Transfer</span>
+                    </Link>
+                  </li>
+                </ul>
+              </div>
             </aside>
           </Reveal>
         </div>

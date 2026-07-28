@@ -19,6 +19,7 @@ const columns = [
   {
     title: "Explore",
     links: [
+      { href: "/services", label: "Taxi & Transfer Services" },
       { href: "/packages", label: "Signature Packages" },
       { href: "/destinations", label: "Destinations" },
       { href: "/gallery", label: "Gallery" },

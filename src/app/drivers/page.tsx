@@ -9,8 +9,9 @@ import { listDrivers } from "@/lib/db/queries/drivers";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Meet Our Drivers",
+  title: "Our Ooty Taxi Drivers — Verified, Ghat-Road Experienced",
   description: "The chauffeurs behind every booking — background-verified, ghat-road experienced.",
+  keywords: ["Ooty taxi drivers", "Ooty chauffeur service", "verified Ooty drivers"],
   alternates: { canonical: "/drivers" },
 };
 
