@@ -100,7 +100,7 @@ export function Navbar() {
       }`}
     >
       <div
-        className={`container-luxe flex items-center justify-between transition-all duration-500 ${
+        className={`container-luxe flex items-center justify-between gap-x-3 transition-all duration-500 ${
           scrolled ? "h-16 lg:h-20" : "h-20 lg:h-24"
         }`}
       >
@@ -118,7 +118,7 @@ export function Navbar() {
           
         </Link>
 
-        <nav className="hidden lg:flex shrink-0 items-center gap-4 xl:gap-7 2xl:gap-10" aria-label="Primary">
+        <nav className="hidden lg:flex shrink-0 items-center gap-3 xl:gap-6 2xl:gap-10" aria-label="Primary">
           {LINKS.map((link) => (
             <Link
               key={link.href}
