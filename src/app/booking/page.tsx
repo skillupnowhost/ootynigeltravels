@@ -10,8 +10,10 @@ import { attachPricingTiers } from "@/lib/pricing/service";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Plan Your Ooty Journey",
-  description: "Guest booking — no account required. Choose a destination, a signature package, and your travel dates.",
+  title: "Ooty Travels Booking — Plan Your Journey",
+  description:
+    "Book your Ooty trip online — no account required. Choose a destination, a signature tour package, and your travel dates.",
+  keywords: ["Ooty travels booking", "Ooty tour booking", "Ooty trip booking online"],
   alternates: { canonical: "/booking" },
 };
 

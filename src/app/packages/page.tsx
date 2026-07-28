@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Ooty Tour Packages & Trip Packages — Family, Honeymoon, Adventure",
   description:
-    "Ooty tour packages and trip plans for family, honeymoon, adventure and friends' getaways across the Nilgiris — or build your own custom itinerary. Every package includes a private chauffeur.",
+    "Ooty tour packages and trip plans for family, couples, honeymoon, adventure and friends' getaways across the Nilgiris — or build your own custom itinerary. Every package includes a private chauffeur.",
   keywords: [
     "Ooty tour packages",
     "Ooty trip packages",
@@ -18,6 +18,9 @@ export const metadata: Metadata = {
     "Ooty honeymoon package",
     "Ooty family package",
     "Ooty group tour package",
+    "travels in Ooty for family",
+    "travels in Ooty for couples",
+    "Ooty travel agency tour packages",
   ],
   alternates: { canonical: "/packages" },
 };
@@ -31,7 +34,7 @@ export default async function PackagesPage() {
       <PageHero
         eyebrow="Trip Packages & Plans"
         title="A trip style for every kind of traveller"
-        description="Family days out, honeymoon escapes, adventure trails and friends' getaways — every plan includes a private chauffeur. Don't see the fit? Build your own."
+        description="Family days out, couple getaways, honeymoon escapes, adventure trails and friends' getaways — every plan includes a private chauffeur. Don't see the fit? Build your own."
         seed="packages-hero"
         variant="tea-rows"
       />

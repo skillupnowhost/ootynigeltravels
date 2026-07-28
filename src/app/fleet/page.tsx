@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Ooty Car Travels & Taxi Fleet — Sedans, SUVs, Tempo Travellers",
   description:
-    "Our chauffeur-driven car fleet for Ooty taxi, cab and outstation car travel — sedans, SUVs and Tempo Travellers, from a luxury ride to an economy sedan.",
+    "Our chauffeur-driven car fleet for Ooty taxi, cab and outstation car travel — sedans, SUVs and Tempo Traveller minibuses, from a luxury ride to an economy sedan or a group bus.",
   keywords: [
     "Ooty car travels",
     "Ooty car rental",
@@ -22,6 +22,8 @@ export const metadata: Metadata = {
     "Ooty SUV rental",
     "Ooty Tempo Traveller booking",
     "car travels in Ooty",
+    "Ooty travels bus",
+    "Ooty group travel bus",
   ],
   alternates: { canonical: "/fleet" },
 };

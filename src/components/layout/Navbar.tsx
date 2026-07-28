@@ -118,12 +118,12 @@ export function Navbar() {
           
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-10" aria-label="Primary">
+        <nav className="hidden lg:flex shrink-0 items-center gap-4 xl:gap-7 2xl:gap-10" aria-label="Primary">
           {LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`relative text-base font-medium tracking-wide transition-colors hover:text-gold-700 ${
+              className={`relative whitespace-nowrap text-sm xl:text-base font-medium tracking-wide transition-colors hover:text-gold-700 ${
                 pathname === link.href ? "text-gold-700" : "text-forest-900"
               }`}
             >
@@ -139,10 +139,10 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden lg:flex items-center gap-3">
+        <div className="hidden lg:flex shrink-0 items-center gap-2 xl:gap-3">
           <Link
             href="/booking"
-            className="rounded-full bg-forest-900 px-6 py-3 text-sm font-semibold text-ivory-50 transition-all hover:bg-gold-600 hover:text-forest-950"
+            className="whitespace-nowrap rounded-full bg-forest-900 px-4 py-2.5 text-sm font-semibold text-ivory-50 transition-all hover:bg-gold-600 hover:text-forest-950 xl:px-6 xl:py-3"
           >
             Book Now
           </Link>
@@ -292,10 +292,10 @@ function AuthControl({ user }: { user: SessionUser }) {
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-label={`${user.name}'s account menu`}
-          className="flex items-center gap-2 rounded-full border border-forest-200 py-1.5 pl-1.5 pr-3 transition-all hover:border-gold-400"
+          className="flex shrink-0 items-center gap-2 rounded-full border border-forest-200 py-1.5 pl-1.5 pr-3 transition-all hover:border-gold-400"
         >
           <AvatarBadge user={user} />
-          <span className="max-w-[7rem] truncate text-sm font-medium text-forest-900">{user.name.split(" ")[0]}</span>
+          <span className="max-w-[5rem] truncate text-sm font-medium text-forest-900 xl:max-w-[7rem]">{user.name.split(" ")[0]}</span>
           <ChevronDown size={14} className={`text-forest-500 transition-transform ${open ? "rotate-180" : ""}`} />
         </button>
 
@@ -352,17 +352,17 @@ function AuthControl({ user }: { user: SessionUser }) {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex shrink-0 items-center gap-1.5 xl:gap-2">
       <Link
         href="/account/login"
-        className="inline-flex items-center gap-1.5 rounded-full border border-forest-200 px-5 py-3 text-sm font-medium text-forest-900 transition-all hover:border-gold-500 hover:text-gold-700"
+        className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-forest-200 px-3 py-2.5 text-sm font-medium text-forest-900 transition-all hover:border-gold-500 hover:text-gold-700 xl:px-5 xl:py-3"
       >
         <UserIcon size={15} />
         Log in
       </Link>
       <Link
         href="/account/register"
-        className="inline-flex items-center gap-1.5 rounded-full bg-gold-600 px-5 py-3 text-sm font-semibold text-forest-950 transition-all hover:bg-gold-500"
+        className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-gold-600 px-3 py-2.5 text-sm font-semibold text-forest-950 transition-all hover:bg-gold-500 xl:px-5 xl:py-3"
       >
         Sign up
       </Link>
