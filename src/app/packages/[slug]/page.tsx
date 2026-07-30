@@ -19,6 +19,7 @@ import { listReviewsForPackage } from "@/lib/db/queries/reviews";
 import { formatINR } from "@/lib/format";
 import { site, waLink } from "@/lib/config/site";
 import { tripCategoryMeta } from "@/lib/config/tripCategories";
+import { serializeJsonLd } from "@/lib/seo/jsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -51,26 +52,60 @@ export default async function PackageDetailPage({ params }: { params: Params }) 
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "TouristTrip",
-    name: pkg.name,
-    description: pkg.summary,
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "INR",
-      price: pkg.price_from,
-    },
-    ...(pkg.review_count > 0 && {
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: pkg.rating,
-        reviewCount: pkg.review_count,
+    "@graph": [
+      {
+        "@type": "TouristTrip",
+        "@id": `${site.url}/packages/${pkg.slug}#trip`,
+        name: pkg.name,
+        description: pkg.summary ?? pkg.description,
+        url: `${site.url}/packages/${pkg.slug}`,
+        provider: { "@id": `${site.url}/#business` },
+        ...(pkg.gallery[0] || pkg.hero_image
+          ? { image: `${site.url}${pkg.gallery[0] ?? pkg.hero_image}` }
+          : {}),
+        offers: {
+          "@type": "Offer",
+          url: `${site.url}/booking?package=${pkg.slug}`,
+          priceCurrency: "INR",
+          price: pkg.price_from,
+          availability: "https://schema.org/InStock",
+        },
+        ...(pkg.review_count > 0
+          ? {
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: pkg.rating,
+                reviewCount: pkg.review_count,
+              },
+            }
+          : {}),
       },
-    }),
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: site.url },
+          { "@type": "ListItem", position: 2, name: "Packages", item: `${site.url}/packages` },
+          { "@type": "ListItem", position: 3, name: pkg.name, item: `${site.url}/packages/${pkg.slug}` },
+        ],
+      },
+      ...(pkg.faqs.length > 0
+        ? [
+            {
+              "@type": "FAQPage",
+              mainEntity: pkg.faqs.map((faq) => ({
+                "@type": "Question",
+                name: faq.question,
+                acceptedAnswer: { "@type": "Answer", text: faq.answer },
+              })),
+            },
+          ]
+        : []),
+    ],
   };
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <PageHero
         eyebrow={categoryMeta?.label ?? "Package"}
         title={pkg.name}

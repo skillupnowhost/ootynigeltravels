@@ -4,6 +4,7 @@ import { RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { HeadsetPulseIcon } from "@/components/ui/AnimatedIcons";
 import { listFaqs } from "@/lib/db/queries/faqs";
+import { serializeJsonLd } from "@/lib/seo/jsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ export default async function FAQPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <PageHero eyebrow="Good to know" title="Frequently asked questions" seed="faq-hero" variant="lake">
         <span className="mt-6 inline-flex items-center gap-2 text-sm text-forest-300">
           <HeadsetPulseIcon size={20} className="text-gold-400" />

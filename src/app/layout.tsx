@@ -4,6 +4,7 @@ import "./globals.css";
 import { SiteChrome } from "@/components/layout/SiteChrome";
 import { site } from "@/lib/config/site";
 import { averageRating } from "@/lib/db/queries/reviews";
+import { serializeJsonLd } from "@/lib/seo/jsonLd";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -185,11 +186,11 @@ export default async function RootLayout({
       <body className="antialiased">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(organizationJsonLd) }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(websiteJsonLd) }}
         />
         <a href="#main-content" className="skip-link">
           Skip to content

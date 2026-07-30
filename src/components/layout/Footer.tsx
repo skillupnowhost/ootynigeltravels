@@ -33,6 +33,7 @@ const columns = [
       { href: "/about", label: "About Us" },
       { href: "/blog", label: "Travel Guide" },
       { href: "/faq", label: "FAQs" },
+      { href: "/site-map", label: "HTML Sitemap" },
       { href: "/contact", label: "Contact" },
       { href: "/track", label: "Track a Booking" },
     ],

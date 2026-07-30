@@ -10,6 +10,7 @@ import { CalendarCheckIcon, MapPinDropIcon } from "@/components/ui/AnimatedIcons
 import { destinationsRepo } from "@/lib/db/queries/destinations";
 import { packagesRepo } from "@/lib/db/queries/packages";
 import { site } from "@/lib/config/site";
+import { serializeJsonLd } from "@/lib/seo/jsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -63,7 +64,7 @@ export default async function DestinationDetailPage({ params }: { params: Params
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <PageHero
         eyebrow={destination.region ?? "Destination"}
         title={destination.name}

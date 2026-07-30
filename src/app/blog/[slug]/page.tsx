@@ -5,6 +5,8 @@ import { Reveal } from "@/components/ui/Reveal";
 import { ClockHandsIcon } from "@/components/ui/AnimatedIcons";
 import { blogRepo } from "@/lib/db/queries/blog";
 import { formatDate } from "@/lib/format";
+import { site } from "@/lib/config/site";
+import { serializeJsonLd } from "@/lib/seo/jsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -29,14 +31,21 @@ export default async function BlogPostPage({ params }: { params: Params }) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
+    "@id": `${site.url}/blog/${post.slug}#article`,
     headline: post.title,
+    description: post.excerpt ?? undefined,
+    mainEntityOfPage: `${site.url}/blog/${post.slug}`,
     datePublished: post.published_at,
-    author: { "@type": "Organization", name: post.author ?? undefined },
+    ...(post.cover_image ? { image: `${site.url}${post.cover_image}` } : {}),
+    author: post.author
+      ? { "@type": "Person", name: post.author }
+      : { "@id": `${site.url}/#business` },
+    publisher: { "@id": `${site.url}/#business` },
   };
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <PageHero eyebrow={post.category} title={post.title} seed={post.slug} variant="tea-rows" image={post.cover_image}>
         <span className="mt-6 inline-flex items-center gap-1.5 text-sm text-forest-300">
           <ClockHandsIcon size={16} className="text-gold-400" /> {post.read_minutes} min read · {formatDate(post.published_at)} · {post.author}

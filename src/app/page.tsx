@@ -17,6 +17,7 @@ import { listPickupLocations } from "@/lib/db/queries/pickupLocations";
 import { attachPricingTiers } from "@/lib/pricing/service";
 import { getOotyWeather } from "@/lib/weather";
 import { site } from "@/lib/config/site";
+import { serializeJsonLd } from "@/lib/seo/jsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +74,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(destinationsJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(destinationsJsonLd) }} />
       <Hero destinations={destinations} packages={packages} pickupLocations={pickupLocations} theme={weather} />
       <TripStylesShowcase />
       <DestinationsShowcase destinations={destinationsWithImages} />

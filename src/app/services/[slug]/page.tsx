@@ -10,6 +10,7 @@ import { WhatsAppGlyphIcon } from "@/components/ui/BrandIcons";
 import { SERVICES, getServiceBySlug } from "@/lib/data/services";
 import { packagesRepo } from "@/lib/db/queries/packages";
 import { site, waLink } from "@/lib/config/site";
+import { serializeJsonLd } from "@/lib/seo/jsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +73,7 @@ export default async function ServiceDetailPage({ params }: { params: Params }) 
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <PageHero
         eyebrow={svc.eyebrow}
         title={svc.heroTitle}

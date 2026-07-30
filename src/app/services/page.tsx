@@ -6,6 +6,7 @@ import { ScenicArt } from "@/components/ui/ScenicArt";
 import { CompassIcon } from "@/components/ui/AnimatedIcons";
 import { SERVICES } from "@/lib/data/services";
 import { site } from "@/lib/config/site";
+import { serializeJsonLd } from "@/lib/seo/jsonLd";
 
 export const metadata: Metadata = {
   title: "Taxi & Travel Services in Ooty",
@@ -31,7 +32,7 @@ export default function ServicesPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <PageHero
         eyebrow="Our Services"
         title="Taxi and travel services across the Nilgiris"

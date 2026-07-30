@@ -10,6 +10,7 @@ import { PhotoGallery } from "@/components/fleet/PhotoGallery";
 import { fleetRepo } from "@/lib/db/queries/fleet";
 import { formatINR } from "@/lib/format";
 import { site, waLink } from "@/lib/config/site";
+import { serializeJsonLd } from "@/lib/seo/jsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -33,20 +34,39 @@ export default async function FleetDetailPage({ params }: { params: Params }) {
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Product",
-    name: vehicle.name,
-    category: vehicle.category,
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "INR",
-      price: vehicle.price_per_day,
-      availability: "https://schema.org/InStock",
-    },
+    "@graph": [
+      {
+        "@type": "Service",
+        "@id": `${site.url}/fleet/${vehicle.slug}#rental-service`,
+        name: `${vehicle.name} with driver`,
+        serviceType: "Chauffeur-driven car rental",
+        description: `Private chauffeur-driven ${vehicle.category} rental with ${vehicle.seats} seats.`,
+        url: `${site.url}/fleet/${vehicle.slug}`,
+        provider: { "@id": `${site.url}/#business` },
+        areaServed: site.areaServed.map((name) => ({ "@type": "City", name })),
+        ...(vehicle.hero_asset ? { image: `${site.url}${vehicle.hero_asset}` } : {}),
+        offers: {
+          "@type": "Offer",
+          url: `${site.url}/fleet/${vehicle.slug}`,
+          priceCurrency: "INR",
+          price: vehicle.price_per_day,
+          availability: "https://schema.org/InStock",
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: site.url },
+          { "@type": "ListItem", position: 2, name: "Fleet", item: `${site.url}/fleet` },
+          { "@type": "ListItem", position: 3, name: vehicle.name, item: `${site.url}/fleet/${vehicle.slug}` },
+        ],
+      },
+    ],
   };
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <PageHero eyebrow={vehicle.category} title={vehicle.name} seed={vehicle.slug} variant="mountains" />
 
       <section className="container-luxe py-16">

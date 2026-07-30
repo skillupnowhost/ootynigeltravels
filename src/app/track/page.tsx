@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "Track Your Booking",
   description: "Look up a booking by ID or phone number to see its live status.",
   alternates: { canonical: "/track" },
+  robots: { index: false, follow: false },
 };
 
 export default function TrackPage() {

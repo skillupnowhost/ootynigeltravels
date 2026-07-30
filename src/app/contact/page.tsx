@@ -17,6 +17,7 @@ import { listApprovedReviews } from "@/lib/db/queries/reviews";
 import { attractionsRepo } from "@/lib/db/queries/attractions";
 import { listAttractionImages } from "@/lib/db/queries/attractionImages";
 import { site, waLink } from "@/lib/config/site";
+import { serializeJsonLd } from "@/lib/seo/jsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +61,7 @@ export default async function ContactPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
 
       <ContactHero />
 
