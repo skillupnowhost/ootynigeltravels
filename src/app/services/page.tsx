@@ -9,9 +9,24 @@ import { site } from "@/lib/config/site";
 import { serializeJsonLd } from "@/lib/seo/jsonLd";
 
 export const metadata: Metadata = {
-  title: "Taxi & Travel Services in Ooty",
+  title: "Ooty Taxi & Travel Services | Airport Transfer & Sightseeing",
   description:
-    "Ooty taxi and cab booking, airport and station transfers, one-way and round-trip taxi, local sightseeing and corporate travel — all with a private chauffeur.",
+    "Book Ooty taxi and cab service for airport transfers, station pickup, one-way and round-trip taxi, local sightseeing and corporate travel with a private chauffeur.",
+  keywords: [
+    "Ooty taxi service",
+    "airport transfer Ooty",
+    "local sightseeing taxi Ooty",
+    "Coimbatore airport to Ooty taxi",
+    "private chauffeur Ooty",
+    "Ooty cab booking",
+    "one way taxi Ooty",
+    "round trip taxi Ooty",
+    "Ooty station pickup",
+    "Coimbatore to Ooty travel taxi",
+    "travel taxi Ooty",
+    "travel taxi Coimbatore",
+    "Coimbatore Ooty travel",
+  ],
   alternates: { canonical: "/services" },
 };
 

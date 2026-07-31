@@ -22,10 +22,20 @@ import { serializeJsonLd } from "@/lib/seo/jsonLd";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Contact Us — Book Ooty Taxi & Tour Packages",
+  title: "Contact Ooty Nigel Travels | Book Taxi & Tour Packages",
   description:
-    "Get in touch with Ooty Nigel Travels — call, WhatsApp, email or send a detailed trip enquiry. Our Nilgiris travel experts reply within hours.",
-  keywords: ["contact Ooty Nigel Travels", "Ooty taxi booking contact", "Ooty travel agency phone number"],
+    "Get in touch with Ooty Nigel Travels for Ooty taxi booking, airport transfer, local sightseeing and custom Nilgiris tour packages.",
+  keywords: [
+    "contact Ooty Nigel Travels",
+    "Ooty taxi booking contact",
+    "Ooty travel agency phone number",
+    "book Ooty taxi",
+    "Ooty cab booking contact",
+    "Coimbatore to Ooty taxi contact",
+    "Ooty travel enquiry",
+    "Coimbatore Ooty travel enquiry",
+    "travel enquiry Ooty",
+  ],
   alternates: { canonical: "/contact" },
 };
 

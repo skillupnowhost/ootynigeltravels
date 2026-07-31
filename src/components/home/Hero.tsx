@@ -9,7 +9,6 @@ import { LinkButton } from "@/components/ui/Button";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { HeroContactIcons } from "@/components/ui/HeroContactIcons";
 import { ForestHero } from "./ForestHero";
-import { HeroWordCycle } from "./HeroWordCycle";
 import { BrandKicker } from "./BrandKicker";
 import { PlanJourneyForm } from "@/components/booking/PlanJourneyForm";
 import type { Destination, PickupLocation } from "@/lib/db/types";
@@ -117,9 +116,9 @@ export function Hero({
                 isNight ? "text-ivory-50" : "text-forest-950"
               }`}
             >
-              Ooty,
+              Best Ooty Taxi
               <br />
-              Curated in <HeroWordCycle />
+              & Tour Packages
             </h1>
           </Reveal>
 
@@ -129,10 +128,9 @@ export function Hero({
                 isNight ? "text-forest-200" : "text-charcoal-500"
               }`}
             >
-              The best-rated travel agency across Ooty, Coimbatore, Coonoor and
-              Kotagiri — Coimbatore Airport pickups, tea gardens, waterfalls,
-              wildlife and viewpoints, woven into an itinerary built around
-              how you want to travel.
+              Private chauffeur-driven Ooty taxi service, Coimbatore to Ooty cab,
+              airport transfer, local sightseeing and curated Nilgiris holiday
+              packages — planned around your dates and travel style.
             </p>
           </Reveal>
 

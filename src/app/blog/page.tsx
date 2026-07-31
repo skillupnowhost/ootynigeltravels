@@ -16,8 +16,17 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Ooty Travel Guide & Blog — Tips, Itineraries & Local Insights",
-  description: "Guides, tips, seasonal advice, photo spots and local favourites for planning your Nilgiris trip.",
-  keywords: ["Ooty travel guide", "Ooty trip blog", "Nilgiris travel tips", "Ooty itinerary guide"],
+  description: "Guides, tips, seasonal advice, photo spots and local favourites for planning your Ooty trip, Coimbatore to Ooty journey and Nilgiris holiday.",
+  keywords: [
+    "Ooty travel guide",
+    "Ooty trip blog",
+    "Nilgiris travel tips",
+    "Ooty itinerary guide",
+    "Ooty sightseeing guide",
+    "Coimbatore to Ooty travel guide",
+    "Ooty honeymoon guide",
+    "Ooty weekend trip guide",
+  ],
   alternates: { canonical: "/blog" },
 };
 

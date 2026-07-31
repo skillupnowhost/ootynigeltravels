@@ -11,9 +11,9 @@ import { BLUR_DATA_URL } from "@/lib/media";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Ooty & Nilgiris Destinations — Coonoor, Kotagiri, Mudumalai",
+  title: "Ooty & Nilgiris Tourist Places | Private Taxi Tours",
   description:
-    "Ooty tourist places and Nilgiris destinations to visit — six essential stops across Ooty, Coonoor, Kotagiri, Mudumalai, Avalanche and Coimbatore.",
+    "Explore Ooty tourist places and Nilgiris destinations including Coonoor, Kotagiri, Mudumalai, Avalanche and Coimbatore with a private taxi and local guide.",
   keywords: [
     "Ooty tourist places",
     "Nilgiris destinations",
@@ -21,6 +21,18 @@ export const metadata: Metadata = {
     "Coonoor tourist places",
     "Kotagiri tourist places",
     "Mudumalai tourist places",
+    "private taxi to Ooty attractions",
+    "best places in Ooty",
+    "Ooty sightseeing places",
+    "Ooty waterfalls",
+    "Pykara Ooty",
+    "Avalanche Ooty",
+    "Doddabetta Ooty",
+    "Tea factory Ooty",
+    "Ooty hill station trip",
+    "travel to Ooty",
+    "travel in Ooty",
+    "Coimbatore to Ooty travel",
   ],
   alternates: { canonical: "/destinations" },
 };

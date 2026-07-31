@@ -10,10 +10,21 @@ import { attachPricingTiers } from "@/lib/pricing/service";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Ooty Travels Booking — Plan Your Journey",
+  title: "Book Ooty Taxi & Tour Packages Online | Ooty Nigel Travels",
   description:
-    "Book your Ooty trip online — no account required. Choose a destination, a signature tour package, and your travel dates.",
-  keywords: ["Ooty travels booking", "Ooty tour booking", "Ooty trip booking online"],
+    "Book your Ooty taxi, airport transfer, local sightseeing trip or custom Nilgiris holiday package online in minutes with no account required.",
+  keywords: [
+    "book Ooty taxi online",
+    "Ooty tour booking",
+    "Ooty trip booking online",
+    "Coimbatore to Ooty cab booking",
+    "book Ooty package online",
+    "Ooty taxi booking",
+    "Ooty holiday booking",
+    "Ooty travel booking",
+    "Coimbatore Ooty travel booking",
+    "travel booking to Ooty",
+  ],
   alternates: { canonical: "/booking" },
 };
 

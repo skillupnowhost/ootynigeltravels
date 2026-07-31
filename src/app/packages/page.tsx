@@ -8,19 +8,26 @@ import { fleetRepo } from "@/lib/db/queries/fleet";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Ooty Tour Packages & Trip Packages — Family, Honeymoon, Adventure",
+  title: "Ooty Tour Packages & Private Taxi Trips | Ooty Nigel Travels",
   description:
-    "Ooty tour packages and trip plans for family, couples, honeymoon, adventure and friends' getaways across the Nilgiris — or build your own custom itinerary. Every package includes a private chauffeur.",
+    "Discover family, honeymoon, adventure, couple, group and custom Ooty tour packages with private chauffeur service across Ooty, Coonoor, Kotagiri and Mudumalai.",
   keywords: [
     "Ooty tour packages",
-    "Ooty trip packages",
+    "private taxi trip Ooty",
     "Nilgiris tour packages",
     "Ooty honeymoon package",
     "Ooty family package",
     "Ooty group tour package",
-    "travels in Ooty for family",
-    "travels in Ooty for couples",
+    "custom Ooty itinerary",
     "Ooty travel agency tour packages",
+    "travel package to Ooty",
+    "Ooty weekend package",
+    "Coimbatore to Ooty package",
+    "Ooty couple package",
+    "Ooty adventure package",
+    "Ooty family holiday package",
+    "Coimbatore to Ooty package",
+    "Ooty trip package",
   ],
   alternates: { canonical: "/packages" },
 };

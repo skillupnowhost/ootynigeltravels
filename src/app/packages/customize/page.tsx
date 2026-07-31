@@ -10,8 +10,18 @@ import { packagesRepo } from "@/lib/db/queries/packages";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Build Your Own Trip",
-  description: "Don't see the fit? Tell us your trip type, the places you want to see and your travel dates — we'll put together a custom Nilgiris itinerary and pricing.",
+  title: "Build Your Own Ooty Trip | Custom Nilgiris Itinerary",
+  description: "Plan a custom Ooty trip, Coimbatore to Ooty taxi trip, sightseeing package, honeymoon itinerary or family holiday with a personalized Nilgiris plan.",
+  keywords: [
+    "custom Ooty trip",
+    "custom Nilgiris itinerary",
+    "Ooty family trip",
+    "Ooty honeymoon trip",
+    "Ooty adventure trip",
+    "Coimbatore to Ooty trip",
+    "Ooty sightseeing trip",
+    "custom travel itinerary Ooty",
+  ],
   alternates: { canonical: "/packages/customize" },
 };
 

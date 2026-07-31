@@ -14,13 +14,20 @@ const highlights = [
 ];
 
 export const metadata: Metadata = {
-  title: "About Us — Best Travel Agency in Ooty",
-  description: `The story behind ${site.name} — the best-rated private, chauffeur-driven travel agency across Ooty, Coimbatore and the Nilgiris.`,
+  title: "About Ooty Nigel Travels | Best Travel Agency in Ooty",
+  description: `The story behind ${site.name} — a trusted private chauffeur-driven Ooty travel agency for airport transfers, sightseeing tours and Nilgiris holiday packages.`,
   keywords: [
     "best travel agency in Ooty",
-    "best travels in Ooty",
+    "best taxi service in Ooty",
     "Ooty travel agency near me",
     "about Ooty Nigel Travels",
+    "private chauffeur Ooty",
+    "trusted Ooty taxi service",
+    "Ooty cab service",
+    "Nilgiris travel agency",
+    "Coimbatore Ooty travel agency",
+    "travel agency Coimbatore Ooty",
+    "Coimbatore to Ooty travel agency",
   ],
   alternates: { canonical: "/about" },
 };
